@@ -22,18 +22,19 @@
 package content
 
 import (
-	"encoding/xml"
 	"io"
 	"io/ioutil"
 	"regexp"
 	"strings"
 )
 
+/*
 type node struct {
 	XMLName xml.Name
 	Content []byte `xml:",innerxml"`
 	Nodes   []node `xml:",any"`
 }
+*/
 
 func xmlContent(r io.ReadSeeker) string {
 	// dec := xml2map.NewDecoder(r)

@@ -34,10 +34,10 @@ jobs:
         run: go-acc ./...
         shell: bash
       - name: Upload coverage
-        run: |
-          curl -s https://codecov.io/bash > codecov.sh
-          chmod +x codecov.sh
-          CODECOV_TOKEN=$(CODECOV_TOKEN) ./codecov.sh
+        env:
+          CI: "true"
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: bash <(curl -s https://codecov.io/bash)
         if: matrix.os == 'windows-latest'
         shell: bash
 

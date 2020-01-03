@@ -27,6 +27,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
 )
 
@@ -36,9 +37,12 @@ func ExampleReadFile() {
 	// parse the file system
 	fs := recursivefs.New()
 
-	// get handle the README.md
+	// create fslib path
 	wd, _ := os.Getwd()
-	file, _ := fs.Open(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
+	fpath, _ := osfs.ToForensicPath(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
+
+	// get handle the README.md
+	file, _ := fs.Open(fpath)
 
 	// get content
 	content, _ := ioutil.ReadAll(file)
