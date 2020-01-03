@@ -37,11 +37,11 @@ func ExampleReadFile() {
 	// parse the file system
 	fs := recursivefs.New()
 
-	// get handle the README.md
+	// create fslib path
 	wd, _ := os.Getwd()
-
 	fpath, _ := osfs.ToForensicPath(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
 
+	// get handle the README.md
 	file, _ := fs.Open(fpath)
 
 	// get content
