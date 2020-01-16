@@ -23,14 +23,17 @@ package zip
 
 import (
 	"archive/zip"
+	"errors"
 	"io"
 	"os"
 	"path"
 	"strings"
 	"syscall"
 	"time"
+)
 
-	"github.com/spf13/afero"
+var (
+	ErrOutOfRange = errors.New("out of range")
 )
 
 // File describes files and directories in the zip file system.
@@ -83,7 +86,7 @@ func (f *File) Read(p []byte) (n int, err error) {
 		return 0, syscall.EISDIR
 	}
 	if f.closed {
-		return 0, afero.ErrFileClosed
+		return 0, os.ErrClosed
 	}
 	err = f.fillBuffer(f.offset + int64(len(p)))
 	n = copy(p, f.buf[f.offset:])
@@ -97,7 +100,7 @@ func (f *File) ReadAt(p []byte, off int64) (n int, err error) {
 		return 0, syscall.EISDIR
 	}
 	if f.closed {
-		return 0, afero.ErrFileClosed
+		return 0, os.ErrClosed
 	}
 	err = f.fillBuffer(off + int64(len(p)))
 	n = copy(p, f.buf[int(off):])
@@ -110,7 +113,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 		return 0, syscall.EISDIR
 	}
 	if f.closed {
-		return 0, afero.ErrFileClosed
+		return 0, os.ErrClosed
 	}
 	switch whence {
 	case io.SeekStart:
@@ -122,7 +125,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 		return 0, syscall.EINVAL
 	}
 	if offset < 0 || offset > int64(f.zipfile.UncompressedSize64) {
-		return 0, afero.ErrOutOfRange
+		return 0, ErrOutOfRange
 	}
 	f.offset = offset
 	return offset, nil
