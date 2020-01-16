@@ -26,18 +26,17 @@ package systemfs
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib"
 	"io"
 	"log"
 	"os"
 	"runtime"
 	"strings"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 )
 
 // New creates a new system FS.
@@ -96,7 +95,7 @@ func (systemfs *FS) Open(name string) (item fslib.Item, err error) {
 		return item, err
 	}
 
-	base, err := afero.NewOsFs().Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
+	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
 	if err != nil {
 		err = errors.Wrap(err, "ntfs base open failed")
 		log.Println(err)
@@ -135,7 +134,7 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 		return info, err
 	}
 
-	base, err := afero.NewOsFs().Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
+	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
 	if err != nil {
 		err = errors.Wrap(err, "ntfs base open failed")
 		log.Println(err)
@@ -159,7 +158,7 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 // Item describes files and directories in the file system.
 type Item struct {
 	fslib.Item
-	base afero.File
+	base *os.File
 }
 
 // Close closes the file freeing the resource. Usually additional IO operations

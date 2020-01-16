@@ -26,7 +26,6 @@ package osfs
 
 import (
 	"errors"
-	"github.com/forensicanalysis/fslib"
 	"log"
 	"os"
 	"path/filepath"
@@ -35,19 +34,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
-	"github.com/spf13/afero"
 	"gopkg.in/djherbis/times.v1"
 )
 
 // New wrapes the nativ file system.
 func New() *FS {
-	return &FS{afero.OsFs{}}
+	return &FS{}
 }
 
 // FS implements a read-only wrapper for the native file system.
-type FS struct {
-	afero.OsFs
+type FS struct{}
+
+// Name returns the name of the file system.
+func (fs *FS) Name() string {
+	return "OsFs"
 }
 
 func isLetter(c byte) bool {
@@ -89,12 +91,12 @@ func (fs *FS) Open(name string) (item fslib.Item, err error) {
 		return &Root{}, nil
 	}
 
-	file, err := fs.OsFs.Open(sysname)
+	file, err := os.Open(sysname)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Item{File: file, syspath: sysname}, err
+	return &Item{File: *file, syspath: sysname}, err
 }
 
 // Stat returns an os.FileInfo object that describes a file.
@@ -108,7 +110,7 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 		return &Root{}, nil
 	}
 
-	fi, err := fs.OsFs.Stat(sysname)
+	fi, err := os.Lstat(sysname)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +146,7 @@ func sysname(name string) (string, string, error) {
 
 // Item describes files and directories in the native OS file system.
 type Item struct {
-	afero.File
+	os.File
 	syspath string
 }
 
@@ -171,7 +173,7 @@ func (i *Item) Close() error {
 
 // Stat return an os.FileInfo object that describes a file.
 func (i *Item) Stat() (os.FileInfo, error) {
-	info, err := i.File.Stat()
+	info, err := os.Lstat(i.syspath)
 	return &Info{info, i.syspath}, err
 }
 

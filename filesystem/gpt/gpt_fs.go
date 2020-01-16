@@ -25,16 +25,16 @@ package gpt
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/forensicfs"
-	"github.com/forensicanalysis/fslib/fsio"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
+	"github.com/forensicanalysis/fslib/forensicfs"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // FS implements a read-only file system for Master Boot Records (MBR).
@@ -54,7 +54,7 @@ func (fs *FS) Name() string {
 	return "GPT"
 }
 
-// Open returns a afero.File for the given location.
+// Open returns a File for the given location.
 func (fs *FS) Open(name string) (fslib.Item, error) {
 	name, err := filesystem.Clean(name)
 	if err != nil {
