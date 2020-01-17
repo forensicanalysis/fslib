@@ -30,7 +30,6 @@ go get -u github.com/forensicanalysis/fslib
 
 ## Examples
 
-
 ### NTFSReaddirnames
 ``` go
 package main
@@ -94,8 +93,39 @@ func main() {
 
 ```
 
+## fs command
+
+The fs command line tool that has various subcommands which imitate unix commands 
+but for nested file system structures.
+
+ - **fs cat**: Print files
+ - **fs file**: Determine files types
+ - **fs hashsum**: Print hashsums
+ - **fs ls**: List directory contents
+ - **fs stat**: Display file status
+ - **fs strings**: Find the printable strings in an object, or other binary, file
+ - **fs tree**: List contents of directories in a tree-like format
 
 
+#### [:package: Download](https://github.com/forensicanalysis/fslib/releases)
+
+#### Usage Examples
+
+List all files in a zip file:
+```
+fs ls test.zip
+```
+
+Extract the Amcache.hve file from a NTFS image in a zip file:
+
+```
+fs cat case/evidence.zip/ntfs.dd/Windows/AppCompat/Programs/Amcache.hve > Amcache.hve
+```
+
+Hash all files in a zip file:
+```
+fs hashsum case/evidence.zip/*
+```
 
 
 ## Subpackages
