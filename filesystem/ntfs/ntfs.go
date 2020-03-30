@@ -24,6 +24,7 @@
 package ntfs
 
 import (
+	"errors"
 	"io"
 	"os"
 	"path"
@@ -36,7 +37,12 @@ import (
 )
 
 // New creates a new ntfs FS.
-func New(r io.ReaderAt) (*FS, error) {
+func New(r io.ReaderAt) (fs *FS, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("error parsing file system as NTFS")
+		}
+	}()
 	reader, _ := parser.NewPagedReader(r, 1024, 10000)
 
 	ntfsCtx, err := parser.GetNTFSContext(reader, 0)
