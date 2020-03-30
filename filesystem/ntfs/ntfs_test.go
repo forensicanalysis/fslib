@@ -22,9 +22,12 @@
 package ntfs
 
 import (
+	"bytes"
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/fsio"
+	"io"
 	"os"
+	"reflect"
 	"sort"
 	"testing"
 	"time"
@@ -58,4 +61,34 @@ func Test_NTFSImage(t *testing.T) {
 	tests["file2Test"].InfoMode = 0
 
 	fstests.RunTest(t, "NTFS", "filesystem/ntfs.dd", func(f fsio.ReadSeekerAt) (fslib.FS, error) { return New(f) }, tests)
+}
+
+func TestNew(t *testing.T) {
+	r := bytes.NewReader([]byte{})
+	type args struct {
+		r io.ReaderAt
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantFs  *FS
+		wantErr bool
+	}{
+		{"no ntfs", args{r}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotFs, err := New(tt.args.r)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				return
+			}
+			if !reflect.DeepEqual(gotFs, tt.wantFs) {
+				t.Errorf("New() gotFs = %v, want %v", gotFs, tt.wantFs)
+			}
+		})
+	}
 }
