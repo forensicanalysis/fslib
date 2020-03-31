@@ -22,7 +22,6 @@
 package content
 
 import (
-	"bufio"
 	"bytes"
 	"io"
 )
@@ -31,46 +30,45 @@ import (
 func StringsReader(r io.Reader, w io.Writer) (err error) {
 	buffer := make([]byte, 4096*4096)
 	var currentString bytes.Buffer
-	f := bufio.NewWriter(w)
-	defer f.Flush()
+
 	for {
-		size, _ := r.Read(buffer)
+		size, err := r.Read(buffer)
+		if err != nil && err != io.EOF {
+			return err
+		}
 		if size == 0 {
 			break
 		}
-		if err = extractString(buffer[:size], &currentString, f); err != nil {
+		if err = extractString(buffer[:size], &currentString, w); err != nil {
 			return err
 		}
 	}
 
-	if currentString.Len() >= 4 {
-		if _, err = currentString.WriteTo(f); err != nil {
-			return err
-		}
-
-		if err = f.WriteByte('\n'); err != nil {
-			return err
-		}
-	}
-	return
+	return finishCurrentString(&currentString, w)
 }
 
-func extractString(data []byte, currentString *bytes.Buffer, f *bufio.Writer) (err error) {
+func finishCurrentString(currentString *bytes.Buffer, w io.Writer) error {
+	if currentString.Len() >= 4 {
+		if _, err := currentString.WriteTo(w); err != nil {
+			return err
+		}
+
+		if _, err := w.Write([]byte{'\n'}); err != nil {
+			return err
+		}
+	} else if currentString.Len() > 0 {
+		currentString.Reset()
+	}
+	return nil
+}
+
+func extractString(data []byte, currentString *bytes.Buffer, w io.Writer) error {
 	for _, c := range data {
-		if (c >= ' ' && c <= '~') || c == '' {
-			if err = currentString.WriteByte(c); err != nil {
-				return err
-			}
+		if (c >= ' ' && c <= '~') || c == 0x0c {
+			currentString.WriteByte(c) // nolint:errcheck
 		} else {
-			if currentString.Len() >= 4 {
-				if _, err = currentString.WriteTo(f); err != nil {
-					return err
-				}
-				if err = f.WriteByte('\n'); err != nil {
-					return err
-				}
-			} else if currentString.Len() > 0 {
-				currentString.Reset()
+			if err := finishCurrentString(currentString, w); err != nil {
+				return err
 			}
 		}
 	}

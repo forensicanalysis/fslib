@@ -88,6 +88,5 @@ func Content(r fsio.ReadSeekerAt) (content string, err error) {
 	if err = StringsReader(r, buf); err != nil {
 		return "", err
 	}
-
 	return buf.String(), nil
 }

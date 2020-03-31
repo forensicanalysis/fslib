@@ -1,6 +1,17 @@
 package content
 
-/*
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"testing"
+
+	"github.com/ledongthuc/pdf"
+
+	"github.com/forensicanalysis/fslib/fsio"
+)
+
 type read struct{}
 
 func (b *read) Read([]byte) (n int, err error) { return 0, nil }
@@ -9,20 +20,8 @@ type readAt struct{}
 
 func (b *readAt) ReadAt([]byte, int64) (n int, err error) { return 0, nil }
 
-type brokenReadAt struct{}
-
-func (b *brokenReadAt) ReadAt([]byte, int64) (n int, err error) {
-	return 0, errors.New("broken readerAt")
-}
-
-type brokenSeek struct{}
-
-func (b *brokenSeek) Seek(int64, int) (int64, error) {
-	return 0, errors.New("broken seeker")
-}
-
 type brokenSeeker struct {
-	brokenSeek
+	fsio.ErrorSeeker
 	readAt
 	read
 }
@@ -32,7 +31,7 @@ func plainTextError(io.ReaderAt, int64) (reader *pdf.Reader, err error) {
 }
 
 func brokenReader(io.ReaderAt, int64) (reader *pdf.Reader, err error) {
-	return pdf.NewReader(&brokenReadAt{}, 0)
+	return pdf.NewReader(&fsio.ErrorReaderAt{}, 0)
 }
 
 func TestPDFContent(t *testing.T) {
@@ -48,8 +47,8 @@ func TestPDFContent(t *testing.T) {
 	}{
 		{"size error", args{&brokenSeeker{}, pdf.NewReader}, "", true},
 		{"no pdf", args{bytes.NewReader([]byte{}), pdf.NewReader}, "", true},
-		{"plaintext error", args{bytes.NewReader([]byte{}), plainTextError}, "", false},
-		{"broken reader", args{bytes.NewReader([]byte{}), brokenReader}, "", false},
+		{"plaintext error", args{bytes.NewReader([]byte{}), plainTextError}, "", true},
+		{"broken reader", args{bytes.NewReader([]byte{}), brokenReader}, "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -69,4 +68,3 @@ func TestPDFContent(t *testing.T) {
 		})
 	}
 }
-*/

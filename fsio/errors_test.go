@@ -25,3 +25,19 @@ func TestErrorSeeker_Seek(t *testing.T) {
 		t.Fatalf("Seek() error = nil, wantErr true")
 	}
 }
+
+func TestErrorWriter_Write(t *testing.T) {
+	b := &ErrorWriter{}
+	_, err := b.Write([]byte{0x00})
+	if err == nil {
+		t.Fatalf("Write() error = nil, wantErr true")
+	}
+}
+
+func TestErrorWriter_WriteOK(t *testing.T) {
+	b := &ErrorWriter{Skip: 1}
+	_, err := b.Write([]byte{0x00})
+	if err != nil {
+		t.Fatalf("Write() error != nil, wantErr false")
+	}
+}

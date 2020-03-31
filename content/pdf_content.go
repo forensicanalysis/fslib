@@ -28,6 +28,8 @@ import (
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
+var readerGenerator = pdf.NewReader
+
 // PDFContent returns the text data from a pdf file.
 func PDFContent(r fsio.ReadSeekerAt) (string, error) {
 	size, err := fsio.GetSize(r)
@@ -35,7 +37,7 @@ func PDFContent(r fsio.ReadSeekerAt) (string, error) {
 		return "", err
 	}
 
-	file, err := pdf.NewReader(r, size)
+	file, err := readerGenerator(r, size)
 	if err != nil {
 		return "", err
 	}
