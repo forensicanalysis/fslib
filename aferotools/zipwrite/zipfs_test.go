@@ -24,9 +24,11 @@ package zipwrite
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"io"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -49,6 +51,88 @@ func TestNewWriteZipFs(t *testing.T) {
 			}
 			if gotWriter := writer.String(); gotWriter != tt.wantWriter {
 				t.Errorf("NewWriteZipFs() = %v, want %v", gotWriter, tt.wantWriter)
+			}
+		})
+	}
+}
+
+type BadWriter struct{}
+
+func (w *BadWriter) Write(b []byte) (int, error) {
+	// panic("noo")
+	return 0, errors.New("this always fails")
+}
+
+func TestFS_Create(t *testing.T) {
+	buf1 := &bytes.Buffer{}
+	fs1 := &FS{zipwriter: zip.NewWriter(buf1)}
+
+	buf2 := &BadWriter{}
+	fs2 := &FS{zipwriter: zip.NewWriter(buf2)}
+	x := strings.Repeat("x", 5000)
+
+	type fields struct {
+		fs     *FS
+		buffer *bytes.Buffer
+	}
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{"add file to zip", fields{fs1, buf1}, args{"test.txt"}, false},
+		{"add file to nil buffer", fields{fs2, nil}, args{x}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.fields.fs.Create(tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Create() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				return
+			}
+			tt.fields.fs.Close()
+
+			r := bytes.NewReader(tt.fields.buffer.Bytes())
+			zr, err := zip.NewReader(r, int64(r.Len()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			f := zr.File[0]
+			if f.Name != tt.args.name {
+				t.Fatalf("wrong name = %s, want %s", f.Name, tt.args.name)
+			}
+		})
+	}
+}
+
+func TestFS_MkdirAll(t *testing.T) {
+	type fields struct {
+		buf *bytes.Buffer
+	}
+	type args struct {
+		path string
+		perm os.FileMode
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{"create folder", fields{&bytes.Buffer{}}, args{"test", 0}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fs := &FS{zipwriter: zip.NewWriter(tt.fields.buf)}
+			if err := fs.MkdirAll(tt.args.path, tt.args.perm); (err != nil) != tt.wantErr {
+				t.Errorf("MkdirAll() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -91,20 +175,17 @@ func TestZipWriteFs_OpenFile(t *testing.T) {
 		name    string
 		fs      *FS
 		args    args
-		want    afero.File
 		wantErr bool
 	}{
-		{"Open ro", &FS{zipwriter: zip.NewWriter(&bytes.Buffer{})}, args{"foo", os.O_RDONLY, 0}, nil, true},
+		{"Open ro", &FS{zipwriter: zip.NewWriter(&bytes.Buffer{})}, args{"foo", os.O_RDONLY, 0}, true},
+		{"Open w", &FS{zipwriter: zip.NewWriter(&bytes.Buffer{})}, args{"foo", os.O_CREATE, 0}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.fs.OpenFile(tt.args.name, tt.args.flag, tt.args.perm)
+			_, err := tt.fs.OpenFile(tt.args.name, tt.args.flag, tt.args.perm)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FS.OpenFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FS.OpenFile() = %v, want %v", got, tt.want)
 			}
 		})
 	}

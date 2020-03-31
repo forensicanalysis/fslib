@@ -23,7 +23,6 @@ package content
 
 import (
 	"bytes"
-
 	"github.com/ledongthuc/pdf"
 
 	"github.com/forensicanalysis/fslib/fsio"

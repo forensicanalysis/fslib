@@ -39,7 +39,8 @@ func New(filesystems ...fslib.FS) *FS {
 	return &FS{fallbackFilesystems: filesystems}
 }
 
-// FS implements a read-only file system for TODO.
+// FS implements a read-only meta file system where failing method calls to
+// higher level file systems are passed to other file systems.
 type FS struct {
 	fallbackFilesystems []fslib.FS
 }
