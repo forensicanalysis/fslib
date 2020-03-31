@@ -22,10 +22,11 @@
 package registryfs
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"reflect"
 	"sort"
 	"testing"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 func TestRegistryFS_Open(t *testing.T) {

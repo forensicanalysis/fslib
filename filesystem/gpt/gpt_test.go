@@ -23,16 +23,17 @@ package gpt
 
 import (
 	"encoding/binary"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
 	"os"
 	"strings"
 	"testing"
 	"time"
 	"unicode/utf16"
 
-	"github.com/forensicanalysis/fslib/filesystem/fstests"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem/fstests"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 func TestGPT(t *testing.T) {

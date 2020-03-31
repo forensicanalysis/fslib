@@ -26,11 +26,11 @@ package content
 import (
 	"bytes"
 	"fmt"
-	"github.com/forensicanalysis/fslib/fsio"
 	"log"
 
 	"github.com/forensicanalysis/fslib/filesystem/zip"
 	"github.com/forensicanalysis/fslib/filetype"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // Content returns the binary contents as a string.

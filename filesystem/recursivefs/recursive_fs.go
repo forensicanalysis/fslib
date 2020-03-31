@@ -26,12 +26,13 @@ package recursivefs
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib"
 	"os"
 	"path"
 	"sort"
 
 	"github.com/pkg/errors"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 type element struct {

@@ -27,13 +27,13 @@
 package glob
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"path"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/testfs"
 )
 

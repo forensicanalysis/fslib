@@ -22,11 +22,12 @@
 package osfs
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"reflect"
 	"runtime"
 	"sort"
 	"testing"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 func getOSFS(t *testing.T) (*FS, *Item, *Item) {

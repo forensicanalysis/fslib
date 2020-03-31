@@ -23,9 +23,10 @@ package content
 
 import (
 	"bytes"
-	"github.com/forensicanalysis/fslib/fsio"
 
 	"github.com/ledongthuc/pdf"
+
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // PDFContent returns the text data from a pdf file.

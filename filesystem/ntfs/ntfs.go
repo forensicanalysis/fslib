@@ -31,9 +31,10 @@ import (
 	"sort"
 	"time"
 
+	"www.velocidex.com/golang/go-ntfs/parser"
+
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
-	"www.velocidex.com/golang/go-ntfs/parser"
 )
 
 // New creates a new ntfs FS.
