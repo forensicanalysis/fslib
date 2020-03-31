@@ -31,7 +31,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-// Item copies a file or directory recursivly between two file systems.
+// Item copies a file or directory recursively between two file systems.
 func Item(srcfs, destfs afero.Fs, src, dest string) error {
 	isDir, err := afero.IsDir(srcfs, src)
 	if err != nil {

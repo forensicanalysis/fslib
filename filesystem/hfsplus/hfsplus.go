@@ -23,6 +23,7 @@ package hfsplus
 
 // Information taken from: https://developer.apple.com/legacy/library/technotes/tn/tn1150.html
 
+/*
 // HFSUniStr255 defines file and folder names on HFS Plus which consist of up
 // to 255 Unicode characters with a preceding 16-bit length.
 type HFSUniStr255 struct {
@@ -209,10 +210,10 @@ type OSType FourCharCode
 
 // FileInfo describes attributes for files used for Finder.
 type FileInfo struct {
-	FileType      OSType /* The type of the file */
-	FileCreator   OSType /* The file's creator */
+	FileType      OSType /* The type of the file * /
+	FileCreator   OSType /* The file's creator * /
 	FinderFlags   uint16
-	Location      Point /* File's location in the folder. */
+	Location      Point /* File's location in the folder. * /
 	ReservedField uint16
 }
 
@@ -226,18 +227,18 @@ type ExtendedFileInfo struct {
 
 // FolderInfo describes attributes for folders used for Finder.
 type FolderInfo struct {
-	WindowBounds Rect /* The position and dimension of the */
-	/* folder's window */
+	WindowBounds Rect /* The position and dimension of the * /
+	/* folder's window * /
 	FinderFlags uint16
-	Location    Point /* Folder's location in the parent */
-	/* folder. If set to {0, 0}, the Finder */
-	/* will place the item automatically */
+	Location    Point /* Folder's location in the parent * /
+	/* folder. If set to {0, 0}, the Finder * /
+	/* will place the item automatically * /
 	ReservedField uint16
 }
 
 // ExtendedFolderInfo describes additional attributes for folders used for Finder.
 type ExtendedFolderInfo struct {
-	ScrollPosition      Point /* Scroll position (for icon views) */
+	ScrollPosition      Point /* Scroll position (for icon views) * /
 	Reserved1           int32
 	ExtendedFinderFlags uint16
 	Reserved2           int16
@@ -317,9 +318,9 @@ type BlockInfo struct {
 type HotFilesInfo struct {
 	Magic       uint32
 	Version     uint32
-	Duration    uint32 /* duration of sample period */
-	Timebase    uint32 /* recording period start time */
-	Timeleft    uint32 /* recording period stop time */
+	Duration    uint32 /* duration of sample period * /
+	Timebase    uint32 /* recording period start time * /
+	Timeleft    uint32 /* recording period stop time * /
 	Threshold   uint32
 	Maxfileblks uint32
 	Maxfilecnt  uint32
@@ -334,3 +335,4 @@ type HotFileKey struct {
 	Temperature uint32
 	FileID      uint32
 }
+*/

@@ -25,15 +25,15 @@ package fat16
 import (
 	"encoding/binary"
 	"errors"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
 	"io"
 	"log"
 	"os"
 	"syscall"
 	"time"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // FS implements a read-only file system for the FAT16 file system.
@@ -215,7 +215,7 @@ func (i *Item) Stat() (os.FileInfo, error) { return i, nil }
 
 // Mode returns the os.FileMode.
 func (i *Item) Mode() os.FileMode {
-	var mode os.FileMode = 0
+	var mode os.FileMode
 	if i.directoryEntry.FileAttributes&0x10 != 0 {
 		mode |= os.ModeDir
 	}

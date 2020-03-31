@@ -247,7 +247,7 @@ func TestToForensicPath(t *testing.T) {
 	}
 }
 
-func isSubset(s [] string, sub []string) bool {
+func isSubset(s []string, sub []string) bool {
 	for _, e := range sub {
 		if !contains(s, e) {
 			return false

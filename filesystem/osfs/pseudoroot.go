@@ -1,9 +1,10 @@
 package osfs
 
 import (
-	"github.com/forensicanalysis/fslib/forensicfs"
 	"os"
 	"time"
+
+	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
 // Root is a pseudo root directory for windows partitions.

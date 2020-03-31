@@ -34,9 +34,10 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/djherbis/times.v1"
+
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
-	"gopkg.in/djherbis/times.v1"
 )
 
 // New wrapes the nativ file system.

@@ -24,13 +24,13 @@ package zip
 
 import (
 	"archive/zip"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
 	"os"
 	"path"
 	"syscall"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // FS implements a read-only file system for zip files.
