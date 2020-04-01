@@ -2,9 +2,10 @@ package content
 
 import (
 	"bytes"
-	"github.com/forensicanalysis/fslib/fsio"
 	"io"
 	"testing"
+
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 func TestStringsReaderFail(t *testing.T) {

@@ -23,7 +23,7 @@ func TestDecoderAtWrapper_ReadAt(t *testing.T) {
 	}{
 		{"readat", fields{bytes.NewReader([]byte{1, 2})}, args{[]byte{1}, 0}, 1, false},
 		{"readat eof", fields{bytes.NewReader([]byte{})}, args{nil, 0}, 0, true},
-		{"fail 1. seek", fields{ReadSeeker: &ErrorReadSeeker{ErrorSeeker{Whence: -1}, ErrorReader{}}}, args{nil, 0}, 0, true},
+		{"fail 1. seek", fields{ReadSeeker: &ErrorReadSeeker{Skip: 0}}, args{nil, 0}, 0, true},
 		{"fail 2. seek", fields{ReadSeeker: &ErrorReadSeeker{}}, args{nil, 0}, 0, true},
 	}
 	for _, tt := range tests {
@@ -55,9 +55,9 @@ func TestGetSize(t *testing.T) {
 	}{
 		{"get zero size", args{bytes.NewReader([]byte{})}, 0, false},
 		{"get size", args{bytes.NewReader([]byte{0})}, 1, false},
-		{"fail 1. seek", args{&ErrorSeeker{Whence: io.SeekCurrent}}, 0, true},
-		{"fail 2. seek", args{&ErrorSeeker{Whence: io.SeekEnd}}, 0, true},
-		{"fail 3. seek", args{&ErrorSeeker{Whence: io.SeekStart}}, 0, true},
+		{"fail 1. seek", args{&ErrorSeeker{Skip: 0}}, 0, true},
+		{"fail 2. seek", args{&ErrorSeeker{Skip: 1}}, 0, true},
+		{"fail 3. seek", args{&ErrorSeeker{Skip: 2}}, 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

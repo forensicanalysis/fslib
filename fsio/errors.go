@@ -2,35 +2,94 @@ package fsio
 
 import (
 	"errors"
-	"fmt"
 )
 
-type ErrorReader struct{}
-
-func (b *ErrorReader) Read([]byte) (n int, err error) {
-	return 0, errors.New("broken reader")
+type ErrorReader struct {
+	Skip    int
+	current int
 }
 
-type ErrorReaderAt struct{}
+func (e *ErrorReader) Read(b []byte) (n int, err error) {
+	if e.current >= e.Skip {
+		return 0, errors.New("broken reader")
+	}
+	e.current += 1
+	return len(b), nil
+}
 
-func (b *ErrorReaderAt) ReadAt([]byte, int64) (n int, err error) {
-	return 0, errors.New("broken readerAt")
+type ErrorReaderAt struct {
+	Skip    int
+	current int
+}
+
+func (e *ErrorReaderAt) ReadAt(b []byte, _ int64) (n int, err error) {
+	if e.current >= e.Skip {
+		return 0, errors.New("broken readerAt")
+	}
+	e.current += 1
+	return len(b), nil
 }
 
 type ErrorSeeker struct {
-	Whence int
+	Skip    int
+	current int
 }
 
-func (b *ErrorSeeker) Seek(_ int64, whence int) (int64, error) {
-	if b.Whence == -1 || whence == b.Whence {
-		return 0, errors.New("broken seeker")
+func (e *ErrorSeeker) Seek(int64, int) (int64, error) {
+	if e.current >= e.Skip {
+		return 0, errors.New("broken seek")
 	}
+	e.current += 1
 	return 0, nil
 }
 
 type ErrorReadSeeker struct {
-	ErrorSeeker
-	ErrorReader
+	Skip    int
+	current int
+}
+
+func (e *ErrorReadSeeker) Read(b []byte) (n int, err error) {
+	if e.current >= e.Skip {
+		return 0, errors.New("broken reader")
+	}
+	e.current += 1
+	return len(b), nil
+}
+
+func (e *ErrorReadSeeker) Seek(int64, int) (int64, error) {
+	if e.current >= e.Skip {
+		return 0, errors.New("broken seek")
+	}
+	e.current += 1
+	return 0, nil
+}
+
+type ErrorReadSeekerAt struct {
+	Skip    int
+	current int
+}
+
+func (e *ErrorReadSeekerAt) Read(b []byte) (n int, err error) {
+	if e.current >= e.Skip {
+		return 0, errors.New("broken reader")
+	}
+	e.current += 1
+	return len(b), nil
+}
+
+func (e *ErrorReadSeekerAt) Seek(int64, int) (int64, error) {
+	if e.current >= e.Skip {
+		return 0, errors.New("broken seek")
+	}
+	e.current += 1
+	return 0, nil
+}
+func (e *ErrorReadSeekerAt) ReadAt(b []byte, _ int64) (n int, err error) {
+	if e.current >= e.Skip {
+		return 0, errors.New("broken readerAt")
+	}
+	e.current += 1
+	return len(b), nil
 }
 
 type ErrorWriter struct {
@@ -39,7 +98,6 @@ type ErrorWriter struct {
 }
 
 func (e *ErrorWriter) Write(b []byte) (int, error) {
-	fmt.Println(string(b))
 	if e.current >= e.Skip {
 		return 0, errors.New("broken writer")
 	}

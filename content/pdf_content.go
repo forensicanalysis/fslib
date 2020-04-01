@@ -22,32 +22,23 @@
 package content
 
 import (
-	"bytes"
+	"io"
+
 	"github.com/ledongthuc/pdf"
 
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
-var readerGenerator = pdf.NewReader
-
 // PDFContent returns the text data from a pdf file.
-func PDFContent(r fsio.ReadSeekerAt) (string, error) {
+func PDFContent(r fsio.ReadSeekerAt) (io.Reader, error) {
 	size, err := fsio.GetSize(r)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	file, err := readerGenerator(r, size)
+	file, err := pdf.NewReader(r, size)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	var buf bytes.Buffer
-	b, err := file.GetPlainText()
-	if err != nil {
-		return "", err
-	}
-	if _, err = buf.ReadFrom(b); err != nil {
-		return "", err
-	}
-	return buf.String(), nil
+	return file.GetPlainText()
 }
