@@ -68,7 +68,7 @@ func TestRunTest(t *testing.T) {
 		args args
 	}{
 		{"RunTest Folder", args{t, "FS", "filesystem/ntfs.dd", n, map[string]*PathTest{
-			"mem": &PathTest{
+			"mem": {
 				TestName:         "",                                              //string
 				Path:             "/",                                             //string
 				FileName:         ".",                                             //string
@@ -82,7 +82,7 @@ func TestRunTest(t *testing.T) {
 			}},
 		}},
 		{"RunTest File", args{t, "FS", "filesystem/ntfs.dd", n, map[string]*PathTest{
-			"mem": &PathTest{
+			"mem": {
 				TestName:         "",             //string
 				Path:             "/test.bar1",   //string
 				FileName:         "test.bar1",    //string

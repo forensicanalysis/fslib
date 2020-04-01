@@ -263,3 +263,19 @@ func Test_tree(t *testing.T) {
 // 		})
 // 	}
 // }
+
+func Test_executeCommands(t *testing.T) {
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{"exec", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := executeCommands(); (err != nil) != tt.wantErr {
+				t.Errorf("executeCommands() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

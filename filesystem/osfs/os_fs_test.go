@@ -22,11 +22,12 @@
 package osfs
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"reflect"
 	"runtime"
 	"sort"
 	"testing"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 func getOSFS(t *testing.T) (*FS, *Item, *Item) {
@@ -247,7 +248,7 @@ func TestToForensicPath(t *testing.T) {
 	}
 }
 
-func isSubset(s [] string, sub []string) bool {
+func isSubset(s []string, sub []string) bool {
 	for _, e := range sub {
 		if !contains(s, e) {
 			return false

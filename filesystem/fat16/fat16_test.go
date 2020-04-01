@@ -23,15 +23,16 @@ package fat16
 
 import (
 	"encoding/binary"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/forensicanalysis/fslib/filesystem/fstests"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem/fstests"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 func Test_FAT16Parser(t *testing.T) {

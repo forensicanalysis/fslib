@@ -23,12 +23,12 @@ package zip
 
 import (
 	"bytes"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
 	"os"
 	"testing"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/fstests"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 func TestNewReadZipFs(t *testing.T) {

@@ -22,9 +22,10 @@
 package testfs
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"reflect"
 	"testing"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 func getInFS() *FS {

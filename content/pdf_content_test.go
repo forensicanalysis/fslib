@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Siemens AG
+// Copyright (c) 2020 Siemens AG
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -22,23 +22,53 @@
 package content
 
 import (
-	"io"
-
-	"github.com/ledongthuc/pdf"
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"strings"
+	"testing"
 
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
-// PDFContent returns the text data from a pdf file.
-func PDFContent(r fsio.ReadSeekerAt) (io.Reader, error) {
-	size, err := fsio.GetSize(r)
+func TestPDFContent(t *testing.T) {
+	pdf, err := ioutil.ReadFile("../test/data/document/Computer forensics - Wikipedia.pdf")
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
+		return
 	}
 
-	file, err := pdf.NewReader(r, size)
-	if err != nil {
-		return nil, err
+	type args struct {
+		r fsio.ReadSeekerAt
 	}
-	return file.GetPlainText()
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"size error", args{&brokenSeeker{}}, "", true},
+		{"no pdf", args{bytes.NewReader([]byte{})}, "Computer forensics", true},
+		{"mini pdf", args{bytes.NewReader(pdf)}, "", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := PDFContent(tt.args.r)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PDFContent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				return
+			}
+			b, err := ioutil.ReadAll(got)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if !strings.Contains(string(b), tt.want) {
+				t.Errorf("PDFContent() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

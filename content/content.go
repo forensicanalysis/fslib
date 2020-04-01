@@ -26,53 +26,58 @@ package content
 import (
 	"bytes"
 	"fmt"
-	"github.com/forensicanalysis/fslib/fsio"
-	"log"
+	"io"
 
 	"github.com/forensicanalysis/fslib/filesystem/zip"
 	"github.com/forensicanalysis/fslib/filetype"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // Content returns the binary contents as a string.
-func Content(r fsio.ReadSeekerAt) (content string, err error) {
+func Content(r fsio.ReadSeekerAt) (content io.Reader, err error) {
+
 	detectedType, err := filetype.DetectReader(r)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	switch detectedType {
 	case filetype.Docx:
 		fs, _ := zip.New(r)
 		r, _ := fs.Open("/word/document.xml")
-		return xmlContent(r), nil
+		return bytes.NewBufferString(xmlContent(r)), nil
 		// doc, _ := document.Read()
 	case filetype.Pptx:
 		// unzip -> ppt/slides/slideX.xml
 		fs, _ := zip.New(r)
-		s := ""
+		s := &bytes.Buffer{}
 		i := 1
 		for {
 			r, err := fs.Open(fmt.Sprintf("/ppt/slides/slide%d.xml", i))
 			if err != nil {
-				log.Println(err)
 				break
 			}
-			s += xmlContent(r)
+			s.WriteString(xmlContent(r))
 			i++
 		}
 		return s, nil
 	case filetype.Xlsx:
 		// unzip -> xl/worksheets/sheetX.xml
 		fs, _ := zip.New(r)
-		s := ""
+		s := &bytes.Buffer{}
+
+		r, err := fs.Open("/xl/sharedStrings.xml")
+		if err == nil {
+			s.WriteString(xmlContent(r))
+		}
+
 		i := 1
 		for {
 			r, err := fs.Open(fmt.Sprintf("/xl/worksheets/sheet%d.xml", i))
 			if err != nil {
-				log.Println(err)
 				break
 			}
-			s += xmlContent(r)
+			s.WriteString(xmlContent(r))
 			i++
 		}
 		return s, nil
@@ -82,12 +87,12 @@ func Content(r fsio.ReadSeekerAt) (content string, err error) {
 
 	_, err = r.Seek(0, 0)
 	if err != nil {
-		return "", err
-	}
-	buf := new(bytes.Buffer)
-	if err = StringsReader(r, buf); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return buf.String(), nil
+	buf := &bytes.Buffer{}
+	if err = StringsReader(r, buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
 }

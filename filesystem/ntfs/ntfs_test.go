@@ -23,8 +23,6 @@ package ntfs
 
 import (
 	"bytes"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
 	"io"
 	"os"
 	"reflect"
@@ -32,7 +30,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/fstests"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 func Test_NTFSImage(t *testing.T) {

@@ -34,13 +34,13 @@ import (
 	"path"
 	"sort"
 
-	"github.com/forensicanalysis/fslib/filesystem/osfs"
-
-	"github.com/forensicanalysis/fslib/content"
-	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
-	"github.com/forensicanalysis/fslib/filetype"
 	"github.com/spf13/cobra"
 	"github.com/xlab/treeprint"
+
+	"github.com/forensicanalysis/fslib/content"
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
+	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
+	"github.com/forensicanalysis/fslib/filetype"
 )
 
 const (

@@ -22,14 +22,15 @@
 package mbr
 
 import (
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/forensicanalysis/fslib/filesystem/fstests"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem/fstests"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 func TestMBREvidence(t *testing.T) {

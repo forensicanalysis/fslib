@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2019 Bob Matcuk
-// Copyright (c) 2019 Siemens AG
+// Copyright (c) 2019-2020 Siemens AG
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -27,13 +27,13 @@
 package glob
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"path"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/testfs"
 )
 
@@ -304,6 +304,108 @@ func Test_expandPath(t *testing.T) {
 			sort.Strings(got)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("expandPath(%s) = %v, want %v", tt.args.in, got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_splitPathOnSeparator(t *testing.T) {
+	type args struct {
+		path      string
+		separator rune
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantRet []string
+	}{
+		{"backslash", args{"foo\\bar", '\\'}, []string{"foo", "bar"}},
+		{"slash", args{"foo", '/'}, []string{"foo"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotRet := splitPathOnSeparator(tt.args.path, tt.args.separator); !reflect.DeepEqual(gotRet, tt.wantRet) {
+				t.Errorf("splitPathOnSeparator() = %v, want %v", gotRet, tt.wantRet)
+			}
+		})
+	}
+}
+
+func Test_indexRuneWithEscaping(t *testing.T) {
+	type args struct {
+		s string
+		r rune
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{"normal y", args{"xxxy", 'y'}, 3},
+		{"escaped y", args{"xxx\\y", 'y'}, -1},
+		{"escaped x", args{"xxx\\xy", 'y'}, 5},
+		{"escaped x 2", args{"xxx\\yy", 'y'}, 5},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := indexRuneWithEscaping(tt.args.s, tt.args.r); got != tt.want {
+				t.Errorf("indexRuneWithEscaping() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_doMatching(t *testing.T) {
+	type args struct {
+		patternComponents []string
+		nameComponents    []string
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantMatched bool
+		wantErr     bool
+	}{
+		{"early return 1", args{nil, nil}, true, false},
+		{"early return 2", args{nil, []string{"a"}}, false, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotMatched, err := doMatching(tt.args.patternComponents, tt.args.nameComponents)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("doMatching() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotMatched != tt.wantMatched {
+				t.Errorf("doMatching() gotMatched = %v, want %v", gotMatched, tt.wantMatched)
+			}
+		})
+	}
+}
+
+func Test_matchComponent(t *testing.T) {
+	type args struct {
+		pattern string
+		name    string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{"early return 2", args{"", "x"}, false, false},
+		{"early return 3", args{"x", ""}, false, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := matchComponent(tt.args.pattern, tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("matchComponent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("matchComponent() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

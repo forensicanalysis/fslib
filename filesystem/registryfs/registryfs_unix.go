@@ -25,8 +25,9 @@ package registryfs
 
 import (
 	"errors"
-	"github.com/forensicanalysis/fslib"
 	"os"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 func New() *FS { return &FS{} }

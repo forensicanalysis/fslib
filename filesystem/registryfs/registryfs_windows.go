@@ -22,8 +22,6 @@
 package registryfs
 
 import (
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/forensicfs"
 	"io"
 	"os"
 	"path"
@@ -32,9 +30,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/windows/registry"
+
+	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem"
+	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
 var registryRoots = map[string]registry.Key{

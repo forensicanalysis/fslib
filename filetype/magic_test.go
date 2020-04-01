@@ -22,9 +22,13 @@
 package filetype
 
 import (
+	"io"
 	"os"
 	"path"
+	"reflect"
 	"testing"
+
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 func TestIdentify(t *testing.T) {
@@ -105,6 +109,100 @@ func TestIdentify(t *testing.T) {
 			got := DetectByExtension(head, path.Ext(tt.args.filename))
 			if got.ID != tt.want.ID {
 				t.Errorf("DetectByExtension() = %v, want %v", got.ID, tt.want.ID)
+			}
+		})
+	}
+}
+
+func TestDetect(t *testing.T) {
+	type args struct {
+		buf []byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Filetype
+	}{
+		{"empty", args{nil}, Empty},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Detect(tt.args.buf); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Detect() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDetectByExtension(t *testing.T) {
+	type args struct {
+		buf   []byte
+		guess string
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Filetype
+	}{
+		{"empty", args{nil, ""}, Empty},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := DetectByExtension(tt.args.buf, tt.args.guess); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DetectByExtension() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDetectReader(t *testing.T) {
+	type args struct {
+		r io.Reader
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Filetype
+		wantErr bool
+	}{
+		{"error reader", args{&fsio.ErrorReader{}}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := DetectReader(tt.args.r)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DetectReader() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DetectReader() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDetectReaderByExtension(t *testing.T) {
+	type args struct {
+		r     io.Reader
+		guess string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Filetype
+		wantErr bool
+	}{
+		{"error reader", args{&fsio.ErrorReader{}, ""}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := DetectReaderByExtension(tt.args.r, tt.args.guess)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DetectReaderByExtension() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DetectReaderByExtension() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

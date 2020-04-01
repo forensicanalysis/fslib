@@ -77,7 +77,7 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 	return nil, os.ErrNotExist
 }
 
-// CreateDir adds a directory and all requried parent directories to the file
+// CreateDir adds a directory and all required parent directories to the file
 // system.
 func (fs *FS) CreateDir(name string) {
 	name = strings.Trim(name, "/")
@@ -91,7 +91,7 @@ func (fs *FS) CreateDir(name string) {
 	}
 }
 
-// CreateFile adds a file and all requried parent directories to the file system.
+// CreateFile adds a file and all required parent directories to the file system.
 func (fs *FS) CreateFile(name string, data []byte) {
 	name = strings.TrimLeft(name, "/")
 	if fs.items == nil {

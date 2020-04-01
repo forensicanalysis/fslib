@@ -32,11 +32,12 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
-	"github.com/pkg/errors"
 )
 
 // New creates a new system FS.

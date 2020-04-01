@@ -29,11 +29,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
-
-	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // PathTest is a single test for file systems.

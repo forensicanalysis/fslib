@@ -22,11 +22,37 @@
 package content
 
 import (
+	"io/ioutil"
 	"strings"
 	"testing"
 
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
+	"github.com/forensicanalysis/fslib/fsio"
 )
+
+type read struct{}
+
+func (b *read) Read([]byte) (n int, err error) { return 0, nil }
+
+type readAt struct{}
+
+func (b *readAt) ReadAt([]byte, int64) (n int, err error) { return 0, nil }
+
+type seek struct{}
+
+func (b *seek) Seek(int64, int) (int64, error) { return 0, nil }
+
+type brokenSeeker struct {
+	fsio.ErrorSeeker
+	readAt
+	read
+}
+
+type brokenReader struct {
+	fsio.ErrorReader
+	readAt
+	seek
+}
 
 func TestGetContent(t *testing.T) {
 	type args struct {
@@ -39,7 +65,7 @@ func TestGetContent(t *testing.T) {
 		wantErr bool
 	}{
 		{"document/Computer forensics - Wikipedia.pdf", args{"document/Computer forensics - Wikipedia.pdf"}, "Computer forensics", false},
-		// {"document/Design_of_the_FAT_file_system.xlsx", args{"document/Design_of_the_FAT_file_system.xlsx"}, "Design of the FAT filesystem", false}, TODO: fix
+		{"document/Design_of_the_FAT_file_system.xlsx", args{"document/Design_of_the_FAT_file_system.xlsx"}, "Design of the FAT file system", false},
 		{"document/Digital forensics.docx", args{"document/Digital forensics.docx"}, "Digital forensics", false},
 		{"document/Digital forensics.txt", args{"document/Digital forensics.txt"}, "Digital forensics", false},
 		{"document/NTFS.pptx", args{"document/NTFS.pptx"}, "NTFS", false},
@@ -57,11 +83,45 @@ func TestGetContent(t *testing.T) {
 				t.Errorf("Content() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			b, err := ioutil.ReadAll(got)
+			if err != nil {
+				t.Error(err)
+			}
+
 			wantParts := strings.Split(tt.want, " ")
 			for _, wantPart := range wantParts {
-				if !strings.Contains(got, wantPart) {
+
+				if !strings.Contains(string(b), wantPart) {
 					t.Errorf("Content() %s does not contain %v", tt.args.filename, wantPart)
 				}
+			}
+		})
+	}
+}
+
+func TestContent(t *testing.T) {
+	br := &brokenReader{}
+	br.ErrorReader = fsio.ErrorReader{Skip: 1}
+
+	type args struct {
+		r fsio.ReadSeekerAt
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"error 1", args{&brokenSeeker{}}, true},
+		{"error 2", args{&brokenReader{}}, true},
+		{"error 3", args{br}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Content(tt.args.r)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Content() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}

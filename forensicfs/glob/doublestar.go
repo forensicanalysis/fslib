@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2019 Bob Matcuk
-// Copyright (c) 2019 Siemens AG
+// Copyright (c) 2019-2020 Siemens AG
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -28,12 +28,13 @@
 package glob
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"path"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 // ErrBadPattern indicates a pattern was malformed.
@@ -415,111 +416,27 @@ func matchComponent(pattern, name string) (bool, error) {
 			// handle escaped runes
 			patIdx += patAdj
 			patRune, patAdj = utf8.DecodeRuneInString(pattern[patIdx:])
-			if patRune == utf8.RuneError {
-				return false, ErrBadPattern
-			} else if patRune == nameRune {
+			if patRune == nameRune {
 				patIdx += patAdj
 				nameIdx += nameAdj
+			} else if patRune == utf8.RuneError {
+				return false, ErrBadPattern
 			} else {
 				return false, nil
 			}
 		} else if patRune == '*' {
-			// handle stars
-			if patIdx += patAdj; patIdx >= patternLen {
-				// a star at the end of a pattern will always
-				// match the rest of the path
-				return true, nil
-			}
-
-			// check if we can make any matches
-			for ; nameIdx < nameLen; nameIdx += nameAdj {
-				if m, _ := matchComponent(pattern[patIdx:], name[nameIdx:]); m {
-					return true, nil
-				}
-			}
-			return false, nil
+			return handleStars(patIdx, patAdj, patternLen, nameIdx, nameLen, nameAdj, pattern, name)
 		} else if patRune == '[' {
 			// handle character sets
 			patIdx += patAdj
-			endClass := indexRuneWithEscaping(pattern[patIdx:], ']')
-			if endClass == -1 {
-				return false, ErrBadPattern
-			}
-			endClass += patIdx
-			classRunes := []rune(pattern[patIdx:endClass])
-			classRunesLen := len(classRunes)
-			if classRunesLen > 0 {
-				classIdx := 0
-				matchClass := false
-				if classRunes[0] == '^' {
-					classIdx++
-				}
-				for classIdx < classRunesLen {
-					low := classRunes[classIdx]
-					if low == '-' {
-						return false, ErrBadPattern
-					}
-					classIdx++
-					if low == '\\' {
-						if classIdx < classRunesLen {
-							low = classRunes[classIdx]
-							classIdx++
-						} else {
-							return false, ErrBadPattern
-						}
-					}
-					high := low
-					if classIdx < classRunesLen && classRunes[classIdx] == '-' {
-						// we have a range of runes
-						if classIdx++; classIdx >= classRunesLen {
-							return false, ErrBadPattern
-						}
-						high = classRunes[classIdx]
-						if high == '-' {
-							return false, ErrBadPattern
-						}
-						classIdx++
-						if high == '\\' {
-							if classIdx < classRunesLen {
-								high = classRunes[classIdx]
-								classIdx++
-							} else {
-								return false, ErrBadPattern
-							}
-						}
-					}
-					if low <= nameRune && nameRune <= high {
-						matchClass = true
-					}
-				}
-				if matchClass == (classRunes[0] == '^') {
-					return false, nil
-				}
-			} else {
-				return false, ErrBadPattern
+			endClass, err, done := handleCharacterSet(pattern, patIdx, nameRune)
+			if done {
+				return false, err
 			}
 			patIdx = endClass + 1
 			nameIdx += nameAdj
 		} else if patRune == '{' {
-			// handle alternatives such as {alt1,alt2,...}
-			patIdx += patAdj
-			endOptions := indexRuneWithEscaping(pattern[patIdx:], '}')
-			if endOptions == -1 {
-				return false, ErrBadPattern
-			}
-			endOptions += patIdx
-			options := splitPathOnSeparator(pattern[patIdx:endOptions], ',')
-			patIdx = endOptions + 1
-			for _, o := range options {
-				m, e := matchComponent(o+pattern[patIdx:], name[nameIdx:])
-				if e != nil {
-					return false, e
-				}
-				if m {
-					return true, nil
-				}
-			}
-			return false, nil
+			return handleAlternatives(patIdx, patAdj, pattern, name, nameIdx)
 		} else if patRune == '?' || patRune == nameRune {
 			// handle single-rune wildcard
 			patIdx += patAdj
@@ -533,6 +450,106 @@ func matchComponent(pattern, name string) (bool, error) {
 	}
 	if nameIdx >= nameLen && pattern[patIdx:] == "*" || pattern[patIdx:] == "**" {
 		return true, nil
+	}
+	return false, nil
+}
+
+func handleStars(patIdx int, patAdj int, patternLen int, nameIdx int, nameLen int, nameAdj int, pattern string, name string) (bool, error) {
+	// handle stars
+	if patIdx += patAdj; patIdx >= patternLen {
+		// a star at the end of a pattern will always
+		// match the rest of the path
+		return true, nil
+	}
+
+	// check if we can make any matches
+	for ; nameIdx < nameLen; nameIdx += nameAdj {
+		if m, _ := matchComponent(pattern[patIdx:], name[nameIdx:]); m {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func handleCharacterSet(pattern string, patIdx int, nameRune rune) (int, error, bool) {
+	endClass := indexRuneWithEscaping(pattern[patIdx:], ']')
+	if endClass == -1 {
+		return 0, ErrBadPattern, true
+	}
+	endClass += patIdx
+	classRunes := []rune(pattern[patIdx:endClass])
+	classRunesLen := len(classRunes)
+	if classRunesLen > 0 {
+		classIdx := 0
+		matchClass := false
+		if classRunes[0] == '^' {
+			classIdx++
+		}
+		for classIdx < classRunesLen {
+			low := classRunes[classIdx]
+			if low == '-' {
+				return 0, ErrBadPattern, true
+			}
+			classIdx++
+			if low == '\\' {
+				if classIdx < classRunesLen {
+					low = classRunes[classIdx]
+					classIdx++
+				} else {
+					return 0, ErrBadPattern, true
+				}
+			}
+			high := low
+			if classIdx < classRunesLen && classRunes[classIdx] == '-' {
+				// we have a range of runes
+				if classIdx++; classIdx >= classRunesLen {
+					return 0, ErrBadPattern, true
+				}
+				high = classRunes[classIdx]
+				if high == '-' {
+					return 0, ErrBadPattern, true
+				}
+				classIdx++
+				if high == '\\' {
+					if classIdx < classRunesLen {
+						high = classRunes[classIdx]
+						classIdx++
+					} else {
+						return 0, ErrBadPattern, true
+					}
+				}
+			}
+			if low <= nameRune && nameRune <= high {
+				matchClass = true
+			}
+		}
+		if matchClass == (classRunes[0] == '^') {
+			return 0, nil, true
+		}
+	} else {
+		return 0, ErrBadPattern, true
+	}
+	return endClass, nil, false
+}
+
+func handleAlternatives(patIdx int, patAdj int, pattern string, name string, nameIdx int) (bool, error) {
+	// handle alternatives such as {alt1,alt2,...}
+	patIdx += patAdj
+	endOptions := indexRuneWithEscaping(pattern[patIdx:], '}')
+	if endOptions == -1 {
+		return false, ErrBadPattern
+	}
+	endOptions += patIdx
+	options := splitPathOnSeparator(pattern[patIdx:endOptions], ',')
+	patIdx = endOptions + 1
+	for _, o := range options {
+		m, e := matchComponent(o+pattern[patIdx:], name[nameIdx:])
+		if e != nil {
+			return false, e
+		}
+		if m {
+			return true, nil
+		}
 	}
 	return false, nil
 }

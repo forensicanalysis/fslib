@@ -25,16 +25,16 @@ package mbr
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/forensicfs"
-	"github.com/forensicanalysis/fslib/fsio"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
+	"github.com/forensicanalysis/fslib/forensicfs"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // FS implements a read-only file system for Master Boot Records (MBR).
