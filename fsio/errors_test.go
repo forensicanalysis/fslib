@@ -1,43 +1,92 @@
 package fsio
 
-import "testing"
+import (
+	"io"
+	"testing"
+)
 
-func TestErrorReaderAt_ReadAt(t *testing.T) {
-	b := &ErrorReaderAt{}
-	_, err := b.ReadAt(nil, 0)
-	if err == nil {
-		t.Fatalf("ReadAt() error = nil, wantErr true")
+func TestReader(t *testing.T) {
+	tests := []struct {
+		name    string
+		r       io.Reader
+		wantErr bool
+	}{
+		{"ErrorReader", &ErrorReader{}, true},
+		{"ErrorReadSeeker", &ErrorReadSeeker{}, true},
+		{"ErrorReadSeekerAt", &ErrorReadSeekerAt{}, true},
+		{"ErrorReader", &ErrorReader{Skip: 1}, false},
+		{"ErrorReadSeeker", &ErrorReadSeeker{Skip: 1}, false},
+		{"ErrorReadSeekerAt", &ErrorReadSeekerAt{Skip: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.r.Read(nil)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("Read() error =  %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
 
-func TestErrorReader_Read(t *testing.T) {
-	b := &ErrorReader{}
-	_, err := b.Read(nil)
-	if err == nil {
-		t.Fatalf("Read() error = nil, wantErr true")
+func TestReaderAt(t *testing.T) {
+	tests := []struct {
+		name    string
+		r       io.ReaderAt
+		wantErr bool
+	}{
+		{"ErrorReaderAt", &ErrorReaderAt{}, true},
+		{"ErrorReadSeekerAt", &ErrorReadSeekerAt{}, true},
+		{"ErrorReaderAt", &ErrorReaderAt{Skip: 1}, false},
+		{"ErrorReadSeekerAt", &ErrorReadSeekerAt{Skip: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.r.ReadAt(nil, 0)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("ReadAt() error =  %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
 
-func TestErrorSeeker_Seek(t *testing.T) {
-	b := &ErrorSeeker{}
-	_, err := b.Seek(0, 0)
-	if err == nil {
-		t.Fatalf("Seek() error = nil, wantErr true")
+func TestSeek(t *testing.T) {
+	tests := []struct {
+		name    string
+		r       io.Seeker
+		wantErr bool
+	}{
+		{"ErrorSeeker", &ErrorSeeker{}, true},
+		{"ErrorReadSeeker", &ErrorReadSeeker{}, true},
+		{"ErrorReadSeekerAt", &ErrorReadSeekerAt{}, true},
+		{"ErrorSeeker", &ErrorSeeker{Skip: 1}, false},
+		{"ErrorReadSeeker", &ErrorReadSeeker{Skip: 1}, false},
+		{"ErrorReadSeekerAt", &ErrorReadSeekerAt{Skip: 1}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.r.Seek(0, 0)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("Seek() error =  %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
 
-func TestErrorWriter_Write(t *testing.T) {
-	b := &ErrorWriter{}
-	_, err := b.Write([]byte{0x00})
-	if err == nil {
-		t.Fatalf("Write() error = nil, wantErr true")
+func TestWrite(t *testing.T) {
+	tests := []struct {
+		name    string
+		r       io.Writer
+		wantErr bool
+	}{
+		{"ErrorWriter", &ErrorWriter{}, true},
+		{"ErrorWriter", &ErrorWriter{Skip: 1}, false},
 	}
-}
-
-func TestErrorWriter_WriteOK(t *testing.T) {
-	b := &ErrorWriter{Skip: 1}
-	_, err := b.Write([]byte{0x00})
-	if err != nil {
-		t.Fatalf("Write() error != nil, wantErr false")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := tt.r.Write(nil)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("Write() error =  %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
