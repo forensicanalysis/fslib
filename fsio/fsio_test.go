@@ -82,9 +82,12 @@ func TestGetSize(t *testing.T) {
 		{"get size", args{bytes.NewReader([]byte{0})}, 0, 1, true, nil},
 		{"keep position", args{bytes.NewReader([]byte{0, 1, 2, 3})}, 2, 4, true, nil},
 
-		{"fail 1. seek", args{&ErrorSeeker{Skip: 0 + seeksInTestSetup, Size: 4}}, 0, 0, false, ErrSizeNotGet},
-		{"fail 2. seek", args{&ErrorSeeker{Skip: 1 + seeksInTestSetup, Size: 4}}, 0, 0, false, ErrSizeNotGet},
+		{"fail 1. seek", args{&ErrorSeeker{Skip: 0 + seeksInTestSetup, Size: 4}}, 0, 0, false, &ErrSizeNotGet{}},
+		{"fail 1. seek", args{&ErrorSeeker{Skip: 0 + seeksInTestSetup, Size: 4}}, 0, 0, false, ErrSeek},
+		{"fail 2. seek", args{&ErrorSeeker{Skip: 1 + seeksInTestSetup, Size: 4}}, 0, 0, false, &ErrSizeNotGet{}},
+		{"fail 2. seek", args{&ErrorSeeker{Skip: 1 + seeksInTestSetup, Size: 4}}, 0, 0, false, ErrSeek},
 		{"fail 3. seek but get size", args{&ErrorSeeker{Skip: 2 + seeksInTestSetup, Size: 4}}, 0, 4, false, ErrNotResetSeek},
+		{"fail 3. seek but get size", args{&ErrorSeeker{Skip: 2 + seeksInTestSetup, Size: 4}}, 0, 4, false, ErrSeek},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -98,10 +101,24 @@ func TestGetSize(t *testing.T) {
 			got, err := GetSize(tt.args.seeker)
 
 			// Then
-			if ((err != nil) || (tt.wantErr != nil)) && !errors.Is(err, tt.wantErr) {
-				t.Errorf("GetSize() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if err == nil {
+				if tt.wantErr != nil {
+					t.Errorf("GetSize() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			} else {
+				if tt.wantErr == nil {
+					t.Errorf("GetSize() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				} else {
+					// fmt.Println(err, "--", tt.wantErr)
+					if !errors.Is(err, tt.wantErr) {
+						t.Errorf("GetSize() type error = %v, wantErr %v", err, tt.wantErr)
+						return
+					}
+				}
 			}
+
 			if got != tt.wantSize {
 				t.Errorf("GetSize() got = %v, wantSize %v", got, tt.wantSize)
 			}
