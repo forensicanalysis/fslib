@@ -23,7 +23,10 @@
 // operations.
 package fsio
 
-import "io"
+import (
+	"errors"
+	"io"
+)
 
 // ReadSeekerAt combines the io.Reader, io.Seeker and io.ReaderAt interface.
 type ReadSeekerAt interface {
@@ -56,16 +59,22 @@ func (da *DecoderAtWrapper) ReadAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
+var ErrNotResetSeek = errors.New("could not reset position")
+var ErrSizeNotGet = errors.New("could not get size")
+
 // GetSize return the size of an io.Seeker without changing the current offset
 func GetSize(seeker io.Seeker) (int64, error) {
 	pos, err := seeker.Seek(0, io.SeekCurrent)
 	if err != nil {
-		return 0, err
+		return 0, ErrSizeNotGet
 	}
 	end, err := seeker.Seek(0, io.SeekEnd)
 	if err != nil {
-		return 0, err
+		return 0, ErrSizeNotGet
 	}
 	_, err = seeker.Seek(pos, io.SeekStart)
-	return end, err
+	if err != nil {
+		return end, ErrNotResetSeek
+	}
+	return end, nil
 }
