@@ -24,7 +24,6 @@
 package fsio
 
 import (
-	"errors"
 	"io"
 )
 
@@ -59,39 +58,16 @@ func (da *DecoderAtWrapper) ReadAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
-var ErrNotResetSeek = errors.New("could not reset position")
-
-type ErrSizeNotGet struct{ underlying error }
-
-func (e *ErrSizeNotGet) Error() string { return "could not get size" }
-func (e *ErrSizeNotGet) Unwrap() error { return e.underlying }
-func (e *ErrSizeNotGet) Is(target error) bool {
-	var x *ErrSizeNotGet
-	return errors.As(target, &x)
-}
-
-type WrapperError struct {
-	error
-	Underlying error
-}
-
-func (e *WrapperError) Error() string   { return e.Error() + ": " + e.Underlying.Error() }
-func (e *WrapperError) Unwrap() error   { return e.Underlying }
-func (e *WrapperError) Is(t error) bool { return errors.Is(e.error, t) || errors.Is(e.Underlying, t) }
-
 // GetSize return the size of an io.Seeker without changing the current offset
 func GetSize(seeker io.Seeker) (int64, error) {
 	pos, err := seeker.Seek(0, io.SeekCurrent)
 	if err != nil {
-		return 0, &ErrSizeNotGet{err}
+		return 0, err
 	}
 	end, err := seeker.Seek(0, io.SeekEnd)
 	if err != nil {
-		return 0, &ErrSizeNotGet{err}
+		return 0, err
 	}
 	_, err = seeker.Seek(pos, io.SeekStart)
-	if err != nil {
-		return end, &WrapperError{ErrNotResetSeek, err}
-	}
-	return end, nil
+	return end, err
 }

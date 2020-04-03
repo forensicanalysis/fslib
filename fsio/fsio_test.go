@@ -23,7 +23,6 @@ package fsio
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"testing"
 )
@@ -76,49 +75,32 @@ func TestGetSize(t *testing.T) {
 		currentPosition  int64
 		wantSize         int64
 		wantKeepPosition bool
-		wantErr          error
+		wantErr          bool
 	}{
-		{"get zero size", args{bytes.NewReader([]byte{})}, 0, 0, true, nil},
-		{"get size", args{bytes.NewReader([]byte{0})}, 0, 1, true, nil},
-		{"keep position", args{bytes.NewReader([]byte{0, 1, 2, 3})}, 2, 4, true, nil},
+		{"get zero size", args{bytes.NewReader([]byte{})}, 0, 0, true, false},
+		{"get size", args{bytes.NewReader([]byte{0})}, 0, 1, true, false},
+		{"keep position", args{bytes.NewReader([]byte{0, 1, 2, 3})}, 2, 4, true, false},
 
-		{"fail 1. seek", args{&ErrorSeeker{Skip: 0 + seeksInTestSetup, Size: 4}}, 0, 0, false, &ErrSizeNotGet{}},
-		{"fail 1. seek", args{&ErrorSeeker{Skip: 0 + seeksInTestSetup, Size: 4}}, 0, 0, false, ErrSeek},
-		{"fail 2. seek", args{&ErrorSeeker{Skip: 1 + seeksInTestSetup, Size: 4}}, 0, 0, false, &ErrSizeNotGet{}},
-		{"fail 2. seek", args{&ErrorSeeker{Skip: 1 + seeksInTestSetup, Size: 4}}, 0, 0, false, ErrSeek},
-		{"fail 3. seek but get size", args{&ErrorSeeker{Skip: 2 + seeksInTestSetup, Size: 4}}, 0, 4, false, ErrNotResetSeek},
-		{"fail 3. seek but get size", args{&ErrorSeeker{Skip: 2 + seeksInTestSetup, Size: 4}}, 0, 4, false, ErrSeek},
+		{"fail 1. seek", args{&ErrorSeeker{Skip: 0 + seeksInTestSetup, Size: 4}}, 0, 0, false, true},
+		{"fail 2. seek", args{&ErrorSeeker{Skip: 1 + seeksInTestSetup, Size: 4}}, 0, 0, false, true},
+		{"fail 3. seek but get size", args{&ErrorSeeker{Skip: 2 + seeksInTestSetup, Size: 4}}, 0, 4, false, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Given
+			// Setup
 			_, err := tt.args.seeker.Seek(tt.currentPosition, io.SeekStart)
 			if err != nil {
 				t.Error(err)
 			}
 
-			// When
+			// Run
 			got, err := GetSize(tt.args.seeker)
 
-			// Then
-			if err == nil {
-				if tt.wantErr != nil {
-					t.Errorf("GetSize() error = %v, wantErr %v", err, tt.wantErr)
-					return
-				}
-			} else {
-				if tt.wantErr == nil {
-					t.Errorf("GetSize() error = %v, wantErr %v", err, tt.wantErr)
-					return
-				} else {
-					// fmt.Println(err, "--", tt.wantErr)
-					if !errors.Is(err, tt.wantErr) {
-						t.Errorf("GetSize() type error = %v, wantErr %v", err, tt.wantErr)
-						return
-					}
-				}
+			// Asserts
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSize() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-
 			if got != tt.wantSize {
 				t.Errorf("GetSize() got = %v, wantSize %v", got, tt.wantSize)
 			}

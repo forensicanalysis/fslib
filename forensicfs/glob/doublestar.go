@@ -37,6 +37,8 @@ import (
 	"github.com/forensicanalysis/fslib"
 )
 
+var doubleStarPattern = regexp.MustCompile(`^\*\*[0-9]*$`)
+
 // ErrBadPattern indicates a pattern was malformed.
 var ErrBadPattern = path.ErrBadPattern
 
@@ -186,19 +188,14 @@ func doMatching(patternComponents, nameComponents []string) (matched bool, err e
 		return false, nil
 	}
 
-	re := regexp.MustCompile(`^\*\*[0-9]*$`)
 	patIdx, nameIdx := 0, 0
 	for patIdx < patternLen && nameIdx < nameLen {
 		// if patternComponents[patIdx] == "**" {
-		if re.MatchString(patternComponents[patIdx]) {
+		if doubleStarPattern.MatchString(patternComponents[patIdx]) {
 
-			depthstring := strings.TrimLeft(patternComponents[patIdx], "/*")
-			depth := 3
-			if depthstring != "" {
-				depth, _ = strconv.Atoi(depthstring)
-			}
+			depth := getDepth(patternComponents, patIdx, -1)
 
-			// if our last pattern component is a doublestar, we're done -
+			// if our last pattern component is a doublestar, we are done -
 			// doublestar will match any remaining name components, if any.
 			if patIdx++; patIdx >= patternLen {
 				return true, nil
@@ -272,86 +269,44 @@ func Glob(fs fslib.FS, pattern string) (matches []string, err error) {
 }
 
 // Perform a glob
-func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int) (m []string, e error) {
+func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int) ([]string, error) {
 	if depth == 0 && len(components) < 2 || depth == -1 {
 		return matches, nil
 	}
-	m = matches
-	e = nil
 
-	// figure out how many components we don't need to glob because they're
-	// just names without patterns - we'll use os.Lstat below to check if that
-	// path actually exists
-	patLen := len(components)
-	patIdx := 0
-	for ; patIdx < patLen; patIdx++ {
-		if strings.ContainsAny(components[patIdx], "*?[{\\") {
-			break
-		}
-	}
+	patLen, patIdx := skipComponents(components)
 	if patIdx > 0 {
 		basedir = path.Join(basedir, path.Join(components[0:patIdx]...))
 	}
 
-	// Lstat will return an error if the file/directory doesn't exist
+	// Stat will return an error if the file/directory doesn't exist
 	fi, err := fs.Stat(basedir)
 	if err != nil {
-		return
+		return matches, nil
 	}
 
 	// if there are no more components, we've found a match
 	if patIdx >= patLen {
-		m = append(m, basedir)
-		return
+		matches = append(matches, basedir)
+		return matches, nil
 	}
-
-	// otherwise, we need to check each item in the directory...
-	// first, if basedir is a symlink, follow it...
-	/*
-		if (fi.Mode() & os.ModeSymlink) != 0 {
-			fi, err = os.Stat(basedir)
-			if err != nil {
-				return
-			}
-		}
-	*/
 
 	// confirm it's a directory...
 	if !fi.IsDir() {
-		return
+		return matches, nil
 	}
 
-	// read directory
-	dir, err := fs.Open(basedir)
+	filenames, err := readDir(fs, basedir)
 	if err != nil {
-		return
+		return matches, err
 	}
-	defer dir.Close()
-
-	filenames, _ := dir.Readdirnames(-1)
 	lastComponent := (patIdx + 1) >= patLen
-	re := regexp.MustCompile(`^\*\*[0-9]*$`)
-	if re.MatchString(components[patIdx]) {
+	if doubleStarPattern.MatchString(components[patIdx]) {
 
-		depthString := strings.TrimLeft(components[patIdx], "/*")
-		if depth < 0 {
-			depth = 3
-			if depthString != "" {
-				depth, _ = strconv.Atoi(depthString)
-			}
-		}
+		depth = getDepth(components, patIdx, depth)
 
 		// if the current component is a doublestar, we'll try depth-first
 		for _, filename := range filenames {
-			// if symlink, we may want to follow
-			/*
-				if (file.Mode() & os.ModeSymlink) != 0 {
-					file, err = os.Stat(path.Join(basedir, filename))
-					if err != nil {
-						continue
-					}
-				}
-			*/
 			fi, err := fs.Stat(path.Join(basedir, filename))
 			if err != nil {
 				continue
@@ -360,16 +315,16 @@ func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int
 			if fi.IsDir() {
 				// recurse into directories
 				if lastComponent {
-					m = append(m, path.Join(basedir, filename))
+					matches = append(matches, path.Join(basedir, filename))
 				}
-				m, e = doGlob(fs, path.Join(basedir, filename), components[patIdx:], m, depth-1)
+				matches, err = doGlob(fs, path.Join(basedir, filename), components[patIdx:], matches, depth-1)
 			} else if lastComponent {
 				// if the pattern's last component is a doublestar, we match filenames, too
-				m = append(m, path.Join(basedir, filename))
+				matches = append(matches, path.Join(basedir, filename))
 			}
 		}
 		if lastComponent {
-			return // we're done
+			return matches, err // we're done
 		}
 		patIdx++
 		lastComponent = (patIdx + 1) >= patLen
@@ -378,19 +333,55 @@ func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int
 	// check items in current directory and recurse
 	var match bool
 	for _, filename := range filenames {
-		match, e = matchComponent(components[patIdx], filename)
-		if e != nil {
-			return
+		match, err = matchComponent(components[patIdx], filename)
+		if err != nil {
+			return matches, err
 		}
 		if match {
 			if lastComponent {
-				m = append(m, path.Join(basedir, filename))
+				matches = append(matches, path.Join(basedir, filename))
 			} else {
-				m, e = doGlob(fs, path.Join(basedir, filename), components[patIdx+1:], m, depth-1)
+				matches, err = doGlob(fs, path.Join(basedir, filename), components[patIdx+1:], matches, depth-1)
 			}
 		}
 	}
-	return
+	return matches, err
+}
+
+func skipComponents(components []string) (patLen, patIdx int) {
+	// figure out how many components we don't need to glob because they're
+	// just names without patterns - we'll use os.Stat below to check if that
+	// path actually exists
+	patLen = len(components)
+	for ; patIdx < patLen; patIdx++ {
+		if strings.ContainsAny(components[patIdx], "*?[{\\") {
+			break
+		}
+	}
+	return patLen, patIdx
+}
+
+func readDir(fs fslib.FS, basedir string) ([]string, error) {
+	// read directory
+	dir, err := fs.Open(basedir)
+	if err != nil {
+		return nil, err
+	}
+	defer dir.Close()
+
+	filenames, _ := dir.Readdirnames(-1)
+	return filenames, nil
+}
+
+func getDepth(components []string, patIdx int, depth int) int {
+	depthString := strings.TrimLeft(components[patIdx], "/*")
+	if depth < 0 {
+		depth = 3
+		if depthString != "" {
+			depth, _ = strconv.Atoi(depthString)
+		}
+	}
+	return depth
 }
 
 // Attempt to match a single pattern component with a path component

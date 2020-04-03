@@ -31,8 +31,6 @@ func (e *ErrorReaderAt) ReadAt(b []byte, _ int64) (n int, err error) {
 	return len(b), nil
 }
 
-var ErrSeek = errors.New("seek failed")
-
 type ErrorSeeker struct {
 	Skip      int
 	Size      int64
@@ -42,7 +40,7 @@ type ErrorSeeker struct {
 
 func (e *ErrorSeeker) Seek(off int64, whence int) (int64, error) {
 	if e.seekCount >= e.Skip {
-		return 0, ErrSeek
+		return 0, errors.New("seek failed")
 	}
 	e.seekCount += 1
 	switch whence {
