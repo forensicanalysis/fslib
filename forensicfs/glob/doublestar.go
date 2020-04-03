@@ -307,7 +307,7 @@ func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int
 
 		// if the current component is a doublestar, we'll try depth-first
 		for _, filename := range filenames {
-			fi, err := fs.Stat(path.Join(basedir, filename))
+			fi, err = fs.Stat(path.Join(basedir, filename))
 			if err != nil {
 				continue
 			}
