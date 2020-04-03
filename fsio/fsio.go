@@ -23,7 +23,9 @@
 // operations.
 package fsio
 
-import "io"
+import (
+	"io"
+)
 
 // ReadSeekerAt combines the io.Reader, io.Seeker and io.ReaderAt interface.
 type ReadSeekerAt interface {

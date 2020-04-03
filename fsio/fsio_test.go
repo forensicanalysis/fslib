@@ -68,27 +68,50 @@ func TestGetSize(t *testing.T) {
 	type args struct {
 		seeker io.Seeker
 	}
+	seeksInTestSetup := 1
 	tests := []struct {
-		name    string
-		args    args
-		want    int64
-		wantErr bool
+		name             string
+		args             args
+		currentPosition  int64
+		wantSize         int64
+		wantKeepPosition bool
+		wantErr          bool
 	}{
-		{"get zero size", args{bytes.NewReader([]byte{})}, 0, false},
-		{"get size", args{bytes.NewReader([]byte{0})}, 1, false},
-		{"fail 1. seek", args{&ErrorSeeker{Skip: 0}}, 0, true},
-		{"fail 2. seek", args{&ErrorSeeker{Skip: 1}}, 0, true},
-		{"fail 3. seek", args{&ErrorSeeker{Skip: 2}}, 0, true},
+		{"get zero size", args{bytes.NewReader([]byte{})}, 0, 0, true, false},
+		{"get size", args{bytes.NewReader([]byte{0})}, 0, 1, true, false},
+		{"keep position", args{bytes.NewReader([]byte{0, 1, 2, 3})}, 2, 4, true, false},
+
+		{"fail 1. seek", args{&ErrorSeeker{Skip: 0 + seeksInTestSetup, Size: 4}}, 0, 0, false, true},
+		{"fail 2. seek", args{&ErrorSeeker{Skip: 1 + seeksInTestSetup, Size: 4}}, 0, 0, false, true},
+		{"fail 3. seek but get size", args{&ErrorSeeker{Skip: 2 + seeksInTestSetup, Size: 4}}, 0, 4, false, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Setup
+			_, err := tt.args.seeker.Seek(tt.currentPosition, io.SeekStart)
+			if err != nil {
+				t.Error(err)
+			}
+
+			// Run
 			got, err := GetSize(tt.args.seeker)
+
+			// Asserts
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetSize() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("GetSize() got = %v, want %v", got, tt.want)
+			if got != tt.wantSize {
+				t.Errorf("GetSize() got = %v, wantSize %v", got, tt.wantSize)
+			}
+			if tt.wantKeepPosition {
+				positionAfterGetSize, err := tt.args.seeker.Seek(0, io.SeekCurrent)
+				if err != nil {
+					t.Error(err)
+				}
+				if positionAfterGetSize != tt.currentPosition {
+					t.Errorf("GetSize() positionAfterGetSize = %v, currentPosition %v", positionAfterGetSize, tt.currentPosition)
+				}
 			}
 		})
 	}

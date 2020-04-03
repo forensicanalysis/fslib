@@ -2,6 +2,7 @@ package fsio
 
 import (
 	"errors"
+	"io"
 )
 
 type ErrorReader struct {
@@ -31,16 +32,26 @@ func (e *ErrorReaderAt) ReadAt(b []byte, _ int64) (n int, err error) {
 }
 
 type ErrorSeeker struct {
-	Skip    int
-	current int
+	Skip      int
+	Size      int64
+	seekCount int
+	position  int64
 }
 
-func (e *ErrorSeeker) Seek(int64, int) (int64, error) {
-	if e.current >= e.Skip {
-		return 0, errors.New("broken seek")
+func (e *ErrorSeeker) Seek(off int64, whence int) (int64, error) {
+	if e.seekCount >= e.Skip {
+		return 0, errors.New("seek failed")
 	}
-	e.current += 1
-	return 0, nil
+	e.seekCount += 1
+	switch whence {
+	case io.SeekCurrent:
+		e.position += off
+	case io.SeekStart:
+		e.position = off
+	case io.SeekEnd:
+		e.position = e.Size + off
+	}
+	return e.position, nil
 }
 
 type ErrorReadSeeker struct {

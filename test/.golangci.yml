@@ -1,4 +1,0 @@
-run:
-  modules-download-mode: readonly
-  skip-files:
-    - assets.go

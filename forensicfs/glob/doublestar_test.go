@@ -46,6 +46,7 @@ type MatchTest struct {
 
 var matchTests = []MatchTest{
 	{"/*", "/", true, nil, false},
+	{"/\\*", "/", false, nil, false},
 	{"/*", "//", false, nil, false},
 	{"//*", "//", true, nil, false},
 	{"//*", "//debug/", false, nil, false},
@@ -406,6 +407,34 @@ func Test_matchComponent(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("matchComponent() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_readDir(t *testing.T) {
+	type args struct {
+		fs      fslib.FS
+		basedir string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []string
+		wantErr bool
+	}{
+		{"read dir", args{&testfs.FS{}, "/"}, nil, false},
+		{"read dir error", args{&testfs.FS{}, "/x"}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := readDir(tt.args.fs, tt.args.basedir)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("readDir() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("readDir() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
