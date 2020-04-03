@@ -31,7 +31,7 @@ jobs:
         shell: bash
 
       - name: Lint
-        run: golangci-lint run --verbose --tests=false --deadline=3m --config test/.golangci.yml
+        run: golangci-lint run --verbose --tests=false --deadline=3m
         shell: bash
       - name: Test
         run: go-acc ./...
