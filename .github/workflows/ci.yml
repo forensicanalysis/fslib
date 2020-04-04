@@ -84,3 +84,20 @@ jobs:
         with:
           name: fs ${{ matrix.os }}
           path: cmd/fs/bin
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup go 1.13
+        uses: actions/setup-go@v1
+        with: {go-version: '1.13'}
+      - name: Set system path
+        run: echo "##[add-path]$(go env GOPATH)/bin"
+        shell: bash
+      - run: go get -u github.com/cugu/godoc2readme
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - run: godoc2readme --template docs/readme-template.md . > README2.md
+      - run: diff Readme.md README2.md

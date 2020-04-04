@@ -4,7 +4,7 @@
  <a href="https://github.com/forensicanalysis/fslib/actions"><img src="https://github.com/forensicanalysis/fslib/workflows/CI/badge.svg" alt="build" /></a>
  <a href="https://codecov.io/gh/forensicanalysis/fslib"><img src="https://codecov.io/gh/forensicanalysis/fslib/branch/master/graph/badge.svg" alt="coverage" /></a>
  <a href="https://goreportcard.com/report/github.com/forensicanalysis/fslib"><img src="https://goreportcard.com/badge/github.com/forensicanalysis/fslib" alt="report" /></a>
- <a href="https://godoc.org/github.com/forensicanalysis/fslib"><img src="https://godoc.org/github.com/forensicanalysis/fslib?status.svg" alt="doc" /></a>
+ <a href="https://pkg.go.dev/github.com/forensicanalysis/fslib"><img src="https://img.shields.io/badge/go.dev-documentation-007d9c?logo=go&logoColor=white" alt="doc" /></a>
 </p>
 
 
@@ -14,7 +14,7 @@ access disk images of with different partitioning and file systems.
 Additionally, file systems for live access to the currently mounted file system
 and registry (on Windows) are implemented.
 
-### Paths
+## Paths
 Paths in fslib use the following conventions:
 
 - all paths are separated by forward slashes '/' (yes, even the windows registry)
@@ -23,9 +23,10 @@ Paths in fslib use the following conventions:
 
 ## Installation
 
-```shell
+``` shell
 go get -u github.com/forensicanalysis/fslib
 ```
+
 
 
 ## Examples
@@ -61,13 +62,13 @@ func main() {
 
 ```
 
-
 ### ReadFile
 ``` go
 package main
 
 import (
 	"fmt"
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
 	"io/ioutil"
 	"os"
@@ -80,9 +81,12 @@ func main() {
 	// parse the file system
 	fs := recursivefs.New()
 
-	// get handle the README.md
+	// create fslib path
 	wd, _ := os.Getwd()
-	file, _ := fs.Open(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
+	fpath, _ := osfs.ToForensicPath(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
+
+	// get handle the README.md
+	file, _ := fs.Open(fpath)
 
 	// get content
 	content, _ := ioutil.ReadAll(file)
@@ -93,9 +97,14 @@ func main() {
 
 ```
 
+
+
+
+
+
 ## fs command
 
-The fs command line tool that has various subcommands which imitate unix commands 
+The fs command line tool that has various subcommands which imitate unix commands
 but for nested file system structures.
 
  - **fs cat**: Print files
@@ -107,7 +116,9 @@ but for nested file system structures.
  - **fs tree**: List contents of directories in a tree-like format
 
 
-#### [:package: Download](https://github.com/forensicanalysis/fslib/releases)
+#### Download
+
+https://github.com/forensicanalysis/fslib/releases
 
 #### Usage Examples
 
@@ -126,6 +137,7 @@ Hash all files in a zip file:
 ```
 fs hashsum case/evidence.zip/*
 ```
+
 
 
 ## Subpackages
@@ -153,6 +165,7 @@ fs hashsum case/evidence.zip/*
 | **testfs** | The testfs project provides a in memory forensicfs implementation for testing. |
 | **zip** | The zip project provides a forensicfs implementation to access zip files. |
 | **zipwrite** | The zipwrite project provides a write-only file system implementation for afero to create zip files. |
+
 
 ## Contact
 
