@@ -40,6 +40,8 @@ import (
 	"github.com/forensicanalysis/fslib/filesystem"
 )
 
+const windows = "windows"
+
 // New wrapes the nativ file system.
 func New() *FS {
 	return &FS{}
@@ -64,7 +66,7 @@ func ToForensicPath(systemPath string) (name string, err error) {
 	if err != nil {
 		return "", err
 	}
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == windows {
 		name = strings.ReplaceAll(name, "\\", "/")
 		name = "/" + name[:1] + name[2:]
 	}
@@ -88,11 +90,11 @@ func (fs *FS) Open(name string) (item fslib.Item, err error) {
 		return nil, err
 	}
 
-	if name == "/" && runtime.GOOS == "windows" {
+	if name == "/" && runtime.GOOS == windows {
 		return &Root{}, nil
 	}
 
-	file, err := os.Open(sysname)
+	file, err := os.Open(sysname) // #nosec
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +109,7 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 		return nil, err
 	}
 
-	if name == "/" && runtime.GOOS == "windows" {
+	if name == "/" && runtime.GOOS == windows {
 		return &Root{}, nil
 	}
 
@@ -120,10 +122,10 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 }
 
 func sysname(name string) (string, string, error) {
-	if runtime.GOOS == "windows" && len(name) > 1 && !isLetter(name[1]) {
+	if runtime.GOOS == windows && len(name) > 1 && !isLetter(name[1]) {
 		return "", "", errors.New("partition must be a letter")
 	}
-	if runtime.GOOS == "windows" && len(name) > 2 && name[2] != '/' {
+	if runtime.GOOS == windows && len(name) > 2 && name[2] != '/' {
 		return "", "", errors.New("partition must be followed by a slash")
 	}
 	name, err := filesystem.Clean(name)
@@ -134,7 +136,7 @@ func sysname(name string) (string, string, error) {
 		return "/", "/", nil
 	}
 	sysname := name
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == windows {
 		sysname = string(name[1]) + ":"
 		if len(name) > 2 {
 			sysname += name[2:]

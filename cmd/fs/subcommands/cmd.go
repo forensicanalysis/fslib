@@ -22,8 +22,8 @@
 package subcommands
 
 import (
-	"crypto/md5"
-	"crypto/sha1"
+	"crypto/md5"  // #nosec
+	"crypto/sha1" // #nosec
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
@@ -182,8 +182,8 @@ func fileCmd(_ *cobra.Command, args []string) {
 
 func hashsumCmd(_ *cobra.Command, args []string) {
 	for _, arg := range args {
-		md5hash := md5.New()
-		sha1hash := sha1.New()
+		md5hash := md5.New()   // #nosec
+		sha1hash := sha1.New() // #nosec
 		sha256hash := sha256.New()
 		sha512hash := sha512.New()
 		hash := io.MultiWriter(md5hash, sha1hash, sha256hash, sha512hash)

@@ -32,9 +32,7 @@ import (
 	"time"
 )
 
-var (
-	ErrOutOfRange = errors.New("out of range")
-)
+var errOutOfRange = errors.New("out of range")
 
 // File describes files and directories in the zip file system.
 type File struct {
@@ -125,7 +123,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 		return 0, syscall.EINVAL
 	}
 	if offset < 0 || offset > int64(f.zipfile.UncompressedSize64) {
-		return 0, ErrOutOfRange
+		return 0, errOutOfRange
 	}
 	f.offset = offset
 	return offset, nil

@@ -35,7 +35,6 @@ import (
 
 // Content returns the binary contents as a string.
 func Content(r fsio.ReadSeekerAt) (content io.Reader, err error) {
-
 	detectedType, err := filetype.DetectReader(r)
 	if err != nil {
 		return nil, err

@@ -30,14 +30,21 @@ import (
 	"github.com/forensicanalysis/fslib"
 )
 
+// New creates a new dummy registry FS.
 func New() *FS { return &FS{} }
 
+// FS implements a dummy file system for Windows Registries.
 type FS struct{}
 
+// Name returns the name of the file system.
 func (*FS) Name() (name string) { return "Registry FS" }
+
+// Open fails for non Windows operating systems.
 func (m *FS) Open(name string) (item fslib.Item, err error) {
 	return nil, errors.New("Registry only supported on Windows")
 }
+
+// Stat fails for non Windows operating systems.
 func (m *FS) Stat(name string) (os.FileInfo, error) {
 	return nil, errors.New("Registry only supported on Windows")
 }

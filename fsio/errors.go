@@ -26,32 +26,37 @@ import (
 	"io"
 )
 
+// ErrorReader mocks a Reader that fails after some Reads.
 type ErrorReader struct {
 	Skip    int
 	current int
 }
 
+// Read implements io.Read but fails after n attempts.
 func (e *ErrorReader) Read(b []byte) (n int, err error) {
 	if e.current >= e.Skip {
 		return 0, errors.New("broken reader")
 	}
-	e.current += 1
+	e.current++
 	return len(b), nil
 }
 
+// ErrorReaderAt mocks a ReaderAt that fails after some ReadAts.
 type ErrorReaderAt struct {
 	Skip    int
 	current int
 }
 
+// ReadAt implements io.ReadAt but fails after n attempts.
 func (e *ErrorReaderAt) ReadAt(b []byte, _ int64) (n int, err error) {
 	if e.current >= e.Skip {
 		return 0, errors.New("broken readerAt")
 	}
-	e.current += 1
+	e.current++
 	return len(b), nil
 }
 
+// ErrorSeeker mocks a Seeker that fails after some Seek.
 type ErrorSeeker struct {
 	Skip      int
 	Size      int64
@@ -59,11 +64,12 @@ type ErrorSeeker struct {
 	position  int64
 }
 
+// Seek implements io.Seek but fails after n attempts.
 func (e *ErrorSeeker) Seek(off int64, whence int) (int64, error) {
 	if e.seekCount >= e.Skip {
 		return 0, errors.New("seek failed")
 	}
-	e.seekCount += 1
+	e.seekCount++
 	switch whence {
 	case io.SeekCurrent:
 		e.position += off
@@ -75,64 +81,74 @@ func (e *ErrorSeeker) Seek(off int64, whence int) (int64, error) {
 	return e.position, nil
 }
 
+// ErrorReadSeeker mocks a ReadSeeker that fails after some Reads or Seeks.
 type ErrorReadSeeker struct {
 	Skip    int
 	current int
 }
 
+// Read implements io.Read but fails after n attempts.
 func (e *ErrorReadSeeker) Read(b []byte) (n int, err error) {
 	if e.current >= e.Skip {
 		return 0, errors.New("broken reader")
 	}
-	e.current += 1
+	e.current++
 	return len(b), nil
 }
 
+// Seek implements io.Seek but fails after n attempts.
 func (e *ErrorReadSeeker) Seek(int64, int) (int64, error) {
 	if e.current >= e.Skip {
 		return 0, errors.New("broken seek")
 	}
-	e.current += 1
+	e.current++
 	return 0, nil
 }
 
+// ErrorReadSeekerAt mocks a ReadSeekerAt that fails after some ReadSeeker.
 type ErrorReadSeekerAt struct {
 	Skip    int
 	current int
 }
 
+// Read implements io.Read but fails after n attempts.
 func (e *ErrorReadSeekerAt) Read(b []byte) (n int, err error) {
 	if e.current >= e.Skip {
 		return 0, errors.New("broken reader")
 	}
-	e.current += 1
+	e.current++
 	return len(b), nil
 }
 
+// Seek implements io.Seek but fails after n attempts.
 func (e *ErrorReadSeekerAt) Seek(int64, int) (int64, error) {
 	if e.current >= e.Skip {
 		return 0, errors.New("broken seek")
 	}
-	e.current += 1
+	e.current++
 	return 0, nil
 }
+
+// ReadAt implements io.ReadAt but fails after n attempts.
 func (e *ErrorReadSeekerAt) ReadAt(b []byte, _ int64) (n int, err error) {
 	if e.current >= e.Skip {
 		return 0, errors.New("broken readerAt")
 	}
-	e.current += 1
+	e.current++
 	return len(b), nil
 }
 
+// ErrorWriter mocks a Writer that fails after some Writes.
 type ErrorWriter struct {
 	Skip    int
 	current int
 }
 
+// Write implements io.Write but fails after n attempts.
 func (e *ErrorWriter) Write(b []byte) (int, error) {
 	if e.current >= e.Skip {
 		return 0, errors.New("broken writer")
 	}
-	e.current += 1
+	e.current++
 	return len(b), nil
 }

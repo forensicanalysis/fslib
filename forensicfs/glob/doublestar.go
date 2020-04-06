@@ -192,7 +192,6 @@ func doMatching(patternComponents, nameComponents []string) (matched bool, err e
 	for patIdx < patternLen && nameIdx < nameLen {
 		// if patternComponents[patIdx] == "**" {
 		if doubleStarPattern.MatchString(patternComponents[patIdx]) {
-
 			depth := getDepth(patternComponents, patIdx, -1)
 
 			// if our last pattern component is a doublestar, we are done -
@@ -302,7 +301,6 @@ func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int
 	}
 	lastComponent := (patIdx + 1) >= patLen
 	if doubleStarPattern.MatchString(components[patIdx]) {
-
 		depth = getDepth(components, patIdx, depth)
 
 		// if the current component is a doublestar, we'll try depth-first
