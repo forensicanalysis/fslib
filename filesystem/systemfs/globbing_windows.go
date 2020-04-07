@@ -22,35 +22,10 @@
 package systemfs
 
 import (
-	"errors"
-	"strings"
-	"syscall"
-	"unsafe"
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
 )
 
 func listPartitions() ([]string, error) {
-	kernel32, err := syscall.LoadDLL("kernel32.dll")
-	if err != nil {
-		return nil, err
-	}
-	getLogicalDriveStringsHandle, err := kernel32.FindProc("GetLogicalDriveStringsA")
-	if err != nil {
-		return nil, err
-	}
-
-	buffer := [1024]byte{}
-	bufferSize := uint32(len(buffer))
-
-	var partitions []string
-
-	hr, _, _ := getLogicalDriveStringsHandle.Call(uintptr(unsafe.Pointer(&bufferSize)), uintptr(unsafe.Pointer(&buffer)))
-	if hr == 0 {
-		return nil, errors.New("there was an error")
-	} else {
-		// Deal with the buffer, you need to split it
-		for i := 0; i < int(hr); i += 4 {
-			partitions = append(partitions, strings.ToUpper(string(buffer[i])))
-		}
-	}
-	return partitions, nil
+	root := osfs.Root{}
+	return root.Readdirnames(0)
 }

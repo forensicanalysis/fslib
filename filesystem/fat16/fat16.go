@@ -158,7 +158,6 @@ func getOffset(cluster int64, vh volumeHeader) int64 {
 		firstSectorofCluster := ((cluster - 2) * int64(vh.SectorsPerCluster)) + firstDataSector
 		pos = firstSectorofCluster * int64(vh.SectorSize)
 		log.Println("firstSectorofCluster ", firstSectorofCluster, "pos ", pos)
-
 	}
 	return pos
 }

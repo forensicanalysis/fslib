@@ -192,7 +192,6 @@ func doMatching(patternComponents, nameComponents []string) (matched bool, err e
 	for patIdx < patternLen && nameIdx < nameLen {
 		// if patternComponents[patIdx] == "**" {
 		if doubleStarPattern.MatchString(patternComponents[patIdx]) {
-
 			depth := getDepth(patternComponents, patIdx, -1)
 
 			// if our last pattern component is a doublestar, we are done -
@@ -269,7 +268,7 @@ func Glob(fs fslib.FS, pattern string) (matches []string, err error) {
 }
 
 // Perform a glob
-func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int) ([]string, error) {
+func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int) ([]string, error) { //nolint:gocyclo
 	if depth == 0 && len(components) < 2 || depth == -1 {
 		return matches, nil
 	}
@@ -302,7 +301,6 @@ func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int
 	}
 	lastComponent := (patIdx + 1) >= patLen
 	if doubleStarPattern.MatchString(components[patIdx]) {
-
 		depth = getDepth(components, patIdx, depth)
 
 		// if the current component is a doublestar, we'll try depth-first
@@ -385,7 +383,7 @@ func getDepth(components []string, patIdx int, depth int) int {
 }
 
 // Attempt to match a single pattern component with a path component
-func matchComponent(pattern, name string) (bool, error) {
+func matchComponent(pattern, name string) (bool, error) { //nolint:gocyclo
 	// check some base cases
 	patternLen, nameLen := len(pattern), len(name)
 	if patternLen == 0 && nameLen == 0 {
@@ -462,7 +460,7 @@ func handleStars(patIdx int, patAdj int, patternLen int, nameIdx int, nameLen in
 	return false, nil
 }
 
-func handleCharacterSet(pattern string, patIdx int, nameRune rune) (int, error, bool) {
+func handleCharacterSet(pattern string, patIdx int, nameRune rune) (int, error, bool) { //nolint:gocyclo,golint
 	endClass := indexRuneWithEscaping(pattern[patIdx:], ']')
 	if endClass == -1 {
 		return 0, ErrBadPattern, true

@@ -44,7 +44,6 @@ type FS struct {
 
 // New creates a new fat16 FS.
 func New(decoder fsio.ReadSeekerAt) (*FS, error) {
-
 	// parser volume header
 	vh := volumeHeader{}
 	err := binary.Read(decoder, binary.LittleEndian, &vh)

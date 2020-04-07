@@ -61,32 +61,33 @@ func xmlContent(r io.ReadSeeker) string {
 
 	// walkMap(reflect.ValueOf(m))
 	return strings.TrimSpace(s)
-	/*
-		dec := xml.NewDecoder(r)
-
-		var n node
-		err := dec.Decode(&n)
-		if err != nil {
-			panic(err)
-		}
-
-		buf := bytes.Buffer{}
-		walk([]node{n}, func(n node) bool {
-			if n.XMLName.Local == "p" {
-				_, err := buf.Write(n.Content)
-				if err != nil {
-					return false
-				}
-				err = buf.WriteByte('\n')
-				if err != nil {
-					return false
-				}
-			}
-			return true
-		})
-		return buf.String()
-	*/
 }
+
+/*
+	dec := xml.NewDecoder(r)
+
+	var n node
+	err := dec.Decode(&n)
+	if err != nil {
+		panic(err)
+	}
+
+	buf := bytes.Buffer{}
+	walk([]node{n}, func(n node) bool {
+		if n.XMLName.Local == "p" {
+			_, err := buf.Write(n.Content)
+			if err != nil {
+				return false
+			}
+			err = buf.WriteByte('\n')
+			if err != nil {
+				return false
+			}
+		}
+		return true
+	})
+	return buf.String()
+*/
 
 // func walk(nodes []node, f func(node) bool) {
 // 	for _, n := range nodes {

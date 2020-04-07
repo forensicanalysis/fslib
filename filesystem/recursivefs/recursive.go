@@ -82,7 +82,7 @@ func parseRealPath(sample string) (rpath []element, err error) {
 			rpath = append(rpath, element{fs.Name(), key})
 		}
 	}
-	return
+	return rpath, nil
 }
 
 func detectFsFromFile(base fslib.Item) (isFs bool, fs string, err error) {
