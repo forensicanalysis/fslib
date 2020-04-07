@@ -24,6 +24,8 @@
 // https://github.com/bmatcuk/doublestar
 // for use with forensic filesystems.
 
+//nolint
+
 // Package glob provides a globing function for forensicfs.
 package glob
 
