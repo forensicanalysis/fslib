@@ -1,3 +1,4 @@
+//nolint
 // Copyright (c) 2014-2019 Bob Matcuk
 // Copyright (c) 2019-2020 Siemens AG
 //
@@ -23,8 +24,6 @@
 // This code was adapted from
 // https://github.com/bmatcuk/doublestar
 // for use with forensic filesystems.
-
-//nolint
 
 // Package glob provides a globing function for forensicfs.
 package glob
