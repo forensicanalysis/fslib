@@ -176,7 +176,3 @@ For feedback, questions and discussions you can use the [Open Source DFIR Slack]
 
 The development of this software was partially sponsored by Siemens CERT, but
 is not an official Siemens product.
-
-
-## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fforensicanalysis%2Ffslib.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fforensicanalysis%2Ffslib?ref=badge_large)
