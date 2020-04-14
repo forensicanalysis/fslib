@@ -22,184 +22,69 @@
 package zip
 
 import (
-	"archive/zip"
-	"errors"
-	"io"
 	"os"
-	"path"
-	"strings"
-	"syscall"
-	"time"
-)
+	"path/filepath"
 
-var errOutOfRange = errors.New("out of range")
+	"github.com/spf13/afero"
+)
 
 // File describes files and directories in the zip file system.
 type File struct {
-	fs            *FS
-	zipfile       *zip.File
-	reader        io.ReadCloser
-	offset        int64
-	isdir, closed bool
-	buf           []byte
-}
-
-func (f *File) fillBuffer(offset int64) (err error) {
-	if f.reader == nil {
-		if f.reader, err = f.zipfile.Open(); err != nil {
-			return
-		}
-	}
-	if offset > int64(f.zipfile.UncompressedSize64) {
-		offset = int64(f.zipfile.UncompressedSize64)
-		err = io.EOF
-	}
-	if len(f.buf) >= int(offset) {
-		return
-	}
-	buf := make([]byte, int(offset)-len(f.buf))
-	n, _ := io.ReadFull(f.reader, buf)
-	if n > 0 {
-		f.buf = append(f.buf, buf[:n]...)
-	}
-	return
+	internal afero.File
 }
 
 // Close closes the file freeing the resource. Other IO operations fail after
 // closing.
 func (f *File) Close() (err error) {
-	f.zipfile = nil
-	f.closed = true
-	f.buf = nil
-	if f.reader != nil {
-		err = f.reader.Close()
-		f.reader = nil
-	}
-	return
+	return f.internal.Close()
 }
 
 // Read reads bytes into the passed buffer.
 func (f *File) Read(p []byte) (n int, err error) {
-	if f.isdir {
-		return 0, syscall.EISDIR
-	}
-	if f.closed {
-		return 0, os.ErrClosed
-	}
-	err = f.fillBuffer(f.offset + int64(len(p)))
-	n = copy(p, f.buf[f.offset:])
-	f.offset += int64(len(p))
-	return
+	return f.internal.Read(p)
 }
 
 // ReadAt reads bytes starting at off into passed buffer.
 func (f *File) ReadAt(p []byte, off int64) (n int, err error) {
-	if f.isdir {
-		return 0, syscall.EISDIR
-	}
-	if f.closed {
-		return 0, os.ErrClosed
-	}
-	err = f.fillBuffer(off + int64(len(p)))
-	n = copy(p, f.buf[int(off):])
-	return
+	return f.internal.ReadAt(p, off)
 }
 
 // Seek move the current offset to the given position.
 func (f *File) Seek(offset int64, whence int) (int64, error) {
-	if f.isdir {
-		return 0, syscall.EISDIR
-	}
-	if f.closed {
-		return 0, os.ErrClosed
-	}
-	switch whence {
-	case io.SeekStart:
-	case io.SeekCurrent:
-		offset += f.offset
-	case io.SeekEnd:
-		offset += int64(f.zipfile.UncompressedSize64)
-	default:
-		return 0, syscall.EINVAL
-	}
-	if offset < 0 || offset > int64(f.zipfile.UncompressedSize64) {
-		return 0, errOutOfRange
-	}
-	f.offset = offset
-	return offset, nil
+	return f.internal.Seek(offset, whence)
 }
 
 // Name returns the name of the file.
 func (f *File) Name() string {
-	if f.zipfile == nil {
-		return "/"
-	}
-	return strings.TrimSuffix(path.Base(f.zipfile.Name), "/")
-}
-
-func (f *File) getDirEntries() (map[string]*zip.File, error) {
-	if !f.isdir {
-		return nil, syscall.ENOTDIR
-	}
-	name := "/"
-	if f.zipfile != nil {
-		name = path.Join(splitpath(f.zipfile.Name))
-	}
-	entries, ok := f.fs.files[name]
-	if !ok {
-		return nil, &os.PathError{Op: "readdir", Path: name, Err: syscall.ENOENT}
-	}
-	return entries, nil
+	return filepath.ToSlash(filepath.Base(f.internal.Name()))
 }
 
 // Readdirnames returns up to n child items of a directory.
-func (f *File) Readdirnames(count int) (fi []string, err error) {
-	zipfiles, err := f.getDirEntries()
-	if err != nil {
-		return nil, err
+func (f *File) Readdirnames(count int) (names []string, err error) {
+	if count == 0 {
+		count = -1
 	}
-	for _, zipfile := range zipfiles {
-		fi = append(fi, strings.TrimSuffix(path.Base(zipfile.Name), "/"))
-		if count > 0 && len(fi) >= count {
-			break
-		}
-	}
-	return
+	return f.internal.Readdirnames(count)
 }
 
 // Stat return an os.FileInfo object that describes a file.
 func (f *File) Stat() (os.FileInfo, error) {
-	if f.zipfile == nil {
+	/*if f.Name() == "/" {
 		return &RootInfo{}, nil
-	}
-	return f.zipfile.FileInfo(), nil
+	}*/
+	return f.internal.Stat()
 }
 
 // Sys returns underlying data source.
 func (f *File) Sys() interface{} {
-	return map[string]interface{}{
-		"mode":     f.zipfile.FileInfo().Mode(),
-		"modified": f.zipfile.Modified.In(time.UTC),
+	attr := map[string]interface{}{
+		// "modified": f.zipfile.Modified.In(time.UTC),
 	}
+
+	mode, err := f.Stat()
+	if err == nil {
+		attr["mode"] = mode
+	}
+
+	return attr
 }
-
-// RootInfo is a pseudo root os.FileInfo.
-type RootInfo struct{}
-
-// Name always returns / for zip pseudo roots.
-func (i *RootInfo) Name() string { return "/" }
-
-// Size returns 0 for zip pseudo roots.
-func (i *RootInfo) Size() int64 { return 0 }
-
-// Mode returns os.ModeDir for zip pseudo roots.
-func (i *RootInfo) Mode() os.FileMode { return os.ModeDir }
-
-// ModTime returns the zero time (0001-01-01 00:00) for zip pseudo roots.
-func (i *RootInfo) ModTime() time.Time { return time.Time{} }
-
-// IsDir returns true for zip pseudo roots.
-func (i *RootInfo) IsDir() bool { return true }
-
-// Sys returns nil for zip pseudo roots.
-func (i *RootInfo) Sys() interface{} { return nil }

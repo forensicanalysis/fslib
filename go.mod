@@ -7,7 +7,7 @@ require (
 	github.com/ledongthuc/pdf v0.0.0-20190830105003-8ac343ec9fdd
 	github.com/pkg/errors v0.8.1
 	github.com/sebdah/goldie v0.0.0-20190531093107-d313ffb52c77 // indirect
-	github.com/spf13/afero v1.2.2
+	github.com/spf13/afero v1.2.3-0.20200410222221-ceb6a5e37254
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.4.0
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
