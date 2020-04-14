@@ -25,8 +25,9 @@ package zip
 import (
 	"archive/zip"
 	"os"
-	"path"
-	"syscall"
+
+	"github.com/spf13/afero"
+	"github.com/spf13/afero/zipfs"
 
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
@@ -35,18 +36,7 @@ import (
 
 // FS implements a read-only file system for zip files.
 type FS struct {
-	r     *zip.Reader
-	files map[string]map[string]*zip.File
-}
-
-func splitpath(name string) (dir, file string) {
-	if len(name) == 0 || name[0] != '/' {
-		name = "/" + name
-	}
-	name = path.Clean(name)
-	dir, file = path.Split(name)
-	dir = path.Clean(dir)
-	return
+	internal afero.Fs
 }
 
 // New creates a new zip FS.
@@ -61,23 +51,8 @@ func New(base fsio.ReadSeekerAt) (*FS, error) {
 		return nil, err
 	}
 
-	fs := &FS{r: zr, files: make(map[string]map[string]*zip.File)}
-	for _, file := range zr.File {
-		d, f := splitpath(file.Name)
-		if _, ok := fs.files[d]; !ok {
-			fs.files[d] = make(map[string]*zip.File)
-		}
-		if _, ok := fs.files[d][f]; !ok {
-			fs.files[d][f] = file
-		}
-		if file.FileInfo().IsDir() {
-			dirname := path.Join(d, f)
-			if _, ok := fs.files[dirname]; !ok {
-				fs.files[dirname] = make(map[string]*zip.File)
-			}
-		}
-	}
-	return fs, nil
+	aferoFS := zipfs.New(zr)
+	return &FS{aferoFS}, nil
 }
 
 // Name returns the name of the file system.
@@ -92,18 +67,8 @@ func (fs *FS) Open(name string) (fslib.Item, error) {
 		return nil, err
 	}
 
-	d, f := splitpath(name)
-	if f == "" {
-		return &File{fs: fs, isdir: true}, nil // &pseudoRoot{}, nil //
-	}
-	if _, ok := fs.files[d]; !ok {
-		return nil, &os.PathError{Op: "stat", Path: name, Err: syscall.ENOENT}
-	}
-	file, ok := fs.files[d][f]
-	if !ok {
-		return nil, &os.PathError{Op: "stat", Path: name, Err: syscall.ENOENT}
-	}
-	return &File{fs: fs, zipfile: file, isdir: file.FileInfo().IsDir()}, nil
+	aferoItem, err := fs.internal.Open(name)
+	return &File{aferoItem}, err
 }
 
 // Stat returns an os.FileInfo object that describes a file.
