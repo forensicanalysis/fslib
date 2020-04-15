@@ -21,7 +21,8 @@
 
 package hfsplus
 
-// Information taken from: https://developer.apple.com/legacy/library/technotes/tn/tn1150.html
+// This code and comments were adapted from
+// https://developer.apple.com/legacy/library/technotes/tn/tn1150.html
 
 /*
 // HFSUniStr255 defines file and folder names on HFS Plus which consist of up

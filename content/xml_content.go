@@ -28,29 +28,9 @@ import (
 	"strings"
 )
 
-/*
-type node struct {
-	XMLName xml.Name
-	Content []byte `xml:",innerxml"`
-	Nodes   []node `xml:",any"`
-}
-*/
-
 func xmlContent(r io.ReadSeeker) string {
-	// dec := xml2map.NewDecoder(r)
-	// m, _ := dec.Decode()
-	// log.Printf("%#v", m)
-
 	r.Seek(0, 0) // nolint: errcheck
 	b, _ := ioutil.ReadAll(r)
-
-	// re := regexp.MustCompile("<w:t[^>]*>([^>]*)</w:t>")
-	// out := re.FindAllStringSubmatch(string(b), -1)
-	// s := ""
-	// for _, o := range out {
-	// 	s += o[1]
-	// }
-	// fmt.Println(s)
 
 	re := regexp.MustCompile("<[^>]*>")
 	b = re.ReplaceAll(b, []byte(" "))
@@ -59,62 +39,5 @@ func xmlContent(r io.ReadSeeker) string {
 	re = regexp.MustCompile(`\s+`)
 	s = re.ReplaceAllString(s, " ")
 
-	// walkMap(reflect.ValueOf(m))
 	return strings.TrimSpace(s)
 }
-
-/*
-	dec := xml.NewDecoder(r)
-
-	var n node
-	err := dec.Decode(&n)
-	if err != nil {
-		panic(err)
-	}
-
-	buf := bytes.Buffer{}
-	walk([]node{n}, func(n node) bool {
-		if n.XMLName.Local == "p" {
-			_, err := buf.Write(n.Content)
-			if err != nil {
-				return false
-			}
-			err = buf.WriteByte('\n')
-			if err != nil {
-				return false
-			}
-		}
-		return true
-	})
-	return buf.String()
-*/
-
-// func walk(nodes []node, f func(node) bool) {
-// 	for _, n := range nodes {
-// 		if f(n) {
-// 			walk(n.Nodes, f)
-// 		}
-// 	}
-// }
-
-// func walkMap(v reflect.Value) {
-// 	// Indirect through pointers and interfaces
-// 	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
-// 		v = v.Elem()
-// 	}
-// 	switch v.Kind() {
-// 	case reflect.Array, reflect.Slice:
-// 		for i := 0; i < v.Len(); i++ {
-// 			walkMap(v.Index(i))
-// 		}
-// 	case reflect.Map:
-// 		for _, k := range v.MapKeys() {
-// 			walkMap(v.MapIndex(k))
-// 			if k.String() == "t" {
-// 				fmt.Print(v.MapIndex(k))
-// 			}
-// 		}
-// 	default:
-// 		// handle other types
-// 	}
-// }

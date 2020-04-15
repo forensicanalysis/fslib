@@ -30,21 +30,27 @@ import (
 
 // Readdirnames lists all partitions in the window pseudo root.
 func (*Root) Readdirnames(n int) (partitions []string, err error) {
-	kernel32, _ := syscall.LoadDLL("kernel32.dll")
-	getLogicalDriveStringsHandle, _ := kernel32.FindProc("GetLogicalDriveStringsA")
+	kernel32, err := syscall.LoadDLL("kernel32.dll")
+	if err != nil {
+		return nil, err
+	}
+	getLogicalDriveStringsProc, err := kernel32.FindProc("GetLogicalDriveStringsA")
+	if err != nil {
+		return nil, err
+	}
 
-	buffer := [1024]byte{}
-	bufferSize := uint32(len(buffer))
+	lpBuffer := [1024]byte{}
+	nBufferLength := uint32(len(lpBuffer))
 
-	hr, _, _ := getLogicalDriveStringsHandle.Call(
-		uintptr(unsafe.Pointer(&bufferSize)), //nolint:gosec
-		uintptr(unsafe.Pointer(&buffer)),     //nolint:gosec
+	returnLength, _, _ := getLogicalDriveStringsProc.Call(
+		uintptr(unsafe.Pointer(&nBufferLength)), //nolint:gosec
+		uintptr(unsafe.Pointer(&lpBuffer)),      //nolint:gosec
 	)
-	if hr == 0 {
+	if returnLength == 0 {
 		return nil, errors.New("partitions could not be listed")
 	}
-	for i := 0; i < int(hr); i += 4 {
-		partitions = append(partitions, strings.ToUpper(string(buffer[i])))
+	for i := 0; i < int(returnLength); i += 4 {
+		partitions = append(partitions, strings.ToUpper(string(lpBuffer[i])))
 	}
 
 	return partitions, nil
