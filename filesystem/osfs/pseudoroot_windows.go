@@ -32,11 +32,11 @@ import (
 func (*Root) Readdirnames(n int) (partitions []string, err error) {
 	kernel32, err := syscall.LoadDLL("kernel32.dll")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	getLogicalDriveStringsProc, err := kernel32.FindProc("GetLogicalDriveStringsA")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	lpBuffer := [1024]byte{}
