@@ -42,44 +42,11 @@ func Content(r fsio.ReadSeekerAt) (content io.Reader, err error) {
 
 	switch detectedType {
 	case filetype.Docx:
-		fs, _ := zip.New(r)
-		r, _ := fs.Open("/word/document.xml")
-		return bytes.NewBufferString(xmlContent(r)), nil
-		// doc, _ := document.Read()
+		return docxContent(r)
 	case filetype.Pptx:
-		// unzip -> ppt/slides/slideX.xml
-		fs, _ := zip.New(r)
-		s := &bytes.Buffer{}
-		i := 1
-		for {
-			r, err := fs.Open(fmt.Sprintf("/ppt/slides/slide%d.xml", i))
-			if err != nil {
-				break
-			}
-			s.WriteString(xmlContent(r))
-			i++
-		}
-		return s, nil
+		return pptxContent(r)
 	case filetype.Xlsx:
-		// unzip -> xl/worksheets/sheetX.xml
-		fs, _ := zip.New(r)
-		s := &bytes.Buffer{}
-
-		r, err := fs.Open("/xl/sharedStrings.xml")
-		if err == nil {
-			s.WriteString(xmlContent(r))
-		}
-
-		i := 1
-		for {
-			r, err := fs.Open(fmt.Sprintf("/xl/worksheets/sheet%d.xml", i))
-			if err != nil {
-				break
-			}
-			s.WriteString(xmlContent(r))
-			i++
-		}
-		return s, nil
+		return xlsxContent(r)
 	case filetype.Pdf:
 		return PDFContent(r)
 	}
@@ -94,4 +61,48 @@ func Content(r fsio.ReadSeekerAt) (content io.Reader, err error) {
 		return nil, err
 	}
 	return buf, nil
+}
+
+func docxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
+	fs, _ := zip.New(r)
+	f, err := fs.Open("/word/document.xml")
+	return bytes.NewBufferString(xmlContent(f)), err
+}
+
+func xlsxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
+	// unzip -> xl/worksheets/sheetX.xml
+	fs, _ := zip.New(r)
+	s := &bytes.Buffer{}
+
+	r, err := fs.Open("/xl/sharedStrings.xml")
+	if err == nil {
+		s.WriteString(xmlContent(r))
+	}
+
+	i := 1
+	for {
+		r, err := fs.Open(fmt.Sprintf("/xl/worksheets/sheet%d.xml", i))
+		if err != nil {
+			break
+		}
+		s.WriteString(xmlContent(r))
+		i++
+	}
+	return s, nil
+}
+
+func pptxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
+	// unzip -> ppt/slides/slideX.xml
+	fs, _ := zip.New(r)
+	s := &bytes.Buffer{}
+	i := 1
+	for {
+		r, err := fs.Open(fmt.Sprintf("/ppt/slides/slide%d.xml", i))
+		if err != nil {
+			break
+		}
+		s.WriteString(xmlContent(r))
+		i++
+	}
+	return s, nil
 }

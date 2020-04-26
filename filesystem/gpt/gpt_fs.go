@@ -108,7 +108,7 @@ func NewPartition(name int, partition *PartitionEntry) *Partition {
 }
 
 // Name returns the name of a partition that consists of 'pX' where X is the
-// number of the partition
+// number of the partition.
 func (p *Partition) Name() string { return "p" + strconv.Itoa(p.name) }
 
 // IsDir returns false for partition.

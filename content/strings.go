@@ -66,10 +66,8 @@ func extractString(data []byte, currentString *bytes.Buffer, w io.Writer) error 
 	for _, c := range data {
 		if (c >= ' ' && c <= '~') || c == 0x0c {
 			currentString.WriteByte(c) // nolint:errcheck
-		} else {
-			if err := finishCurrentString(currentString, w); err != nil {
-				return err
-			}
+		} else if err := finishCurrentString(currentString, w); err != nil {
+			return err
 		}
 	}
 	return nil

@@ -47,10 +47,10 @@ type FS struct{}
 // New creates a new recursive FS.
 func New() *FS { return &FS{} }
 
-// Name returns the filesystem name
+// Name returns the filesystem name.
 func (fs *FS) Name() string { return "RecFS" }
 
-// Open returns a File for the given location
+// Open returns a File for the given location.
 func (fs *FS) Open(name string) (f fslib.Item, err error) {
 	name = path.Clean(name)
 
