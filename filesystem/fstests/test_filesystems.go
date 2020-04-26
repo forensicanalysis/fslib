@@ -111,61 +111,65 @@ func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (
 	_, err = fs.Open("/non_existing")
 	assert.Error(t, err)
 
-	for _, test := range tests {
-		t.Run(test.TestName, func(t *testing.T) {
-			log.Print("------------------------------")
-			log.Print(name, " ", test.TestName)
-			log.Print("------------------------------")
-			log.Print("test fs.Stat")
-			stat, err := fs.Stat(test.Path)
-			if assert.NoError(t, err) {
-				assert.EqualValues(t, test.InfoSize, stat.Size())
-				assert.EqualValues(t, test.InfoIsDir, stat.IsDir())
-			}
+	for _, tt := range tests {
+		t.Run(tt.TestName, checkPath(name, tt, fs))
+	}
+}
 
+func checkPath(name string, tt *PathTest, fs fslib.FS) func(t *testing.T) {
+	return func(t *testing.T) {
+		log.Print("------------------------------")
+		log.Print(name, " ", tt.TestName)
+		log.Print("------------------------------")
+		log.Print("test fs.Stat")
+		stat, err := fs.Stat(tt.Path)
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, tt.InfoSize, stat.Size())
+			assert.EqualValues(t, tt.InfoIsDir, stat.IsDir())
+		}
+
+		log.Print("-------------------")
+		log.Print("test fs.Open")
+		file, err := fs.Open(tt.Path)
+		if assert.NoError(t, err) {
 			log.Print("-------------------")
-			log.Print("test fs.Open")
-			file, err := fs.Open(test.Path)
-			if assert.NoError(t, err) {
+			log.Print("test item.Name")
+			assert.EqualValues(t, tt.FileName, file.Name())
+			// fileInfos, err := file.Readdir(0)
+			// assert.NoError(t, err)
+			// assert.EqualValues(t, test.FileReaddir, fileInfos)
+			if tt.InfoIsDir {
 				log.Print("-------------------")
-				log.Print("test item.Name")
-				assert.EqualValues(t, test.FileName, file.Name())
-				// fileInfos, err := file.Readdir(0)
-				// assert.NoError(t, err)
-				// assert.EqualValues(t, test.FileReaddir, fileInfos)
-				if test.InfoIsDir {
-					log.Print("-------------------")
-					log.Print("test dir.Readdirnames(0)")
-					filenames, err := file.Readdirnames(0)
-					if assert.NoError(t, err) {
-						assert.ElementsMatch(t, test.FileReaddirnames, filenames, "dirnames do not match %s %s", test.FileReaddirnames, filenames)
-					}
-
-					min := func(a, b int) int {
-						if a < b {
-							return a
-						}
-						return b
-					}
-					for _, i := range []int{1, 3, 1000} {
-						log.Print("-------------------")
-						log.Printf("test dir.Readdirnames(%d)", i)
-						filenames, err = file.Readdirnames(i)
-						if assert.NoError(t, err) {
-							assert.Equal(t, min(i, len(test.FileReaddirnames)), len(filenames), "dirnames do not match %s %s", test.FileReaddirnames, filenames)
-						}
-					}
+				log.Print("test dir.Readdirnames(0)")
+				filenames, err := file.Readdirnames(0)
+				if assert.NoError(t, err) {
+					assert.ElementsMatch(t, tt.FileReaddirnames, filenames, "dirnames do not match %s %s", tt.FileReaddirnames, filenames)
 				}
 
-				if !test.InfoIsDir {
+				min := func(a, b int) int {
+					if a < b {
+						return a
+					}
+					return b
+				}
+				for _, i := range []int{1, 3, 1000} {
 					log.Print("-------------------")
-					log.Print("test file.Read")
-					head := make([]byte, len(test.Head))
-					_, err = file.Read(head)
-					assert.NoError(t, err)
-					assert.EqualValues(t, test.Head, head)
+					log.Printf("test dir.Readdirnames(%d)", i)
+					filenames, err = file.Readdirnames(i)
+					if assert.NoError(t, err) {
+						assert.Equal(t, min(i, len(tt.FileReaddirnames)), len(filenames), "dirnames do not match %s %s", tt.FileReaddirnames, filenames)
+					}
 				}
 			}
-		})
+
+			if !tt.InfoIsDir {
+				log.Print("-------------------")
+				log.Print("test file.Read")
+				head := make([]byte, len(tt.Head))
+				_, err = file.Read(head)
+				assert.NoError(t, err)
+				assert.EqualValues(t, tt.Head, head)
+			}
+		}
 	}
 }

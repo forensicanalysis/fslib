@@ -178,7 +178,7 @@ func matchWithSeparator(pattern, name string, separator rune) (bool, error) {
 	return doMatching(patternComponents, nameComponents)
 }
 
-func doMatching(patternComponents, nameComponents []string) (matched bool, err error) {
+func doMatching(patternComponents, nameComponents []string) (matched bool, err error) { //nolint:gocognit
 	// check for some base-cases
 	patternLen, nameLen := len(patternComponents), len(nameComponents)
 	if patternLen == 0 && nameLen == 0 {
@@ -267,8 +267,8 @@ func Glob(fs fslib.FS, pattern string) (matches []string, err error) {
 	// return doGlob(fs, "/", patternComponents, matches)
 }
 
-// Perform a glob
-func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int) ([]string, error) { //nolint:gocyclo
+// Perform a glob.
+func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int) ([]string, error) { //nolint:gocyclo,gocognit,funlen
 	if depth == 0 && len(components) < 2 || depth == -1 {
 		return matches, nil
 	}
@@ -382,8 +382,8 @@ func getDepth(components []string, patIdx int, depth int) int {
 	return depth
 }
 
-// Attempt to match a single pattern component with a path component
-func matchComponent(pattern, name string) (bool, error) { //nolint:gocyclo
+// Attempt to match a single pattern component with a path component.
+func matchComponent(pattern, name string) (bool, error) { //nolint:gocyclo,gocognit,funlen
 	// check some base cases
 	patternLen, nameLen := len(pattern), len(name)
 	if patternLen == 0 && nameLen == 0 {
@@ -401,21 +401,23 @@ func matchComponent(pattern, name string) (bool, error) { //nolint:gocyclo
 	for patIdx < patternLen && nameIdx < nameLen {
 		patRune, patAdj := utf8.DecodeRuneInString(pattern[patIdx:])
 		nameRune, nameAdj := utf8.DecodeRuneInString(name[nameIdx:])
-		if patRune == '\\' {
+		switch patRune {
+		case '\\':
 			// handle escaped runes
 			patIdx += patAdj
 			patRune, patAdj = utf8.DecodeRuneInString(pattern[patIdx:])
-			if patRune == nameRune {
+			switch patRune {
+			case nameRune:
 				patIdx += patAdj
 				nameIdx += nameAdj
-			} else if patRune == utf8.RuneError {
+			case utf8.RuneError:
 				return false, ErrBadPattern
-			} else {
+			default:
 				return false, nil
 			}
-		} else if patRune == '*' {
+		case '*':
 			return handleStars(patIdx, patAdj, patternLen, nameIdx, nameLen, nameAdj, pattern, name)
-		} else if patRune == '[' {
+		case '[':
 			// handle character sets
 			patIdx += patAdj
 			endClass, err, done := handleCharacterSet(pattern, patIdx, nameRune)
@@ -424,13 +426,13 @@ func matchComponent(pattern, name string) (bool, error) { //nolint:gocyclo
 			}
 			patIdx = endClass + 1
 			nameIdx += nameAdj
-		} else if patRune == '{' {
+		case '{':
 			return handleAlternatives(patIdx, patAdj, pattern, name, nameIdx)
-		} else if patRune == '?' || patRune == nameRune {
+		case '?', nameRune:
 			// handle single-rune wildcard
 			patIdx += patAdj
 			nameIdx += nameAdj
-		} else {
+		default:
 			return false, nil
 		}
 	}
@@ -460,7 +462,7 @@ func handleStars(patIdx int, patAdj int, patternLen int, nameIdx int, nameLen in
 	return false, nil
 }
 
-func handleCharacterSet(pattern string, patIdx int, nameRune rune) (int, error, bool) { //nolint:gocyclo,golint
+func handleCharacterSet(pattern string, patIdx int, nameRune rune) (int, error, bool) { //nolint:gocyclo,golint,gocognit,stylecheck
 	endClass := indexRuneWithEscaping(pattern[patIdx:], ']')
 	if endClass == -1 {
 		return 0, ErrBadPattern, true

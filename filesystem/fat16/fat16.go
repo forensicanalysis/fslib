@@ -163,9 +163,7 @@ func getOffset(cluster int64, vh volumeHeader) int64 {
 }
 
 func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*directoryEntry, error) {
-	pos := getOffset(cluster, m.vh)
-
-	_, err := m.decoder.Seek(pos, io.SeekStart)
+	_, err := m.decoder.Seek(getOffset(cluster, m.vh), io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
@@ -199,15 +197,10 @@ func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*direc
 
 			// long filename
 			if de.FileAttributes == 0x0F && de.Startingcluster == 0x00 {
-				lfn := lfnEntry{}
-				err := binary.Read(bytes.NewBuffer(data), binary.LittleEndian, &lfn)
-				if err != nil && err != io.EOF {
+				currentFilename, err = handleLongFilname(data, currentFilename)
+				if err != nil {
 					return nil, err
 				}
-
-				lname := append(bytes.TrimRight(lfn.Filename1[:], "\xff"), bytes.TrimRight(lfn.Filename2[:], "\xff")...)
-				lname = append(lname, bytes.TrimRight(lfn.Filename3[:], "\xff")...)
-				currentFilename = append(lname, currentFilename...)
 				continue
 			}
 
@@ -230,6 +223,19 @@ func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*direc
 		}
 	}
 	return files, nil
+}
+
+func handleLongFilname(data []byte, currentFilename []byte) ([]byte, error) {
+	lfn := lfnEntry{}
+	err := binary.Read(bytes.NewBuffer(data), binary.LittleEndian, &lfn)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+
+	lname := append(bytes.TrimRight(lfn.Filename1[:], "\xff"), bytes.TrimRight(lfn.Filename2[:], "\xff")...)
+	lname = append(lname, bytes.TrimRight(lfn.Filename3[:], "\xff")...)
+	currentFilename = append(lname, currentFilename...)
+	return currentFilename, nil
 }
 
 /*

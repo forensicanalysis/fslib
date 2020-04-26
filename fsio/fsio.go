@@ -58,7 +58,7 @@ func (da *DecoderAtWrapper) ReadAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
-// GetSize return the size of an io.Seeker without changing the current offset
+// GetSize return the size of an io.Seeker without changing the current offset.
 func GetSize(seeker io.Seeker) (int64, error) {
 	pos, err := seeker.Seek(0, io.SeekCurrent)
 	if err != nil {

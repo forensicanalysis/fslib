@@ -49,7 +49,7 @@ var (
 	exttype   = map[string][]*Filetype{}
 )
 
-func init() {
+func init() { //nolint:gochecknoinits
 	for _, filetypelist := range [][]*Filetype{filesystemTypes, importedTypes, baseTypes} {
 		for _, filetype := range filetypelist {
 			filetypes[filetype.ID] = filetype

@@ -27,7 +27,7 @@ import (
 	"syscall"
 )
 
-// Readdirnames fails on UNIX
+// Readdirnames fails on UNIX.
 func (*Root) Readdirnames(n int) (partitions []string, err error) {
 	return nil, syscall.EPERM
 }
