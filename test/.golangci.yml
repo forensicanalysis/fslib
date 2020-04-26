@@ -35,7 +35,7 @@ linters:
     - dupl # Tool for code clone detection
     - errcheck # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases
     - funlen # Tool for detection of long functions
-    ## - gochecknoglobals # Checks that no globals are present in Go code
+    # - gochecknoglobals # Checks that no globals are present in Go code
     - gochecknoinits # Checks that no init functions are present in Go code
     - gocognit # Computes and checks the cognitive complexity of functions
     - goconst # Finds repeated strings that could be replaced by a constant
@@ -46,7 +46,7 @@ linters:
     # - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
     # - goimports # Goimports does everything that gofmt does. Additionally it checks unused imports
     - golint # Golint differs from gofmt. Gofmt reformats Go source code, whereas golint prints out style mistakes
-    ## - gomnd # An analyzer to detect magic numbers.
+    # - gomnd # An analyzer to detect magic numbers.
     - gomodguard # Allow and block list linter for direct Go module dependencies.
     - goprintffuncname # Checks that printf-like functions are named with f at the end
     - gosec # Inspects source code for security problems
@@ -58,7 +58,7 @@ linters:
     # - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
     - misspell # Finds commonly misspelled English words in comments
     - nakedret # Finds naked returns in functions greater than a specified function length
-    ## - nestif # Reports deeply nested if statements
+    # - nestif # Reports deeply nested if statements
     # - prealloc # Finds slice declarations that could potentially be preallocated
     - rowserrcheck # checks whether Err of rows is checked successfully
     - scopelint # Scopelint checks for unpinned variables in go programs
