@@ -165,7 +165,6 @@ fs hashsum case/evidence.zip/*
 | **systemfs** | The systemfs project provides a forensicfs implementation that uses the osfs as default, while a ntfs for every partition as a fallback on Windows, on UNIX the behavior is the same as osfs. |
 | **testfs** | The testfs project provides a in memory forensicfs implementation for testing. |
 | **zip** | The zip project provides a forensicfs implementation to access zip files. |
-| **zipwrite** | The zipwrite project provides a write-only file system implementation for afero to create zip files. |
 
 
 ## Contact
