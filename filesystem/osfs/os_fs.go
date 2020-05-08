@@ -195,13 +195,13 @@ func (i *Info) Sys() interface{} {
 		log.Printf("could not stat times for %s: %s", err, i.syspath)
 	}
 	if err == nil {
-		attributes["accessed"] = t.AccessTime().In(time.UTC).Format("2006-01-02T15:04:05.000Z")
-		attributes["modified"] = t.ModTime().In(time.UTC).Format("2006-01-02T15:04:05.000Z")
+		attributes["accessed"] = t.AccessTime().UTC().Format(time.RFC3339Nano)
+		attributes["modified"] = t.ModTime().UTC().Format(time.RFC3339Nano)
 		if t.HasChangeTime() {
-			attributes["changed"] = t.ChangeTime().In(time.UTC).Format("2006-01-02T15:04:05.000Z")
+			attributes["changed"] = t.ChangeTime().UTC().Format(time.RFC3339Nano)
 		}
 		if t.HasBirthTime() {
-			attributes["created"] = t.BirthTime().In(time.UTC).Format("2006-01-02T15:04:05.000Z")
+			attributes["created"] = t.BirthTime().UTC().Format(time.RFC3339Nano)
 		}
 	}
 	return attributes

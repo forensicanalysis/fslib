@@ -179,9 +179,9 @@ func (i *Item) Sys() interface{} {
 		return map[string]interface{}{}
 	}
 	return map[string]interface{}{
-		"created":     infos.SI_Times.CreateTime.In(time.UTC).Format("2006-01-02T15:04:05.000Z"),
-		"modified":    infos.SI_Times.FileModifiedTime.In(time.UTC).Format("2006-01-02T15:04:05.000Z"),
-		"mftModified": infos.SI_Times.MFTModifiedTime.In(time.UTC).Format("2006-01-02T15:04:05.000Z"),
-		"accessed":    infos.SI_Times.AccessedTime.In(time.UTC).Format("2006-01-02T15:04:05.000Z"),
+		"created":     infos.SI_Times.CreateTime.UTC().Format(time.RFC3339Nano),
+		"modified":    infos.SI_Times.FileModifiedTime.UTC().Format(time.RFC3339Nano),
+		"mftModified": infos.SI_Times.MFTModifiedTime.UTC().Format(time.RFC3339Nano),
+		"accessed":    infos.SI_Times.AccessedTime.UTC().Format(time.RFC3339Nano),
 	}
 }
