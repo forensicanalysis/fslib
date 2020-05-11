@@ -29,6 +29,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 
@@ -91,6 +92,9 @@ func (systemfs *FS) Open(name string) (item fslib.Item, err error) {
 	if err == nil {
 		return item, nil
 	}
+	if os.IsNotExist(err) && path.Base(name)[0] != '$' {
+		return item, err
+	}
 
 	if !strings.ContainsRune(systemfs.ntfsPartitions, rune(name[1])) {
 		return item, err
@@ -129,6 +133,9 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 	info, err = fs.Stat(name)
 	if err == nil {
 		return info, nil
+	}
+	if os.IsNotExist(err) && path.Base(name)[0] != '$' {
+		return info, err
 	}
 
 	if !strings.ContainsRune(systemfs.ntfsPartitions, rune(name[1])) {
