@@ -118,7 +118,7 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 		return nil, err
 	}
 
-	return &Info{fi, sysname}, err
+	return &Info{fi, sysname}, nil
 }
 
 func sysname(name string) (string, string, error) {
