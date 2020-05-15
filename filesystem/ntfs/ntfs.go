@@ -44,7 +44,7 @@ func New(r io.ReaderAt) (fs *FS, err error) {
 			err = errors.New("error parsing file system as NTFS")
 		}
 	}()
-	reader, _ := parser.NewPagedReader(r, 1024, 10000)
+	reader, _ := parser.NewPagedReader(r, 1024*1024, 100*1024*1024)
 
 	ntfsCtx, err := parser.GetNTFSContext(reader, 0)
 	return &FS{ntfsCtx: ntfsCtx}, err
