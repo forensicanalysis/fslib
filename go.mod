@@ -3,6 +3,7 @@ module github.com/forensicanalysis/fslib
 go 1.12
 
 require (
+	github.com/forensicanalysis/pagedreader v0.0.0-20200515172353-4230c3fd6d75
 	github.com/h2non/filetype v1.0.12
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/ledongthuc/pdf v0.0.0-20200323191019-23c5852adbd2

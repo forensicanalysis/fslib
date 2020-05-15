@@ -35,6 +35,7 @@ import (
 
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
+	"github.com/forensicanalysis/pagedreader"
 )
 
 // New creates a new ntfs FS.
@@ -44,8 +45,10 @@ func New(r io.ReaderAt) (fs *FS, err error) {
 			err = errors.New("error parsing file system as NTFS")
 		}
 	}()
-	reader, _ := parser.NewPagedReader(r, 1024, 10000)
-
+	reader, err := pagedreader.New(r, 1024*1024, 100*1024*1024)
+	if err != nil {
+		return nil, err
+	}
 	ntfsCtx, err := parser.GetNTFSContext(reader, 0)
 	return &FS{ntfsCtx: ntfsCtx}, err
 }
@@ -104,11 +107,11 @@ func (i *Item) Read(p []byte) (n int, err error) {
 
 // ReadAt reads bytes starting at off into passed buffer.
 func (i *Item) ReadAt(p []byte, off int64) (n int, err error) {
-	rat, err := parser.GetDataForPath(i.ntfsCtx, i.path)
+	attribute, err := i.entry.GetAttribute(i.ntfsCtx, 128, -1)
 	if err != nil {
 		return 0, err
 	}
-	return rat.ReadAt(p, off)
+	return attribute.Data(i.ntfsCtx).ReadAt(p, off)
 }
 
 // Seek move the current offset to the given position.
