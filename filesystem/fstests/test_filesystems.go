@@ -58,6 +58,8 @@ func GetDefaultContainerTests() map[string]*PathTest {
 	dir2Files := []string{"Computer forensics - Wikipedia.7z", "Computer forensics - Wikipedia.tar", "Computer forensics - Wikipedia.pdf.gz", "Computer forensics - Wikipedia.zip"}
 	file1Head := []byte{0x23, 0x20, 0x3a, 0x6d, 0x61, 0x67, 0x3a, 0x20, 0x65, 0x76, 0x69, 0x64, 0x65, 0x6e, 0x63, 0x65}
 	file2Head := []byte{0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x48}
+	file3Head := []byte{0x89, 0x50, 0x4e, 0x47, 0xd, 0xa, 0x1a, 0xa, 0x0, 0x0, 0x0, 0xd, 0x49, 0x48, 0x44, 0x52}
+	file4Head := []byte{0x4d, 0x4d, 0x0, 0x2a, 0x0, 0x4c, 0x26, 0x8, 0x9d, 0x97, 0x92, 0xff, 0x9c, 0x99, 0x92, 0xff}
 
 	anyTime := time.Time{}
 	dirTime := time.Date(2019, time.August, 15, 23, 01, 02, 0, time.UTC)
@@ -72,6 +74,8 @@ func GetDefaultContainerTests() map[string]*PathTest {
 	dir2Test := PathTest{"Dir 2 Test", "/container", "container", 0, os.ModeDir | 0755, dir2Time, true, anySys, dir2Files, []byte{}}
 	file1Test := PathTest{"File 1 Test", "/README.md", "README.md", 496, 0644, fileTime, false, anySys, []string{}, file1Head}
 	file2Test := PathTest{"File 2 Test", "/image/alps.jpg", "alps.jpg", 344415, 0644, fileTime, false, anySys, []string{}, file2Head}
+	file3Test := PathTest{"File 3 Test", "/image/alps.png", "alps.png", 1338018, 0644, fileTime, false, anySys, []string{}, file3Head}
+	file4Test := PathTest{"File 4 Test", "/image/alps.tiff", "alps.tiff", 4994190, 0644, fileTime, false, anySys, []string{}, file4Head}
 
 	return map[string]*PathTest{
 		"rootTest":  &rootTest,
@@ -79,6 +83,8 @@ func GetDefaultContainerTests() map[string]*PathTest {
 		"dir2Test":  &dir2Test,
 		"file1Test": &file1Test,
 		"file2Test": &file2Test,
+		"file3Test": &file3Test,
+		"file4Test": &file4Test,
 	}
 }
 
@@ -166,8 +172,9 @@ func checkPath(name string, tt *PathTest, fs fslib.FS) func(t *testing.T) {
 				log.Print("-------------------")
 				log.Print("test file.Read")
 				head := make([]byte, len(tt.Head))
-				_, err = file.Read(head)
+				c, err := file.Read(head)
 				assert.NoError(t, err)
+				assert.Equal(t, len(tt.Head), c)
 				assert.EqualValues(t, tt.Head, head)
 			}
 		}
