@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Siemens AG
+// Copyright (c) 2019-2020 Siemens AG
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -32,8 +32,6 @@ import (
 	"path"
 	"runtime"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
@@ -93,32 +91,37 @@ func (systemfs *FS) Open(name string) (item fslib.Item, err error) {
 		return item, nil
 	}
 	if os.IsNotExist(err) && path.Base(name)[0] != '$' {
-		return item, err
+		return nil, err
 	}
 
 	if !strings.ContainsRune(systemfs.ntfsPartitions, rune(name[1])) {
-		return item, err
+		return nil, err
 	}
 
+	item, _, err = systemfs.NTFSOpen(name)
+	return item, err
+}
+
+func (systemfs *FS) NTFSOpen(name string) (fslib.Item, func() error, error) {
 	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
 	if err != nil {
-		err = errors.Wrap(err, "ntfs base open failed")
-		log.Println(err)
-		return nil, err
+		return nil, nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
 
 	lowLevelFS, err := ntfs.New(base)
 	if err != nil {
 		base.Close() // nolint:errcheck
-		err = errors.Wrap(err, "ntfs creation failed")
-		log.Println(err)
-		return item, err
+		return nil, nil, fmt.Errorf("ntfs creation failed: %w", err)
 	}
 
 	log.Printf("low level open %s", name[2:])
 
-	item, err = lowLevelFS.Open(name[2:])
-	return &Item{Item: item, base: base}, err
+	item, err := lowLevelFS.Open(name[2:])
+	if err != nil {
+		return nil, nil, err
+	}
+	i := &Item{Item: item, base: base}
+	return i, i.Close, nil
 }
 
 // Stat returns an os.FileInfo object that describes a file.
@@ -144,17 +147,13 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 
 	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
 	if err != nil {
-		err = errors.Wrap(err, "ntfs base open failed")
-		log.Println(err)
-		return nil, err
+		return nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
 
 	lowLevelFS, err := ntfs.New(base)
 	if err != nil {
 		base.Close() // nolint:errcheck
-		err = errors.Wrap(err, "ntfs creation failed")
-		log.Println(err)
-		return info, err
+		return info, fmt.Errorf("ntfs creation failed: %w")
 	}
 
 	log.Printf("low level open %s", name[2:])
