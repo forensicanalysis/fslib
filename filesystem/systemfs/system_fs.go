@@ -153,7 +153,7 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 	lowLevelFS, err := ntfs.New(base)
 	if err != nil {
 		base.Close() // nolint:errcheck
-		return info, fmt.Errorf("ntfs creation failed: %w")
+		return info, fmt.Errorf("ntfs creation failed: %w", err)
 	}
 
 	log.Printf("low level open %s", name[2:])
