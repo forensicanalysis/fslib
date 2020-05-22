@@ -15,14 +15,11 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
-      - name: Setup go 1.13
-        uses: actions/setup-go@v1
-        with: {go-version: 1.13}
+      - name: Setup go 1.14
+        uses: actions/setup-go@v2
+        with: {go-version: 1.14}
       - name: Checkout code
         uses: actions/checkout@v1
-      - name: Set system path
-        run: echo "##[add-path]$(go env GOPATH)/bin"
-        shell: bash
       - name: Download dependencies
         run: go mod download
 
@@ -56,14 +53,11 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
-      - name: Setup go 1.13
-        uses: actions/setup-go@v1
-        with: {go-version: '1.13'}
+      - name: Setup go 1.14
+        uses: actions/setup-go@v2
+        with: {go-version: '1.14'}
       - name: Checkout code
         uses: actions/checkout@v1
-      - name: Set system path
-        run: echo "##[add-path]$(go env GOPATH)/bin"
-        shell: bash
       - name: Download dependencies
         run: go mod download
 
@@ -94,12 +88,9 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
-      - name: Setup go 1.13
-        uses: actions/setup-go@v1
-        with: {go-version: '1.13'}
-      - name: Set system path
-        run: echo "##[add-path]$(go env GOPATH)/bin"
-        shell: bash
+      - name: Setup go 1.14
+        uses: actions/setup-go@v2
+        with: {go-version: '1.14'}
       - run: go get -u github.com/cugu/godoc2readme
 
       - name: Checkout code
