@@ -30,8 +30,6 @@ import (
 	"path"
 	"sort"
 
-	"github.com/pkg/errors"
-
 	"github.com/forensicanalysis/fslib"
 )
 
@@ -123,7 +121,7 @@ func (i *Item) Readdirnames(n int) (items []string, err error) {
 		items, err = root.Readdirnames(n)
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("could not Readdirnames %#v", i))
+		return nil, fmt.Errorf("could not Readdirnames %#v: %w", i, err)
 	}
 
 	sort.Strings(items)

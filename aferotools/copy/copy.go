@@ -24,10 +24,10 @@
 package copy
 
 import (
+	"fmt"
 	"io"
 	"path"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
 
@@ -47,22 +47,25 @@ func Item(srcfs, destfs afero.Fs, src, dest string) error {
 func File(srcfs, destfs afero.Fs, src, dest string) error {
 	srcfile, err := srcfs.Open(src)
 	if err != nil {
-		return errors.Wrap(err, "open failed")
+		return fmt.Errorf("open failed: %w", err)
 	}
 	defer srcfile.Close()
 
 	if err := destfs.MkdirAll(path.Dir(dest), 0700); err != nil {
-		return errors.Wrap(err, "mkdir failed")
+		return fmt.Errorf("mkdir failed: %w", err)
 	}
 
 	destfile, err := destfs.Create(dest)
 	if err != nil {
-		return errors.Wrap(err, "create failed")
+		return fmt.Errorf("create failed: %w", err)
 	}
 	defer destfile.Close()
 
 	_, err = io.Copy(destfile, srcfile)
-	return errors.Wrap(err, "copy failed")
+	if err != nil {
+		return fmt.Errorf("copy failed: %w", err)
+	}
+	return nil
 }
 
 // Directory copies a directory recursively between two file systems.
