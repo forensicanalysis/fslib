@@ -22,16 +22,13 @@
 package recursivefs
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"path"
 	"strings"
 
 	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/fsio"
-
-	"github.com/pkg/errors"
-
 	"github.com/forensicanalysis/fslib/filesystem/fat16"
 	"github.com/forensicanalysis/fslib/filesystem/gpt"
 	"github.com/forensicanalysis/fslib/filesystem/mbr"
@@ -39,6 +36,7 @@ import (
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/forensicanalysis/fslib/filesystem/zip"
 	"github.com/forensicanalysis/fslib/filetype"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 func parseRealPath(sample string) (rpath []element, err error) {
@@ -69,11 +67,11 @@ func parseRealPath(sample string) (rpath []element, err error) {
 			key = "/"
 			isFs, fsName, err := detectFsFromFile(file)
 			if err != nil {
-				return nil, errors.Wrap(err, fmt.Sprintf("error detection fs %s", key))
+				return nil, fmt.Errorf("error detection fs %s: %w", key, err)
 			}
 			fs, err = fsFromName(fsName, file)
 			if err != nil {
-				return nil, errors.Wrap(err, fmt.Sprintf("could not get fs from name %s", fsName))
+				return nil, fmt.Errorf("could not get fs from name %s: %w", fsName, err)
 			}
 			if !isFs && len(parts) > 0 {
 				return nil, errors.New("could not resolve path")

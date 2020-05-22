@@ -22,6 +22,7 @@
 package registryfs
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -30,7 +31,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sys/windows/registry"
 
 	"github.com/forensicanalysis/fslib"
@@ -148,7 +148,7 @@ func (rk *Key) Readdirnames(n int) (items []string, err error) {
 	items = []string{}
 	subKeyNames, err := rk.Key.ReadSubKeyNames(n)
 	if err != nil && err != io.EOF {
-		return items, errors.Wrap(err, "error ReadSubKeyNames")
+		return items, fmt.Errorf("error ReadSubKeyNames: %w", err)
 	}
 	for _, subKeyName := range subKeyNames {
 		items = append(items, strings.ReplaceAll(subKeyName, `/`, `\`))
