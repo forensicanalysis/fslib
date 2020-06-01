@@ -35,7 +35,6 @@ import (
 
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
-	"github.com/forensicanalysis/pagedreader"
 )
 
 // New creates a new ntfs FS.
@@ -45,7 +44,7 @@ func New(r io.ReaderAt) (fs *FS, err error) {
 			err = errors.New("error parsing file system as NTFS")
 		}
 	}()
-	reader, err := pagedreader.New(r, 1024*1024, 100*1024*1024)
+	reader, err := parser.NewPagedReader(r, 1024*1024, 100*1024*1024)
 	if err != nil {
 		return nil, err
 	}
