@@ -1,0 +1,29 @@
+package systemfs
+
+import (
+	"reflect"
+	"testing"
+)
+
+func TestRoot_Readdirnames(t *testing.T) {
+	tests := []struct {
+		name           string
+		wantPartitions []string
+		wantErr        bool
+	}{
+		{"test 1", []string{"C", "D", "Cvss0", "Cvss1"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ro := &Root{}
+			gotPartitions, err := ro.Readdirnames(0)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Readdirnames() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotPartitions, tt.wantPartitions) {
+				t.Errorf("Readdirnames() gotPartitions = %v, want %v", gotPartitions, tt.wantPartitions)
+			}
+		})
+	}
+}

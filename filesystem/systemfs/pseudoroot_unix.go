@@ -19,13 +19,19 @@
 //
 // Author(s): Jonas Plum
 
+// +build !windows
+
 package systemfs
 
 import (
-	"github.com/forensicanalysis/fslib/filesystem/osfs"
+	"syscall"
 )
 
-func listPartitions() ([]string, error) {
-	root := osfs.Root{}
-	return root.Readdirnames(0)
+// Readdirnames fails on UNIX.
+func (*Root) Readdirnames(n int) (partitions []string, err error) {
+	return nil, syscall.EPERM
+}
+
+func getVSSStores(partition string) (map[string]*vss.VSS, error) {
+	return nil, syscall.EPERM
 }

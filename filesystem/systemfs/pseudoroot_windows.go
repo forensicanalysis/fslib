@@ -19,10 +19,46 @@
 //
 // Author(s): Jonas Plum
 
-// +build !windows
-
 package systemfs
 
-func listPartitions() ([]string, error) {
-	return []string{}, nil
+import (
+	"fmt"
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
+	"github.com/forensicanalysis/go-vss"
+	"os"
+	"strings"
+)
+
+// Readdirnames lists all partitions in the window pseudo root.
+func (r *Root) Readdirnames(n int) (partitions []string, err error) {
+	root := osfs.Root{}
+	partitions, err = root.Readdirnames(0)
+	if err != nil {
+		return nil, err
+	}
+
+	for name := range r.fs.vss {
+		partitions = append(partitions, name)
+	}
+
+	return partitions, nil
+}
+
+func getVSSStores(partition string) (map[string]*vss.VSS, error) {
+	f, err := os.Open(fmt.Sprintf("\\\\.\\%s:", strings.ToLower(partition)))
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	stores, err := vss.NewByReader(f)
+	if err != nil {
+		return nil, nil
+	}
+
+	vssStores := map[string]*vss.VSS{}
+	for i, store := range stores {
+		vssStores[fmt.Sprintf("%svss%d", partition, i)] = store
+	}
+	return vssStores, nil
 }
