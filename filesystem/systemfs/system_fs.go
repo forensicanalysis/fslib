@@ -43,7 +43,7 @@ func New() (fslib.FS, error) {
 	return newFS(nil)
 }
 
-func NewWithPlugins(plugins []pluginFS) (fslib.FS, error) {
+func NewWithPlugins(plugins ...pluginFS) (fslib.FS, error) {
 	return newFS(plugins)
 }
 
