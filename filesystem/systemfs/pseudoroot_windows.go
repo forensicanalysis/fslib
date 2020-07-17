@@ -23,10 +23,11 @@ package systemfs
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib/filesystem/osfs"
-	"github.com/forensicanalysis/go-vss"
 	"os"
 	"strings"
+
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
+	"github.com/forensicanalysis/go-vss"
 )
 
 // Readdirnames lists all partitions in the window pseudo root.
