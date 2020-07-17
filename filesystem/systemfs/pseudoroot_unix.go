@@ -25,15 +25,9 @@ package systemfs
 
 import (
 	"syscall"
-
-	"github.com/forensicanalysis/go-vss"
 )
 
 // Readdirnames fails on UNIX.
 func (*Root) Readdirnames(_ int) (partitions []string, err error) {
-	return nil, syscall.EPERM
-}
-
-func getVSSStores(_ string) (map[string]*vss.VSS, error) {
 	return nil, syscall.EPERM
 }
