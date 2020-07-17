@@ -37,28 +37,51 @@ import (
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
+	"github.com/forensicanalysis/go-vss"
 )
 
 // New creates a new system FS.
 func New() (fslib.FS, error) {
+	return newFS(false)
+}
+
+func NewVSS() (fslib.FS, error) {
+	return newFS(true)
+}
+
+func newFS(useVSS bool) (fslib.FS, error) {
 	if runtime.GOOS != "windows" {
 		return osfs.New(), nil
 	}
 
-	fs := &FS{}
-	partitions, err := listPartitions()
+	fs := &FS{
+		vss: map[string]*vss.VSS{},
+	}
+	root := osfs.Root{}
+	partitions, err := root.Readdirnames(0)
 	if err != nil {
 		return fs, err
 	}
 
-	fs.ntfsPartitions = strings.Join(partitions, "")
-	ntfsPartitions := ""
+	if useVSS {
+		for _, partition := range partitions {
+			vssStores, err := getVSSStores(partition)
+			if err != nil {
+				return nil, err
+			}
 
+			for name, store := range vssStores {
+				fs.vss[name] = store
+			}
+		}
+	}
+
+	var ntfsPartitions []string
 	for _, partition := range partitions {
 		f, err := fs.Open("/" + partition + "/$MFT")
 
 		if err == nil {
-			ntfsPartitions += partition
+			ntfsPartitions = append(ntfsPartitions, partition)
 		}
 
 		if closer, ok := f.(io.Closer); ok {
@@ -66,12 +89,14 @@ func New() (fslib.FS, error) {
 		}
 	}
 	fs.ntfsPartitions = ntfsPartitions
+
 	return fs, nil
 }
 
 // FS implements a read-only file system for all operating systems.
 type FS struct {
-	ntfsPartitions string
+	ntfsPartitions []string
+	vss            map[string]*vss.VSS
 }
 
 // Name returns the name of the file system.
@@ -84,6 +109,14 @@ func (systemfs *FS) Open(name string) (item fslib.Item, err error) {
 		return nil, err
 	}
 
+	if name == "/" {
+		return &Root{fs: systemfs}, nil
+	}
+	if name[2:5] == "vss" {
+		nameParts := strings.SplitN(name[5:], "/", 2)
+		return systemfs.vss[name[1:6]].Open("/" + nameParts[1])
+	}
+
 	fs := osfs.New()
 
 	item, err = fs.Open(name)
@@ -94,7 +127,7 @@ func (systemfs *FS) Open(name string) (item fslib.Item, err error) {
 		return nil, err
 	}
 
-	if !strings.ContainsRune(systemfs.ntfsPartitions, rune(name[1])) {
+	if !contains(systemfs.ntfsPartitions, string(name[1])) {
 		return nil, err
 	}
 
@@ -131,6 +164,14 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 		return nil, err
 	}
 
+	if name == "/" {
+		return &Root{fs: systemfs}, nil
+	}
+	if name[2:5] == "vss" {
+		nameParts := strings.SplitN(name[5:], "/", 2)
+		return systemfs.vss[name[1:6]].Stat("/" + nameParts[1])
+	}
+
 	fs := osfs.New()
 
 	info, err = fs.Stat(name)
@@ -141,7 +182,7 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 		return info, err
 	}
 
-	if !strings.ContainsRune(systemfs.ntfsPartitions, rune(name[1])) {
+	if !contains(systemfs.ntfsPartitions, string(name[1])) {
 		return info, err
 	}
 
@@ -173,4 +214,13 @@ type Item struct {
 func (i *Item) Close() error {
 	i.Item.Close() // nolint:errcheck
 	return i.base.Close()
+}
+
+func contains(l []string, s string) bool {
+	for _, e := range l {
+		if e == s {
+			return true
+		}
+	}
+	return false
 }
