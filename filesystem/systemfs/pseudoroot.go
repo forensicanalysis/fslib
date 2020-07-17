@@ -23,8 +23,11 @@ package systemfs
 
 import (
 	"os"
+	"runtime"
+	"syscall"
 	"time"
 
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
@@ -58,4 +61,23 @@ func (*Root) Sys() interface{} { return nil }
 // Stat returns the windows pseudo roots itself as os.FileMode.
 func (r *Root) Stat() (os.FileInfo, error) {
 	return r, nil
+}
+
+// Readdirnames lists all partitions in the window pseudo root.
+func (r *Root) Readdirnames(n int) (partitions []string, err error) {
+	if runtime.GOOS != "windows" {
+		return nil, syscall.EPERM
+	}
+
+	root := osfs.Root{}
+	partitions, err = root.Readdirnames(0)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, plugin := range r.fs.plugins {
+		partitions = append(partitions, plugin.Names()...)
+	}
+
+	return partitions, nil
 }

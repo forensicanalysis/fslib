@@ -49,7 +49,8 @@ func NewWithPlugins(plugins []pluginFS) (fslib.FS, error) {
 
 type pluginFS interface {
 	Setup() error
-	FS(string) (fslib.FS, string)
+	Names() []string
+	FS(name string) (fslib.FS, string)
 }
 
 func newFS(plugins []pluginFS) (fslib.FS, error) {
