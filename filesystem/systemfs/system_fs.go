@@ -31,31 +31,35 @@ import (
 	"os"
 	"path"
 	"runtime"
-	"strings"
 
 	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
-	"github.com/forensicanalysis/go-vss"
 )
 
 // New creates a new system FS.
 func New() (fslib.FS, error) {
-	return newFS(false)
+	return newFS(nil)
 }
 
-func NewVSS() (fslib.FS, error) {
-	return newFS(true)
+func NewWithPlugins(plugins []pluginFS) (fslib.FS, error) {
+	return newFS(plugins)
 }
 
-func newFS(useVSS bool) (fslib.FS, error) {
+type pluginFS interface {
+	Setup() error
+	Names() []string
+	FS(name string) (fslib.FS, string)
+}
+
+func newFS(plugins []pluginFS) (fslib.FS, error) {
 	if runtime.GOOS != "windows" {
 		return osfs.New(), nil
 	}
 
 	fs := &FS{
-		vss: map[string]*vss.VSS{},
+		plugins: plugins,
 	}
 	root := osfs.Root{}
 	partitions, err := root.Readdirnames(0)
@@ -63,16 +67,10 @@ func newFS(useVSS bool) (fslib.FS, error) {
 		return fs, err
 	}
 
-	if useVSS {
-		for _, partition := range partitions {
-			vssStores, err := getVSSStores(partition)
-			if err != nil {
-				return nil, err
-			}
-
-			for name, store := range vssStores {
-				fs.vss[name] = store
-			}
+	for _, plugin := range plugins {
+		err = plugin.Setup()
+		if err != nil {
+			return fs, err
 		}
 	}
 
@@ -96,7 +94,7 @@ func newFS(useVSS bool) (fslib.FS, error) {
 // FS implements a read-only file system for all operating systems.
 type FS struct {
 	ntfsPartitions []string
-	vss            map[string]*vss.VSS
+	plugins        []pluginFS
 }
 
 // Name returns the name of the file system.
@@ -112,9 +110,11 @@ func (systemfs *FS) Open(name string) (item fslib.Item, err error) {
 	if name == "/" {
 		return &Root{fs: systemfs}, nil
 	}
-	if name[2:5] == "vss" {
-		nameParts := strings.SplitN(name[5:], "/", 2)
-		return systemfs.vss[name[1:6]].Open("/" + nameParts[1])
+	for _, plugin := range systemfs.plugins {
+		fs, namePart := plugin.FS(name)
+		if fs != nil {
+			return fs.Open(namePart)
+		}
 	}
 
 	fs := osfs.New()
@@ -167,9 +167,11 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 	if name == "/" {
 		return &Root{fs: systemfs}, nil
 	}
-	if name[2:5] == "vss" {
-		nameParts := strings.SplitN(name[5:], "/", 2)
-		return systemfs.vss[name[1:6]].Stat("/" + nameParts[1])
+	for _, plugin := range systemfs.plugins {
+		fs, namePart := plugin.FS(name)
+		if fs != nil {
+			return fs.Stat(namePart)
+		}
 	}
 
 	fs := osfs.New()

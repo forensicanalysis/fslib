@@ -27,10 +27,6 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
-github.com/forensicanalysis/fslib v0.14.3/go.mod h1:8cZgZ42nhTGAZuvpK16Q35o/OStWFpYgGHsTZ0cVheE=
-github.com/forensicanalysis/go-vss v0.1.0 h1:kYeq58XqYRP8nFcLsa5Ebi4hgIc0LQFR+XEb0gwiRqU=
-github.com/forensicanalysis/go-vss v0.1.0/go.mod h1:K7Oz8d1BXu6OeAn49eTgjBkKh5ihDCPof0l1sMrfco4=
-github.com/forensicanalysis/pagedreader v0.0.0-20200515172353-4230c3fd6d75/go.mod h1:KGnON1mQ7pGs9ZCJtTVwL6L9eSZ76BOGZAJK7BI9qvY=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
@@ -85,7 +81,6 @@ github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc/go.mod h1:v
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
-github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/sftp v1.10.1/go.mod h1:lYOWFsE0bwd1+KfKJaKeuokY15vzFx25BLbzYYoAxZI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
@@ -188,6 +183,5 @@ gopkg.in/yaml.v2 v2.2.4/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.2.8 h1:obN1ZagJSUGI0Ek/LBmuj4SNLPfIny3KsKFopxRdj10=
 gopkg.in/yaml.v2 v2.2.8/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
-www.velocidex.com/golang/go-ntfs v0.0.0-20200110083657-950cbe916617/go.mod h1:dhcNkYlQGhX+HIPSAL2+1yVHZfHq+P/0qhNfHBg7RfI=
 www.velocidex.com/golang/go-ntfs v0.0.0-20200530234845-9c557c0b9eec h1:nI9RVeWl++octztqHgd5M6Nwa/0//eXFC0b20bXY09M=
 www.velocidex.com/golang/go-ntfs v0.0.0-20200530234845-9c557c0b9eec/go.mod h1:1sqoU8u2Jchwiqsbz4yMSq061wEAOcyXhTCfm6Gz3Lk=
