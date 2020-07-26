@@ -195,3 +195,5 @@ www.velocidex.com/golang/go-ntfs v0.0.0-20200530234845-9c557c0b9eec h1:nI9RVeWl+
 www.velocidex.com/golang/go-ntfs v0.0.0-20200530234845-9c557c0b9eec/go.mod h1:1sqoU8u2Jchwiqsbz4yMSq061wEAOcyXhTCfm6Gz3Lk=
 www.velocidex.com/golang/go-ntfs v0.0.0-20200706125523-d4a342d6d0fb h1:ToBfTPwXt5mPRJW0Xi3YYaMKvcGxHd8uYguCNf1xDlY=
 www.velocidex.com/golang/go-ntfs v0.0.0-20200706125523-d4a342d6d0fb/go.mod h1:1sqoU8u2Jchwiqsbz4yMSq061wEAOcyXhTCfm6Gz3Lk=
+www.velocidex.com/golang/go-ntfs v0.0.0-20200726152114-40b3dfbc3d5c h1:9RIW0bahL8NMs3DYJ00DVpMHVkzQNdLAC9rgn6tZR5U=
+www.velocidex.com/golang/go-ntfs v0.0.0-20200726152114-40b3dfbc3d5c/go.mod h1:1sqoU8u2Jchwiqsbz4yMSq061wEAOcyXhTCfm6Gz3Lk=
