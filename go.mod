@@ -16,5 +16,5 @@ require (
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/djherbis/times.v1 v1.2.0
 	gopkg.in/yaml.v2 v2.2.8 // indirect
-	www.velocidex.com/golang/go-ntfs v0.0.0-20200530234845-9c557c0b9eec
+	www.velocidex.com/golang/go-ntfs v0.0.0-20200706125523-d4a342d6d0fb
 )
