@@ -185,3 +185,5 @@ gopkg.in/yaml.v2 v2.2.8/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 www.velocidex.com/golang/go-ntfs v0.0.0-20200530234845-9c557c0b9eec h1:nI9RVeWl++octztqHgd5M6Nwa/0//eXFC0b20bXY09M=
 www.velocidex.com/golang/go-ntfs v0.0.0-20200530234845-9c557c0b9eec/go.mod h1:1sqoU8u2Jchwiqsbz4yMSq061wEAOcyXhTCfm6Gz3Lk=
+www.velocidex.com/golang/go-ntfs v0.0.0-20200706125523-d4a342d6d0fb h1:ToBfTPwXt5mPRJW0Xi3YYaMKvcGxHd8uYguCNf1xDlY=
+www.velocidex.com/golang/go-ntfs v0.0.0-20200706125523-d4a342d6d0fb/go.mod h1:1sqoU8u2Jchwiqsbz4yMSq061wEAOcyXhTCfm6Gz3Lk=
