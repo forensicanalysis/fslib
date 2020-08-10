@@ -7,13 +7,12 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/ledongthuc/pdf v0.0.0-20200323191019-23c5852adbd2
 	github.com/sebdah/goldie v0.0.0-20190531093107-d313ffb52c77 // indirect
-	github.com/spf13/afero v1.3.3
+	github.com/spf13/afero v1.3.4
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/xlab/treeprint v1.0.0
-	golang.org/x/sys v0.0.0-20200803150936-fd5f0c170ac3
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/sys v0.0.0-20200808120158-1030fc2bf1d9
 	gopkg.in/djherbis/times.v1 v1.2.0
-	www.velocidex.com/golang/go-ntfs v0.0.0-20200803103303-9f050df195aa
+	www.velocidex.com/golang/go-ntfs v0.0.0-20200808165039-c2a9c841abe3
 )
