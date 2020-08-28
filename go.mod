@@ -12,7 +12,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/xlab/treeprint v1.0.0
-	golang.org/x/sys v0.0.0-20200817155316-9781c653f443
+	golang.org/x/sys v0.0.0-20200828081204-131dc92a58d5
 	gopkg.in/djherbis/times.v1 v1.2.0
 	www.velocidex.com/golang/go-ntfs v0.0.0-20200808165039-c2a9c841abe3
 )
