@@ -39,7 +39,8 @@ func Test_LocalNTFS(t *testing.T) {
 			t.Errorf("Error %s", err)
 		}
 
-		mft, err := fs.Open(`C:\$MFT`)
+		// mft, err := fs.Open(`C:\$MFT`)
+		mft, err := fs.Open(`/C/$MFT`)
 		if err != nil {
 			t.Errorf("Error %s", err)
 		}
