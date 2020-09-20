@@ -26,7 +26,6 @@ package systemfs
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -76,15 +75,13 @@ func newFS(plugins []pluginFS) (fslib.FS, error) {
 
 	var ntfsPartitions []string
 	for _, partition := range partitions {
-		f, err := fs.Open("/" + partition + "/$MFT")
+		_, close, err := fs.NTFSOpen("/" + partition + "/$MFT")
 
 		if err == nil {
 			ntfsPartitions = append(ntfsPartitions, partition)
 		}
 
-		if closer, ok := f.(io.Closer); ok {
-			closer.Close() // nolint:errcheck
-		}
+		close()
 	}
 	fs.ntfsPartitions = ntfsPartitions
 
