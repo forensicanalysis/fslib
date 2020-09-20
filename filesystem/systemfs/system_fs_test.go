@@ -39,25 +39,12 @@ func Test_LocalNTFS(t *testing.T) {
 			t.Errorf("Error %s", err)
 		}
 
-		mft, err := fs.Open(`\$MFT`)
+		mft, err := fs.Open(`C:\$MFT`)
 		if err != nil {
 			t.Errorf("Error %s", err)
 		}
 
 		mftInfo, err := mft.Stat()
-		if err != nil {
-			t.Errorf("Error %s", err)
-		}
-		if mftInfo.Size() == 0 {
-			t.Errorf("MFT is 0 byte")
-		}
-
-		mft, err = fs.Open(`C:\$MFT`)
-		if err != nil {
-			t.Errorf("Error %s", err)
-		}
-
-		mftInfo, err = mft.Stat()
 		if err != nil {
 			t.Errorf("Error %s", err)
 		}
