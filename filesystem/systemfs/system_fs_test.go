@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-package windowsfs
+package systemfs
 
 import (
 	"os"
@@ -29,17 +29,12 @@ import (
 
 func Test_LocalNTFS(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		fd, err := os.OpenFile(`\\.\C:`, os.O_RDONLY, os.FileMode(0666))
+		_, err := os.OpenFile(`\\.\C:`, os.O_RDONLY, os.FileMode(0666))
 		if err != nil {
 			panic(err)
 		}
 
-		fs, err := New(fd)
-		if err != nil {
-			t.Errorf("Error %s", err)
-		}
-
-		_, err = NewFromPath("C:/")
+		fs, err := New()
 		if err != nil {
 			t.Errorf("Error %s", err)
 		}
@@ -48,7 +43,12 @@ func Test_LocalNTFS(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error %s", err)
 		}
-		if mft.Size() == 0 {
+
+		mftInfo, err := mft.Stat()
+		if err != nil {
+			t.Errorf("Error %s", err)
+		}
+		if mftInfo.Size() == 0 {
 			t.Errorf("MFT is 0 byte")
 		}
 
@@ -56,7 +56,12 @@ func Test_LocalNTFS(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error %s", err)
 		}
-		if mft.Size() == 0 {
+
+		mftInfo, err = mft.Stat()
+		if err != nil {
+			t.Errorf("Error %s", err)
+		}
+		if mftInfo.Size() == 0 {
 			t.Errorf("MFT is 0 byte")
 		}
 	}
