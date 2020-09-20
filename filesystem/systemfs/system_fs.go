@@ -79,9 +79,8 @@ func newFS(plugins []pluginFS) (fslib.FS, error) {
 
 		if err == nil {
 			ntfsPartitions = append(ntfsPartitions, partition)
+			close()
 		}
-
-		close()
 	}
 	fs.ntfsPartitions = ntfsPartitions
 
