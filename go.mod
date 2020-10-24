@@ -13,5 +13,5 @@ require (
 	github.com/xlab/treeprint v1.0.0
 	golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d
 	gopkg.in/djherbis/times.v1 v1.2.0
-	www.velocidex.com/golang/go-ntfs v0.0.0-20200921014656-f5804b2428ab
+	www.velocidex.com/golang/go-ntfs v0.1.1
 )
