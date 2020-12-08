@@ -27,8 +27,8 @@ jobs:
       - name: Setup GOPATH
         run: |
           mkdir -p $(go env GOPATH)/src/github.com/forensicanalysis/fslib
-          mv -v vendor/* $(go env GOPATH)/src
-          mv -v * $(go env GOPATH)/src/github.com/forensicanalysis/fslib
+          mv -fv vendor/* $(go env GOPATH)/src
+          mv -fv * $(go env GOPATH)/src/github.com/forensicanalysis/fslib
         shell: bash
       - name: Build with go 1.9.7
         run: go build github.com/forensicanalysis/fslib/...
