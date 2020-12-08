@@ -27,7 +27,6 @@ jobs:
       - name: Build with go 1.9.7
         run: go build .
       - name: Build with go 1.2.2
-        container: golang:1.2.2
         run: docker run --rm -v "$PWD"/vendor:/go/src -v "$PWD":/go/src/github.com/forensicanalysis/fslib -w /go/src/github.com/forensicanalysis/fslib golang:1.2.2 go build -v ./...
         continue-on-error: true
 
