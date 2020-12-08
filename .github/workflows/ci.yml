@@ -26,6 +26,7 @@ jobs:
         with: {go-version: 1.9.7}
       - name: Build with go 1.9.7
         run: |
+          mkdir -p $GOPATH/src
           mv -v vendor/* $GOPATH/src
           ls $GOPATH/src
           go build ./...
