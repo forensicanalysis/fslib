@@ -4,3 +4,4 @@
 cmd/fs/fs
 coverage.out
 .idea
+vendor
