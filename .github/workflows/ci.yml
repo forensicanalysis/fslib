@@ -8,6 +8,25 @@ on:
 
 jobs:
 
+  legacy:
+    name: legacy
+    runs-on: windows-latest
+    steps:
+      - name: Setup go 1.14
+        uses: actions/setup-go@v2
+        with: {go-version: 1.14}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Download and vendor dependencies
+        run: |
+          go mod download
+          go mod vendor
+      - name: Setup go 1.9.7
+        uses: actions/setup-go@v2
+        with: {go-version: 1.9.7}
+      - name: Build legacy
+        run: go build .
+
   fslib:
     name: fslib
     runs-on: ${{ matrix.os }}
