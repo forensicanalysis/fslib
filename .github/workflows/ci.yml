@@ -26,12 +26,12 @@ jobs:
         with: {go-version: 1.9.7}
       - name: Build with go 1.9.7
         run: |
-          mkdir -p $GOPATH/src
-          mv -v vendor/* $GOPATH/src
-          ls $GOPATH/src
+          mkdir -p $(go env GOPATH)/src
+          mv -v vendor/* $(go env GOPATH)/src
+          ls $(go env GOPATH)/src
           go build ./...
       - name: Build with go 1.2.2
-        run: docker run --rm -v $GOPATH/src:/go/src -v $PWD:/go/src/github.com/forensicanalysis/fslib -w /go/src/github.com/forensicanalysis/fslib golang:1.2.2 go build -v ./...
+        run: docker run --rm -v $(go env GOPATH)/src:/go/src -v $PWD:/go/src/github.com/forensicanalysis/fslib -w /go/src/github.com/forensicanalysis/fslib golang:1.2.2 go build -v ./...
         continue-on-error: true
 
   fslib:
