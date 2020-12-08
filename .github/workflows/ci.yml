@@ -37,10 +37,17 @@ jobs:
       - name: Build with go 1.9.7
         run: go build github.com/forensicanalysis/fslib/...
       - name: Build with go 1.2.2
-        run: docker run --rm -v $(go env GOPATH)/src:/go/src -w /go/src/github.com/forensicanalysis/fslib golang:1.2.2 go build -v ./...
+        run: |
+          wget https://golang.org/dl/go1.2.2.windows-amd64.zip
+          ls
+          unzip go1.2.2.windows-amd64.zip
+          ls
+          ls go
+          ./go/bin/go version
+          GOPATH=$(go env GOPATH) ./go/bin/go build -v github.com/forensicanalysis/fslib/...
         continue-on-error: true
         shell: bash
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
 
   fslib:
     name: fslib
