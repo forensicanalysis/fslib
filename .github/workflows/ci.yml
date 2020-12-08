@@ -38,11 +38,8 @@ jobs:
         run: go build github.com/forensicanalysis/fslib/...
       - name: Build with go 1.2.2
         run: |
-          curl -Lo go1.2.2.windows-amd64.zip https://golang.org/dl/go1.2.2.windows-amd64.zip
-          ls
+          curl -Lso go1.2.2.windows-amd64.zip https://golang.org/dl/go1.2.2.windows-amd64.zip
           unzip -q go1.2.2.windows-amd64.zip
-          ls
-          ls go
           ./go/bin/go version
           GOROOT=$PWD/go GOPATH=$(go env GOPATH) ./go/bin/go build -v github.com/forensicanalysis/fslib/...
         continue-on-error: true
