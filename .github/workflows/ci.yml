@@ -30,9 +30,9 @@ jobs:
       - name: Setup GOPATH
         run: |
           mkdir -p $(go env GOPATH)/src
-          mv -v vendor/* $(go env GOPATH)/src
+          mv vendor/* $(go env GOPATH)/src
           mkdir -p $(go env GOPATH)/src/github.com/forensicanalysis/fslib
-          mv -v * $(go env GOPATH)/src/github.com/forensicanalysis/fslib
+          mv * $(go env GOPATH)/src/github.com/forensicanalysis/fslib
         shell: bash
       - name: Build with go 1.9.7
         run: go build github.com/forensicanalysis/fslib/...
@@ -44,7 +44,7 @@ jobs:
           ls
           ls go
           ./go/bin/go version
-          GOROOT=$PWD/go/bin/go GOPATH=$(go env GOPATH) ./go/bin/go build -v github.com/forensicanalysis/fslib/...
+          GOROOT=$PWD/go GOPATH=$(go env GOPATH) ./go/bin/go build -v github.com/forensicanalysis/fslib/...
         continue-on-error: true
         shell: bash
         if: matrix.os == 'windows-latest'
