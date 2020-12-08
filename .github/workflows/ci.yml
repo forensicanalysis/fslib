@@ -10,7 +10,10 @@ jobs:
 
   legacy:
     name: legacy
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
     steps:
       - name: Setup go 1.14
         uses: actions/setup-go@v2
@@ -37,6 +40,7 @@ jobs:
         run: docker run --rm -v $(go env GOPATH)/src:/go/src -w /go/src/github.com/forensicanalysis/fslib golang:1.2.2 go build -v ./...
         continue-on-error: true
         shell: bash
+        if: matrix.os == 'ubuntu-latest'
 
   fslib:
     name: fslib
