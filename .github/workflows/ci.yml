@@ -38,7 +38,7 @@ jobs:
         run: go build github.com/forensicanalysis/fslib/...
       - name: Build with go 1.2.2
         run: |
-          curl -o go1.2.2.windows-amd64.zip https://golang.org/dl/go1.2.2.windows-amd64.zip
+          curl -Lo go1.2.2.windows-amd64.zip https://golang.org/dl/go1.2.2.windows-amd64.zip
           ls
           unzip go1.2.2.windows-amd64.zip
           ls
