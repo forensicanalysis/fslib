@@ -80,7 +80,7 @@ func Test_MBR(t *testing.T) {
 		},
 	}
 
-	fstests.RunTest(t, "MBR", "filesystem/mbr_fat16.dd", func(f fsio.ReadSeekerAt) (fslib.FS, error) { return New(f) }, mbrPathTests)
+	fstests.RunTest(t, "MBR", "filesystem/mbr_fat16.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, mbrPathTests)
 }
 
 func BenchmarkMBR(b *testing.B) {

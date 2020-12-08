@@ -239,7 +239,7 @@ func doMatching(patternComponents, nameComponents []string) (matched bool, err e
 //
 // Note: this is meant as a drop-in replacement for filepath.Glob().
 //
-func Glob(fs fslib.FS, pattern string) (matches []string, err error) {
+func Glob(fs fs.FS, pattern string) (matches []string, err error) {
 	patternComponents := splitPathOnSeparator(pattern, '/')
 	if len(patternComponents) == 0 {
 		return nil, nil
@@ -268,7 +268,7 @@ func Glob(fs fslib.FS, pattern string) (matches []string, err error) {
 }
 
 // Perform a glob.
-func doGlob(fs fslib.FS, basedir string, components, matches []string, depth int) ([]string, error) { //nolint:gocyclo,gocognit,funlen
+func doGlob(fs fs.FS, basedir string, components, matches []string, depth int) ([]string, error) { //nolint:gocyclo,gocognit,funlen
 	if depth == 0 && len(components) < 2 || depth == -1 {
 		return matches, nil
 	}
@@ -359,7 +359,7 @@ func skipComponents(components []string) (patLen, patIdx int) {
 	return patLen, patIdx
 }
 
-func readDir(fs fslib.FS, basedir string) ([]string, error) {
+func readDir(fs fs.FS, basedir string) ([]string, error) {
 	// read directory
 	dir, err := fs.Open(basedir)
 	if err != nil {

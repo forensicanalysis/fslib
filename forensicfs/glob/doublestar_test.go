@@ -263,7 +263,7 @@ func getTestFS() *testfs.FS {
 	return infs
 }
 
-func getInFS() fslib.FS {
+func getInFS() fs.FS {
 	infs := &testfs.FS{}
 	content := []byte("test")
 	dirs := []string{"/dir/", "/dir/a/", "/dir/b/", "/dir/a/a/", "/dir/a/b/", "/dir/b/a/", "/dir/b/b/"}
@@ -279,7 +279,7 @@ func getInFS() fslib.FS {
 
 func Test_expandPath(t *testing.T) {
 	type args struct {
-		fs fslib.FS
+		fs fs.FS
 		in string
 	}
 	tests := []struct {
@@ -414,7 +414,7 @@ func Test_matchComponent(t *testing.T) {
 
 func Test_readDir(t *testing.T) {
 	type args struct {
-		fs      fslib.FS
+		fs      fs.FS
 		basedir string
 	}
 	tests := []struct {

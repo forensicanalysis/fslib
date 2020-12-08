@@ -28,34 +28,34 @@
 package fallbackfs
 
 import (
+	"io/fs"
 	"os"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 )
 
 // New creates a new fallback FS.
-func New(filesystems ...fslib.FS) *FS {
+func New(filesystems ...fs.FS) *FS {
 	return &FS{fallbackFilesystems: filesystems}
 }
 
 // FS implements a read-only meta file system where failing method calls to
 // higher level file systems are passed to other file systems.
 type FS struct {
-	fallbackFilesystems []fslib.FS
+	fallbackFilesystems []fs.FS
 }
 
 // Name returns the name of the file system.
 func (*FS) Name() (name string) { return "Fallback FS" }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (item fslib.Item, err error) {
+func (fsys *FS) Open(name string) (item fs.File, err error) {
 	name, err = filesystem.Clean(name)
 	if err != nil {
 		return
 	}
 
-	for _, fallbackFilesystem := range fs.fallbackFilesystems {
+	for _, fallbackFilesystem := range fsys.fallbackFilesystems {
 		item, err = fallbackFilesystem.Open(name)
 		if err == nil {
 			return
@@ -66,14 +66,14 @@ func (fs *FS) Open(name string) (item fslib.Item, err error) {
 }
 
 // Stat returns an os.FileInfo object that describes a file.
-func (fs *FS) Stat(name string) (info os.FileInfo, err error) {
+func (fsys *FS) Stat(name string) (info os.FileInfo, err error) {
 	name, err = filesystem.Clean(name)
 	if err != nil {
 		return
 	}
 
-	for _, fallbackFilesystem := range fs.fallbackFilesystems {
-		info, err = fallbackFilesystem.Stat(name)
+	for _, fallbackFilesystem := range fsys.fallbackFilesystems {
+		info, err = fs.Stat(fallbackFilesystem, name)
 		if err == nil {
 			return
 		}

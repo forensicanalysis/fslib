@@ -22,10 +22,9 @@
 package testfs
 
 import (
+	"io/fs"
 	"reflect"
 	"testing"
-
-	"github.com/forensicanalysis/fslib"
 )
 
 func getInFS() *FS {
@@ -97,14 +96,14 @@ func TestTestFS_Name(t *testing.T) {
 }
 
 func TestTestFS_Open(t *testing.T) {
-	fs := getInFS()
+	fsys := getInFS()
 	type args struct {
 		name string
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    fslib.Item
+		want    fs.File
 		wantErr bool
 	}{
 		{"Open", args{"/dir"}, &Directory{path: "dir", fs: fs}, false},
@@ -112,7 +111,7 @@ func TestTestFS_Open(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			got, err := fs.Open(tt.args.name)
+			got, err := fsys.Open(tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Open() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -139,8 +138,8 @@ func TestTestFolder_Readdirnames(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fs := getInFS()
-			d, _ := fs.Open(tt.dir)
+			fsys := getInFS()
+			d, _ := fsys.Open(tt.dir)
 			gotItems, err := d.Readdirnames(tt.args.in0)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Readdirnames() error = %v, wantErr %v", err, tt.wantErr)

@@ -25,8 +25,6 @@ import (
 	"reflect"
 	"sort"
 	"testing"
-
-	"github.com/forensicanalysis/fslib"
 )
 
 func TestRegistryFS_Open(t *testing.T) {
@@ -42,7 +40,7 @@ func TestRegistryFS_Open(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantItem fslib.Item
+		wantItem fs.File
 		wantErr  bool
 	}{
 		{"Open ComputerName", args{"/HKEY_LOCAL_MACHINE/System/CurrentControlSet/Control/ComputerName/ComputerName"}, computerName, false},

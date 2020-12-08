@@ -25,10 +25,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"path"
 	"strings"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/fat16"
 	"github.com/forensicanalysis/fslib/filesystem/gpt"
 	"github.com/forensicanalysis/fslib/filesystem/mbr"
@@ -48,42 +48,42 @@ func parseRealPath(sample string) (rpath []element, err error) {
 	}
 
 	key := "/"
-	var fs fslib.FS = osfs.New()
+	var fsys fs.FS = osfs.New()
 	for len(parts) > 0 {
 		key = path.Join(key, parts[0])
 		parts = parts[1:]
-		info, err := fs.Stat(key)
+		info, err := fs.Stat(fsys, key)
 		if err != nil {
 			return nil, err
 		}
 
 		if !info.IsDir() {
-			file, err := fs.Open(key)
+			file, err := fsys.Open(key)
 			if err != nil {
 				return nil, err
 			}
 
-			rpath = append(rpath, element{fs.Name(), key})
+			rpath = append(rpath, element{fsys.Name(), key})
 			key = "/"
 			isFs, fsName, err := detectFsFromFile(file)
 			if err != nil {
-				return nil, fmt.Errorf("error detection fs %s: %w", key, err)
+				return nil, fmt.Errorf("error detection fsys %s: %w", key, err)
 			}
-			fs, err = fsFromName(fsName, file)
+			fsys, err = fsFromName(fsName, file)
 			if err != nil {
-				return nil, fmt.Errorf("could not get fs from name %s: %w", fsName, err)
+				return nil, fmt.Errorf("could not get fsys from name %s: %w", fsName, err)
 			}
 			if !isFs && len(parts) > 0 {
 				return nil, errors.New("could not resolve path")
 			}
 		} else if len(parts) == 0 {
-			rpath = append(rpath, element{fs.Name(), key})
+			rpath = append(rpath, element{fsys.Name(), key})
 		}
 	}
 	return rpath, nil
 }
 
-func detectFsFromFile(base fslib.Item) (isFs bool, fs string, err error) {
+func detectFsFromFile(base fs.File) (isFs bool, fs string, err error) {
 	ext := strings.TrimLeft(path.Ext(base.Name()), ".")
 
 	t, err := filetype.DetectReaderByExtension(base, ext)
@@ -109,7 +109,7 @@ func detectFsFromFile(base fslib.Item) (isFs bool, fs string, err error) {
 	return true, fs, err
 }
 
-func fsFromName(name string, f fsio.ReadSeekerAt) (fs fslib.FS, err error) {
+func fsFromName(name string, f fsio.ReadSeekerAt) (fs fs.FS, err error) {
 	switch name {
 	case "OsFs":
 		fs = osfs.New()

@@ -26,11 +26,10 @@ package recursivefs
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 	"sort"
-
-	"github.com/forensicanalysis/fslib"
 )
 
 type element struct {
@@ -49,7 +48,7 @@ func New() *FS { return &FS{} }
 func (fs *FS) Name() string { return "RecFS" }
 
 // Open returns a File for the given location.
-func (fs *FS) Open(name string) (f fslib.Item, err error) {
+func (fs *FS) Open(name string) (f fs.File, err error) {
 	name = path.Clean(name)
 
 	elems, err := parseRealPath(name)
@@ -82,7 +81,7 @@ func (fs *FS) Open(name string) (f fslib.Item, err error) {
 	}
 
 	if fi.IsDir() {
-		return &Item{Item: f, path: name, recursiveFS: fs, isFS: false}, nil
+		return &Item{File: f, path: name, recursiveFS: fs, isFS: false}, nil
 	}
 
 	isFS, ifs, err := detectFsFromFile(f)
@@ -90,7 +89,7 @@ func (fs *FS) Open(name string) (f fslib.Item, err error) {
 		return nil, err
 	}
 
-	return &Item{Item: f, path: name, innerFSName: ifs, recursiveFS: fs, isFS: isFS}, nil
+	return &Item{File: f, path: name, innerFSName: ifs, recursiveFS: fs, isFS: isFS}, nil
 }
 
 // Stat returns an os.FileInfo object that describes a file.
@@ -104,7 +103,7 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 
 // Item describes files and directories in the  file system.
 type Item struct {
-	fslib.Item
+	fs.File
 	path        string
 	innerFSName string
 	recursiveFS *FS
@@ -114,7 +113,7 @@ type Item struct {
 // Readdirnames returns up to n child items of a directory.
 func (i *Item) Readdirnames(n int) (items []string, err error) {
 	if !i.isFS {
-		items, err = i.Item.Readdirnames(n)
+		items, err = i.File.Readdirnames(n)
 	} else {
 		innerFS, _ := fsFromName(i.innerFSName, i)
 		root, _ := innerFS.Open("/")
@@ -130,7 +129,7 @@ func (i *Item) Readdirnames(n int) (items []string, err error) {
 
 // Stat return an os.FileInfo object that describes a file.
 func (i *Item) Stat() (os.FileInfo, error) {
-	info, err := i.Item.Stat()
+	info, err := i.File.Stat()
 	return &Info{info, i.isFS}, err
 }
 

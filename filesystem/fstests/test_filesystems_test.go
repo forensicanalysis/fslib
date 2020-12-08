@@ -24,13 +24,13 @@
 package fstests
 
 import (
+	fsys "io/fs"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/forensicanalysis/fslib/filesystem/testfs"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
@@ -55,12 +55,12 @@ func TestRunTest(t *testing.T) {
 	fs.CreateFile("test.bar1", []byte("test"))
 	fs.CreateFile("test.bar2", []byte("test"))
 	fs.CreateFile("test.bar3", []byte("test"))
-	n := func(f fsio.ReadSeekerAt) (fslib.FS, error) { return fs, nil }
+	n := func(f fsio.ReadSeekerAt) (fsys.FS, error) { return fs, nil }
 	type args struct {
 		t     *testing.T
 		name  string
 		file  string
-		new   func(fsio.ReadSeekerAt) (fslib.FS, error)
+		new   func(fsio.ReadSeekerAt) (fsys.FS, error)
 		tests map[string]*PathTest
 	}
 	tests := []struct {

@@ -33,7 +33,6 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/forensicfs"
 )
@@ -57,7 +56,7 @@ type FS struct{}
 func (*FS) Name() (name string) { return "Registry FS" }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (item fslib.Item, err error) {
+func (fs *FS) Open(name string) (item fs.File, err error) {
 	name, err = filesystem.Clean(name)
 	if err != nil {
 		return nil, err

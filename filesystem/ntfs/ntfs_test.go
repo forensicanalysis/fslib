@@ -60,7 +60,7 @@ func Test_NTFSImage(t *testing.T) {
 	tests["file2Test"].InfoModTime = time.Date(2019, time.August, 21, 17, 40, 04, 0, time.UTC)
 	tests["file2Test"].InfoMode = 0
 
-	fstests.RunTest(t, "NTFS", "filesystem/ntfs.dd", func(f fsio.ReadSeekerAt) (fslib.FS, error) { return New(f) }, tests)
+	fstests.RunTest(t, "NTFS", "filesystem/ntfs.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
 }
 
 func TestNew(t *testing.T) {

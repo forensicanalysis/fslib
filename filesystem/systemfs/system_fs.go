@@ -26,33 +26,33 @@ package systemfs
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path"
 	"runtime"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
 )
 
 // New creates a new system FS.
-func New() (fslib.FS, error) {
+func New() (fs.FS, error) {
 	return newFS(nil)
 }
 
-func NewWithPlugins(plugins ...pluginFS) (fslib.FS, error) {
+func NewWithPlugins(plugins ...pluginFS) (fs.FS, error) {
 	return newFS(plugins)
 }
 
 type pluginFS interface {
 	Setup() error
 	Names() []string
-	FS(name string) (fslib.FS, string)
+	FS(name string) (fs.FS, string)
 }
 
-func newFS(plugins []pluginFS) (fslib.FS, error) {
+func newFS(plugins []pluginFS) (fs.FS, error) {
 	if runtime.GOOS != "windows" {
 		return osfs.New(), nil
 	}
@@ -97,7 +97,7 @@ type FS struct {
 func (*FS) Name() (name string) { return "System FS" }
 
 // Open opens a file for reading.
-func (systemfs *FS) Open(name string) (item fslib.Item, err error) {
+func (systemfs *FS) Open(name string) (item fs.File, err error) {
 	name, err = filesystem.Clean(name)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (systemfs *FS) Open(name string) (item fslib.Item, err error) {
 	return item, err
 }
 
-func (systemfs *FS) NTFSOpen(name string) (fslib.Item, func() error, error) {
+func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
 	if err != nil {
 		return nil, nil, fmt.Errorf("ntfs base open failed: %w", err)
@@ -149,7 +149,7 @@ func (systemfs *FS) NTFSOpen(name string) (fslib.Item, func() error, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	i := &Item{Item: item, base: base}
+	i := &Item{File: item, base: base}
 	return i, i.Close, nil
 }
 
@@ -164,15 +164,15 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 		return &Root{fs: systemfs}, nil
 	}
 	for _, plugin := range systemfs.plugins {
-		fs, namePart := plugin.FS(name)
-		if fs != nil {
-			return fs.Stat(namePart)
+		fsys, namePart := plugin.FS(name)
+		if fsys != nil {
+			return fs.Stat(fsys, namePart)
 		}
 	}
 
-	fs := osfs.New()
+	fsys := osfs.New()
 
-	info, err = fs.Stat(name)
+	info, err = fsys.Stat(name)
 	if err == nil {
 		return info, nil
 	}
@@ -203,14 +203,14 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 
 // Item describes files and directories in the file system.
 type Item struct {
-	fslib.Item
+	fs.File
 	base *os.File
 }
 
 // Close closes the file freeing the resource. Usually additional IO operations
 // fail after closing.
 func (i *Item) Close() error {
-	i.Item.Close() // nolint:errcheck
+	i.File.Close() // nolint:errcheck
 	return i.base.Close()
 }
 

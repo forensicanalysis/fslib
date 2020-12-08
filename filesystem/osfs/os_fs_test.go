@@ -145,7 +145,7 @@ func TestWindowsRoot(t *testing.T) {
 	}
 	tests := []struct {
 		name      string
-		item      fslib.Item
+		item      fs.File
 		args      args
 		wantItems []string
 		wantErr   bool
@@ -199,7 +199,7 @@ func TestOSFS_Open(t *testing.T) {
 		name     string
 		fs       *FS
 		args     args
-		wantItem fslib.Item
+		wantItem fs.File
 		wantErr  bool
 	}{
 		{"Open fail", fs, args{"foo"}, nil, true},

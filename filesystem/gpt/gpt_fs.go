@@ -26,12 +26,12 @@ package gpt
 import (
 	"fmt"
 	"io"
+	fsys "io/fs"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/forensicfs"
 	"github.com/forensicanalysis/fslib/fsio"
@@ -55,7 +55,7 @@ func (fs *FS) Name() string {
 }
 
 // Open returns a File for the given location.
-func (fs *FS) Open(name string) (fslib.Item, error) {
+func (fs *FS) Open(name string) (fsys.File, error) {
 	name, err := filesystem.Clean(name)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 	return f.Stat()
 }
 
-// Partition implements fslib.Item
+// Partition implements fs.File
 type Partition struct {
 	forensicfs.FileDefaults
 	*io.SectionReader

@@ -22,11 +22,11 @@
 package fallbackfs
 
 import (
+	"io/fs"
 	"io/ioutil"
 	"reflect"
 	"testing"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/testfs"
 )
 
@@ -84,7 +84,7 @@ func TestFallbackFS_Open(t *testing.T) {
 
 func TestFS_Name(t *testing.T) {
 	type fields struct {
-		fallbackFilesystems []fslib.FS
+		fallbackFilesystems []fs.FS
 	}
 	tests := []struct {
 		name     string

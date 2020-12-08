@@ -26,6 +26,7 @@ package ntfs
 import (
 	"errors"
 	"io"
+	"io/fs"
 	"os"
 	"path"
 	"sort"
@@ -33,7 +34,6 @@ import (
 
 	"www.velocidex.com/golang/go-ntfs/parser"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 )
 
@@ -61,7 +61,7 @@ type FS struct {
 func (*FS) Name() (name string) { return "NTFS" }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (item fslib.Item, err error) {
+func (fs *FS) Open(name string) (item fs.File, err error) {
 	name, err = filesystem.Clean(name)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	return f.Stat()
+	return f.Stat(), nil
 }
 
 // Item describes files and directories in the NTFS.

@@ -23,6 +23,7 @@ package gpt
 
 import (
 	"encoding/binary"
+	"io/fs"
 	"os"
 	"strings"
 	"testing"
@@ -31,7 +32,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/fstests"
 	"github.com/forensicanalysis/fslib/fsio"
 )
@@ -91,7 +91,7 @@ func Test_GPT(t *testing.T) {
 		},
 	}
 
-	fstests.RunTest(t, "GPT", "filesystem/gpt_apfs.dd", func(f fsio.ReadSeekerAt) (fslib.FS, error) { return New(f) }, pptPathTests)
+	fstests.RunTest(t, "GPT", "filesystem/gpt_apfs.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, pptPathTests)
 }
 
 func BenchmarkGPT(b *testing.B) {

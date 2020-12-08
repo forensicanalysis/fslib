@@ -24,54 +24,54 @@ package testfs
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"path"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
 // FS implements a read-only memory file system for testing.
 type FS struct {
-	items map[string]fslib.Item
+	items map[string]fs.File
 }
 
 // Name returns the name of the file system.
 func (*FS) Name() string { return "FS" }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (fslib.Item, error) {
+func (fsys *FS) Open(name string) (fs.File, error) {
 	name, err := filesystem.Clean(name)
 	if err != nil {
 		return nil, err
 	}
 
 	name = strings.Trim(name, "/")
-	if fs.items == nil {
-		fs.items = map[string]fslib.Item{"": &Directory{fs: fs, path: ""}}
+	if fsys.items == nil {
+		fsys.items = map[string]fs.File{"": &Directory{fs: fsys, path: ""}}
 	}
-	if item, ok := fs.items[name]; ok {
+	if item, ok := fsys.items[name]; ok {
 		return item, nil
 	}
 	return nil, os.ErrNotExist
 }
 
 // Stat returns an os.FileInfo object that describes a file.
-func (fs *FS) Stat(name string) (os.FileInfo, error) {
+func (fsys *FS) Stat(name string) (os.FileInfo, error) {
 	name, err := filesystem.Clean(name)
 	if err != nil {
 		return nil, err
 	}
 
 	name = strings.Trim(name, "/")
-	if fs.items == nil {
-		fs.items = map[string]fslib.Item{"": &Directory{fs: fs, path: ""}}
+	if fsys.items == nil {
+		fsys.items = map[string]fs.File{"": &Directory{fs: fsys, path: ""}}
 	}
-	if item, ok := fs.items[name]; ok {
+	if item, ok := fsys.items[name]; ok {
 		return item.Stat()
 	}
 	return nil, os.ErrNotExist
@@ -79,25 +79,25 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 
 // CreateDir adds a directory and all required parent directories to the file
 // system.
-func (fs *FS) CreateDir(name string) {
+func (fsys *FS) CreateDir(name string) {
 	name = strings.Trim(name, "/")
-	if fs.items == nil {
-		fs.items = map[string]fslib.Item{"": &Directory{fs: fs, path: ""}}
+	if fsys.items == nil {
+		fsys.items = map[string]fs.File{"": &Directory{fs: fsys, path: ""}}
 	}
 	parts := strings.Split(name, "/")
 	for i := range parts {
 		name = strings.Join(parts[:i+1], "/")
-		fs.items[name] = &Directory{fs: fs, path: name}
+		fsys.items[name] = &Directory{fs: fsys, path: name}
 	}
 }
 
 // CreateFile adds a file and all required parent directories to the file system.
-func (fs *FS) CreateFile(name string, data []byte) {
+func (fsys *FS) CreateFile(name string, data []byte) {
 	name = strings.TrimLeft(name, "/")
-	if fs.items == nil {
-		fs.items = map[string]fslib.Item{"": &Directory{fs: fs, path: ""}}
+	if fsys.items == nil {
+		fsys.items = map[string]fs.File{"": &Directory{fs: fsys, path: ""}}
 	}
-	fs.items[name] = &File{name: path.Base(name), data: bytes.NewReader(data)}
+	fsys.items[name] = &File{name: path.Base(name), data: bytes.NewReader(data)}
 }
 
 // File describes a single file in the test file system.

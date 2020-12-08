@@ -61,7 +61,7 @@ func (fs *FS) Name() string {
 }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (fslib.Item, error) {
+func (fs *FS) Open(name string) (fs.File, error) {
 	name, err := filesystem.Clean(name)
 	if err != nil {
 		return nil, err

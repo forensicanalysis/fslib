@@ -26,12 +26,12 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"syscall"
 	"time"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/fsio"
 )
@@ -95,7 +95,7 @@ func (m *FS) getVolumeName() (string, error) {
 */
 
 // Open opens a file for reading.
-func (m *FS) Open(name string) (f fslib.Item, err error) {
+func (m *FS) Open(name string) (f fs.File, err error) {
 	name, err = filesystem.Clean(name)
 	if err != nil {
 		return

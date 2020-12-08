@@ -25,9 +25,8 @@ package registryfs
 
 import (
 	"errors"
+	"io/fs"
 	"os"
-
-	"github.com/forensicanalysis/fslib"
 )
 
 // New creates a new dummy registry FS.
@@ -39,12 +38,12 @@ type FS struct{}
 // Name returns the name of the file system.
 func (*FS) Name() (name string) { return "Registry FS" }
 
-// Open fails for non Windows operating systems.
-func (m *FS) Open(name string) (item fslib.Item, err error) {
+// Open fails for non Windows operating systems.
+func (m *FS) Open(name string) (item fs.File, err error) {
 	return nil, errors.New("registry only supported on Windows")
 }
 
-// Stat fails for non Windows operating systems.
+// Stat fails for non Windows operating systems.
 func (m *FS) Stat(name string) (os.FileInfo, error) {
 	return nil, errors.New("registry only supported on Windows")
 }

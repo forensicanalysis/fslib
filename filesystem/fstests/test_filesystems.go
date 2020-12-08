@@ -24,6 +24,7 @@
 package fstests
 
 import (
+	"io/fs"
 	"log"
 	"os"
 	"testing"
@@ -31,7 +32,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/forensicanalysis/fslib/fsio"
 )
@@ -89,7 +89,7 @@ func GetDefaultContainerTests() map[string]*PathTest {
 }
 
 // RunTest executes a set of tests.
-func RunTest(t *testing.T, name, file string, new func(fsio.ReadSeekerAt) (fslib.FS, error), tests map[string]*PathTest) {
+func RunTest(t *testing.T, name, file string, new func(fsio.ReadSeekerAt) (fs.FS, error), tests map[string]*PathTest) {
 	t.Run(name, func(t *testing.T) {
 		fs := osfs.New()
 		base, err := fs.OpenSystemPath("../../test/data/" + file)
@@ -99,7 +99,7 @@ func RunTest(t *testing.T, name, file string, new func(fsio.ReadSeekerAt) (fslib
 	})
 }
 
-func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (fslib.FS, error), name string, tests map[string]*PathTest) {
+func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (fs.FS, error), name string, tests map[string]*PathTest) {
 	// test creation
 	fs, err := new(base)
 	assert.NoError(t, err)
@@ -122,7 +122,7 @@ func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (
 	}
 }
 
-func checkPath(name string, tt *PathTest, fs fslib.FS) func(t *testing.T) {
+func checkPath(name string, tt *PathTest, fs fs.FS) func(t *testing.T) {
 	return func(t *testing.T) {
 		log.Print("------------------------------")
 		log.Print(name, " ", tt.TestName)

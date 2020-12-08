@@ -62,5 +62,5 @@ func Test_ZIP(t *testing.T) {
 
 	tests["rootTest"].InfoMode = os.ModeDir
 
-	fstests.RunTest(t, "ZIP", "container/zip.zip", func(f fsio.ReadSeekerAt) (fslib.FS, error) { return New(f) }, tests)
+	fstests.RunTest(t, "ZIP", "container/zip.zip", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
 }

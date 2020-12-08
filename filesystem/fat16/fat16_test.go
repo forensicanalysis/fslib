@@ -74,5 +74,5 @@ func Test_FAT16(t *testing.T) {
 	delete(tests, "file3Test") // TODO: fix test
 	delete(tests, "file4Test") // TODO: fix test
 
-	fstests.RunTest(t, "FAT16", "filesystem/fat16.dd", func(f fsio.ReadSeekerAt) (fslib.FS, error) { return New(f) }, tests)
+	fstests.RunTest(t, "FAT16", "filesystem/fat16.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
 }

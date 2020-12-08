@@ -26,6 +26,7 @@ package osfs
 
 import (
 	"errors"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -36,7 +37,6 @@ import (
 
 	"gopkg.in/djherbis/times.v1"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 )
 
@@ -75,7 +75,7 @@ func ToForensicPath(systemPath string) (name string, err error) {
 
 // OpenSystemPath opens a normal path (e.g. 'C:\Windows') instead of a fslib path
 // ('/C/Windows').
-func (fs *FS) OpenSystemPath(syspath string) (item fslib.Item, err error) {
+func (fs *FS) OpenSystemPath(syspath string) (item fs.File, err error) {
 	syspath, err = ToForensicPath(syspath)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (fs *FS) OpenSystemPath(syspath string) (item fslib.Item, err error) {
 }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (item fslib.Item, err error) {
+func (fs *FS) Open(name string) (item fs.File, err error) {
 	name, sysname, err := sysname(name)
 	if err != nil {
 		return nil, err
