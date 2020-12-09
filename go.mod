@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/ledongthuc/pdf v0.0.0-20200323191019-23c5852adbd2
 	github.com/sebdah/goldie v0.0.0-20190531093107-d313ffb52c77 // indirect
-	github.com/spf13/afero v1.4.1
+	github.com/spf13/afero v1.5.1
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
 	github.com/xlab/treeprint v1.0.0
