@@ -19,18 +19,18 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: repo
-      - name: Copy Package
-        run: |
-          mkdir -p path/src/github.com/forensicanalysis/fslib
-          cp -r repo path/src/github.com/forensicanalysis/fslib
-        shell: bash
       - name: Load Modules
         run: |
           go mod download
           go mod vendor
-          cp -r vendor ../path/src
         shell: bash
         working-directory: repo
+      - name: Move packages
+        run: |
+          mkdir -p path/src/github.com/forensicanalysis
+          mv repo/vendor path/src
+          mv repo path/src/github.com/forensicanalysis/fslib
+        shell: bash
       - name: Build with go 1.9.7
         run: |
           mkdir -p go1.9.7
