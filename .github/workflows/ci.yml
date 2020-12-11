@@ -21,46 +21,40 @@ jobs:
         run: |
           TMPDIR=C:\Temp
 
-          echo cleanup
-          rm -rf "$TMPDIR"legacygo/path
-
-          echo make folder
-          mkdir -p "$TMPDIR"legacygo/path/src/github.com/forensicanalysis/fslib
-          mkdir -p "$TMPDIR"legacygo/go1.9.7
-          mkdir -p "$TMPDIR"legacygo/go1.7.6
-          mkdir -p "$TMPDIR"legacygo/go1.5.4
-          mkdir -p "$TMPDIR"legacygo/go1.2.2
-
-          echo reset vendor
-          rm -rf vendor
-
           echo copy package
-          cp -r ./* "$TMPDIR"legacygo/path/src/github.com/forensicanalysis/fslib
+          rm -rf $TMPDIR/legacygo/path
+          mkdir -p $TMPDIR/legacygo/path/src/github.com/forensicanalysis/fslib
+          cp -r $GITHUB_WORKSPACE/* $TMPDIR/legacygo/path/src/github.com/forensicanalysis/fslib
 
-          echo create and move vendor
+          echo other packages
+          rm -rf vendor
           go mod download
           go mod vendor
-          cp -r vendor/* "$TMPDIR"legacygo/path/src
+          cp -r $GITHUB_WORKSPACE/vendor/* $TMPDIR/legacygo/path/src
 
           echo compile with go 1.9.7
-          curl -Lso "$TMPDIR"legacygo/go1.9.7.windows-amd64.zip https://golang.org/dl/go1.9.7.windows-amd64.zip
-          unzip -q go1.9.7.windows-amd64.zip -d "$TMPDIR"legacygo/go1.9.7
-          GOPATH="$TMPDIR"legacygo/path GOROOT="$TMPDIR"legacygo/go1.9.7/go "$TMPDIR"legacygo/go1.9.7/go/bin/go build github.com/forensicanalysis/fslib/...
+          mkdir -p $TMPDIR/legacygo/go1.9.7
+          curl -Lso $TMPDIR/legacygo/go1.9.7.windows-amd64.zip https://golang.org/dl/go1.9.7.windows-amd64.zip
+          unzip -q go1.9.7.windows-amd64.zip -d $TMPDIR/legacygo/go1.9.7
+          GOPATH=$TMPDIR/legacygo/path GOROOT=$TMPDIR/legacygo/go1.9.7/go $TMPDIR/legacygo/go1.9.7/go/bin/go build github.com/forensicanalysis/fslib/...
 
           echo compile with go 1.7.6
-          curl -Lso "$TMPDIR"legacygo/go1.7.6.windows-amd64.zip https://golang.org/dl/go1.7.6.windows-amd64.zip
-          unzip -q go1.7.6.windows-amd64.zip -d "$TMPDIR"legacygo/go1.7.6
-          GOPATH="$TMPDIR"legacygo/path GOROOT="$TMPDIR"legacygo/go1.7.6/go "$TMPDIR"legacygo/go1.7.6/go/bin/go build github.com/forensicanalysis/fslib/... || true
+          mkdir -p $TMPDIR/legacygo/go1.7.6
+          curl -Lso $TMPDIR/legacygo/go1.7.6.windows-amd64.zip https://golang.org/dl/go1.7.6.windows-amd64.zip
+          unzip -q go1.7.6.windows-amd64.zip -d $TMPDIR/legacygo/go1.7.6
+          GOPATH=$TMPDIR/legacygo/path GOROOT=$TMPDIR/legacygo/go1.7.6/go $TMPDIR/legacygo/go1.7.6/go/bin/go build github.com/forensicanalysis/fslib/... || true
 
           echo compile with go 1.5.4
-          curl -Lso "$TMPDIR"legacygo/go1.5.4.windows-amd64.zip https://golang.org/dl/go1.5.4.windows-amd64.zip
-          unzip -q go1.5.4.windows-amd64.zip -d "$TMPDIR"legacygo/go1.5.4
-          GOPATH="$TMPDIR"legacygo/path GOROOT="$TMPDIR"legacygo/go1.5.4/go "$TMPDIR"legacygo/go1.5.4/go/bin/go build github.com/forensicanalysis/fslib/... || true
+          mkdir -p $TMPDIR/legacygo/go1.5.4
+          curl -Lso $TMPDIR/legacygo/go1.5.4.windows-amd64.zip https://golang.org/dl/go1.5.4.windows-amd64.zip
+          unzip -q go1.5.4.windows-amd64.zip -d $TMPDIR/legacygo/go1.5.4
+          GOPATH=$TMPDIR/legacygo/path GOROOT=$TMPDIR/legacygo/go1.5.4/go $TMPDIR/legacygo/go1.5.4/go/bin/go build github.com/forensicanalysis/fslib/... || true
 
           echo compile with go 1.2.2
-          curl -Lso "$TMPDIR"legacygo/go1.2.2.windows-amd64.zip https://golang.org/dl/go1.2.2.windows-amd64.zip
-          unzip -q go1.2.2.windows-amd64.zip -d "$TMPDIR"legacygo/go1.2.2
-          GOPATH="$TMPDIR"legacygo/path GOROOT="$TMPDIR"legacygo/go1.2.2/go "$TMPDIR"legacygo/go1.2.2/go/bin/go build github.com/forensicanalysis/fslib/... || true
+          mkdir -p $TMPDIR/legacygo/go1.2.2
+          curl -Lso $TMPDIR/legacygo/go1.2.2.windows-amd64.zip https://golang.org/dl/go1.2.2.windows-amd64.zip
+          unzip -q go1.2.2.windows-amd64.zip -d $TMPDIR/legacygo/go1.2.2
+          GOPATH=$TMPDIR/legacygo/path GOROOT=$TMPDIR/legacygo/go1.2.2/go $TMPDIR/legacygo/go1.2.2/go/bin/go build github.com/forensicanalysis/fslib/... || true
         shell: bash
 
   fslib:
