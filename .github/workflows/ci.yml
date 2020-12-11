@@ -24,6 +24,7 @@ jobs:
           echo copy package
           rm -rf $TMPDIR/legacygo/path
           mkdir -p $TMPDIR/legacygo/path/src/github.com/forensicanalysis/fslib
+          ls $GITHUB_WORKSPACE/*
           cp -r $GITHUB_WORKSPACE/* $TMPDIR/legacygo/path/src/github.com/forensicanalysis/fslib
 
           echo other packages
