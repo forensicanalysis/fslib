@@ -67,7 +67,7 @@ func ToForensicPath(systemPath string) (name string, err error) {
 		return "", err
 	}
 	if runtime.GOOS == windows {
-		name = strings.ReplaceAll(name, "\\", "/")
+		name = strings.Replace(name, "\\", "/", -1)
 		name = "/" + name[:1] + name[2:]
 	}
 	return name, err

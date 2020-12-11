@@ -4,3 +4,7 @@
 cmd/fs/fs
 coverage.out
 .idea
+vendor
+path
+path.zip
+go1.*
