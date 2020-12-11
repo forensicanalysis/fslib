@@ -17,45 +17,45 @@ jobs:
         with: {go-version: 1.14}
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Build
+        with:
+          path: repo
+      - name: Copy Package
         run: |
-          TMPDIR=C:\Temp
-
-          echo copy package
-          rm -rf $TMPDIR/legacygo/path
-          mkdir -p $TMPDIR/legacygo/path/src/github.com/forensicanalysis/fslib
-          ls $GITHUB_WORKSPACE/*
-          cp -r $GITHUB_WORKSPACE/* $TMPDIR/legacygo/path/src/github.com/forensicanalysis/fslib
-
-          echo other packages
-          rm -rf vendor
+          mkdir -p path/src/github.com/forensicanalysis/fslib
+          cp -r repo path/src/github.com/forensicanalysis/fslib
+        shell: bash
+      - name: Load Modules
+        run: |
           go mod download
           go mod vendor
-          cp -r $GITHUB_WORKSPACE/vendor/* $TMPDIR/legacygo/path/src
-
+          cp -r vendor ../path/src
+        shell: bash
+        working-directory: repo
+      - name: Build
+        run: |
           echo compile with go 1.9.7
-          mkdir -p $TMPDIR/legacygo/go1.9.7
-          curl -Lso $TMPDIR/legacygo/go1.9.7.windows-amd64.zip https://golang.org/dl/go1.9.7.windows-amd64.zip
-          unzip -q go1.9.7.windows-amd64.zip -d $TMPDIR/legacygo/go1.9.7
-          GOPATH=$TMPDIR/legacygo/path GOROOT=$TMPDIR/legacygo/go1.9.7/go $TMPDIR/legacygo/go1.9.7/go/bin/go build github.com/forensicanalysis/fslib/...
+          mkdir -p go1.9.7
+          curl -Lso go1.9.7.windows-amd64.zip https://golang.org/dl/go1.9.7.windows-amd64.zip
+          unzip -q go1.9.7.windows-amd64.zip -d go1.9.7
+          GOPATH=path GOROOT=go1.9.7/go go1.9.7/go/bin/go build github.com/forensicanalysis/fslib/...
 
           echo compile with go 1.7.6
-          mkdir -p $TMPDIR/legacygo/go1.7.6
-          curl -Lso $TMPDIR/legacygo/go1.7.6.windows-amd64.zip https://golang.org/dl/go1.7.6.windows-amd64.zip
-          unzip -q go1.7.6.windows-amd64.zip -d $TMPDIR/legacygo/go1.7.6
-          GOPATH=$TMPDIR/legacygo/path GOROOT=$TMPDIR/legacygo/go1.7.6/go $TMPDIR/legacygo/go1.7.6/go/bin/go build github.com/forensicanalysis/fslib/... || true
+          mkdir -p go1.7.6
+          curl -Lso go1.7.6.windows-amd64.zip https://golang.org/dl/go1.7.6.windows-amd64.zip
+          unzip -q go1.7.6.windows-amd64.zip -d go1.7.6
+          GOPATH=path GOROOT=go1.7.6/go go1.7.6/go/bin/go build github.com/forensicanalysis/fslib/... || true
 
           echo compile with go 1.5.4
-          mkdir -p $TMPDIR/legacygo/go1.5.4
-          curl -Lso $TMPDIR/legacygo/go1.5.4.windows-amd64.zip https://golang.org/dl/go1.5.4.windows-amd64.zip
-          unzip -q go1.5.4.windows-amd64.zip -d $TMPDIR/legacygo/go1.5.4
-          GOPATH=$TMPDIR/legacygo/path GOROOT=$TMPDIR/legacygo/go1.5.4/go $TMPDIR/legacygo/go1.5.4/go/bin/go build github.com/forensicanalysis/fslib/... || true
+          mkdir -p go1.5.4
+          curl -Lso go1.5.4.windows-amd64.zip https://golang.org/dl/go1.5.4.windows-amd64.zip
+          unzip -q go1.5.4.windows-amd64.zip -d go1.5.4
+          GOPATH=$GITHUB_WORKSPACE/path GOROOT=$GITHUB_WORKSPACE/go1.5.4/go $GITHUB_WORKSPACE/go1.5.4/go/bin/go build github.com/forensicanalysis/fslib/... || true
 
           echo compile with go 1.2.2
-          mkdir -p $TMPDIR/legacygo/go1.2.2
-          curl -Lso $TMPDIR/legacygo/go1.2.2.windows-amd64.zip https://golang.org/dl/go1.2.2.windows-amd64.zip
-          unzip -q go1.2.2.windows-amd64.zip -d $TMPDIR/legacygo/go1.2.2
-          GOPATH=$TMPDIR/legacygo/path GOROOT=$TMPDIR/legacygo/go1.2.2/go $TMPDIR/legacygo/go1.2.2/go/bin/go build github.com/forensicanalysis/fslib/... || true
+          mkdir -p go1.2.2
+          curl -Lso go1.2.2.windows-amd64.zip https://golang.org/dl/go1.2.2.windows-amd64.zip
+          unzip -q go1.2.2.windows-amd64.zip -d go1.2.2
+          GOPATH=$GITHUB_WORKSPACE/path GOROOT=$GITHUB_WORKSPACE/go1.2.2/go $GITHUB_WORKSPACE/go1.2.2/go/bin/go build github.com/forensicanalysis/fslib/... || true
         shell: bash
 
   fslib:
