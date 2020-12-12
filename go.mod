@@ -15,3 +15,5 @@ require (
 	gopkg.in/djherbis/times.v1 v1.2.0
 	www.velocidex.com/golang/go-ntfs v0.1.1
 )
+
+replace golang.org/x/sys => syscall
