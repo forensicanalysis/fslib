@@ -24,6 +24,7 @@ package fsio
 import (
 	"bytes"
 	"io"
+	"os"
 	"testing"
 )
 
