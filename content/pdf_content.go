@@ -1,3 +1,4 @@
+// +build go1.8
 // Copyright (c) 2019 Siemens AG
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of

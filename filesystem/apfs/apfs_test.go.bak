@@ -54,13 +54,13 @@ func TestAPFS(t *testing.T) {
 	assert.EqualValues(t, 4096, blocksize)
 
 	assert.EqualValues(t, 0x949, containerSuperblock.OmapOid())
-	filesystem.Seek(int64(containerSuperblock.OmapOid())*int64(blocksize), io.SeekStart)
+	filesystem.Seek(int64(containerSuperblock.OmapOid())*int64(blocksize), os.SEEK_SET)
 	omap := Btree{}
 	omap.DecodeAncestors(p0, &apfs)
 	//log.Printf("omap: %#v", omap)
 
 	/*
-		filesystem.Seek(int64(*omap.TreeRoot())*int64(blocksize), io.SeekStart)
+		filesystem.Seek(int64(*omap.TreeRoot())*int64(blocksize), os.SEEK_SET)
 		omapnode := Node{}
 		omapnode.DecodeAncestors(p0, &apfs)
 	*/
@@ -92,12 +92,12 @@ func BenchmarkAPFS(t *testing.B) {
 		assert.EqualValues(t, 4096, blocksize)
 
 		assert.EqualValues(t, 0x949, containerSuperblock.OmapOid())
-		filesystem.Seek(int64(containerSuperblock.OmapOid())*int64(blocksize), io.SeekStart)
+		filesystem.Seek(int64(containerSuperblock.OmapOid())*int64(blocksize), os.SEEK_SET)
 		omap := Btree{}
 		omap.DecodeAncestors(p0, &apfs)
 		log.Printf("omap: %#v", omap)
 
-		filesystem.Seek(int64(omap.TreeRoot())*int64(blocksize), io.SeekStart)
+		filesystem.Seek(int64(omap.TreeRoot())*int64(blocksize), os.SEEK_SET)
 		omapnode := Node{}
 		omapnode.DecodeAncestors(p0, &apfs)
 		log.Printf("omapnode: %#v", omapnode)

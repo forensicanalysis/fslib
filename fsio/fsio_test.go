@@ -24,6 +24,7 @@ package fsio
 import (
 	"bytes"
 	"io"
+	"os"
 	"testing"
 )
 
@@ -88,7 +89,7 @@ func TestGetSize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Setup
-			_, err := tt.args.seeker.Seek(tt.currentPosition, io.SeekStart)
+			_, err := tt.args.seeker.Seek(tt.currentPosition, os.SEEK_SET)
 			if err != nil {
 				t.Error(err)
 			}
@@ -105,7 +106,7 @@ func TestGetSize(t *testing.T) {
 				t.Errorf("GetSize() got = %v, wantSize %v", got, tt.wantSize)
 			}
 			if tt.wantKeepPosition {
-				positionAfterGetSize, err := tt.args.seeker.Seek(0, io.SeekCurrent)
+				positionAfterGetSize, err := tt.args.seeker.Seek(0, os.SEEK_CUR)
 				if err != nil {
 					t.Error(err)
 				}
