@@ -64,7 +64,7 @@ func (m *FS) Name() string { return "FAT16" }
 func (m *FS) getVolumeName() (string, error) {
 	rootDirStart := (int64(m.vh.SectorsPerFat)*int64(m.vh.FatCount) + 1) * 512
 
-	_, err := decoder.Seek(rootDirStart, io.SeekStart)
+	_, err := decoder.Seek(rootDirStart, os.SEEK_SET)
 	if err != nil {
 		return "", err
 	}

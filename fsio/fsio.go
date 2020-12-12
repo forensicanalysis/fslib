@@ -25,6 +25,7 @@ package fsio
 
 import (
 	"io"
+	"os"
 )
 
 // ReadSeekerAt combines the io.Reader, io.Seeker and io.ReaderAt interface.
@@ -42,11 +43,11 @@ type DecoderAtWrapper struct {
 
 // ReadAt reads len(b) bytes from the File starting at byte offset off.
 func (da *DecoderAtWrapper) ReadAt(p []byte, off int64) (n int, err error) {
-	pos, err := da.Seek(0, io.SeekCurrent)
+	pos, err := da.Seek(0, os.SEEK_CUR)
 	if err != nil {
 		return 0, err
 	}
-	_, err = da.Seek(off, io.SeekStart)
+	_, err = da.Seek(off, os.SEEK_SET)
 	if err != nil {
 		return 0, err
 	}
@@ -54,20 +55,20 @@ func (da *DecoderAtWrapper) ReadAt(p []byte, off int64) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	_, err = da.Seek(pos, io.SeekStart)
+	_, err = da.Seek(pos, os.SEEK_SET)
 	return n, err
 }
 
 // GetSize return the size of an io.Seeker without changing the current offset.
 func GetSize(seeker io.Seeker) (int64, error) {
-	pos, err := seeker.Seek(0, io.SeekCurrent)
+	pos, err := seeker.Seek(0, os.SEEK_CUR)
 	if err != nil {
 		return 0, err
 	}
-	end, err := seeker.Seek(0, io.SeekEnd)
+	end, err := seeker.Seek(0, os.SEEK_END)
 	if err != nil {
 		return 0, err
 	}
-	_, err = seeker.Seek(pos, io.SeekStart)
+	_, err = seeker.Seek(pos, os.SEEK_SET)
 	return end, err
 }

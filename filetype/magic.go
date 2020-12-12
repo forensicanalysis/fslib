@@ -29,16 +29,13 @@ import (
 	"github.com/h2non/filetype/types"
 )
 
-// MIME stores the file MIME type values.
-type MIME = types.MIME
-
 // ID stores a unique identifier for filetypes.
 type ID string
 
 // Filetype represents a single file format.
 type Filetype struct {
 	ID         ID
-	Mimetype   MIME
+	Mimetype   types.MIME
 	Extensions []string
 	Matcher    func(buf []byte) bool
 	layer      int

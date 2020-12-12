@@ -27,6 +27,7 @@ package gpt
 import (
 	"encoding/binary"
 	"io"
+	"os"
 )
 
 type GptPartitionTable struct {
@@ -76,14 +77,14 @@ func (k *GptPartitionTable) Primary() (value *PartitionHeader) {
 	if !k.primarySet {
 		var err error
 		var elem PartitionHeader
-		posprimary, _ := k.decoder.Seek(0, io.SeekCurrent) // Cannot fail
-		_, err = k.decoder.Seek(int64(k.Root().SectorSize()), io.SeekStart)
+		posprimary, _ := k.decoder.Seek(0, os.SEEK_CUR) // Cannot fail
+		_, err = k.decoder.Seek(int64(k.Root().SectorSize()), os.SEEK_SET)
 		if err != nil {
 			return
 		}
 		err = elem.Decode(k.decoder, k, k.Root())
 		k.primary = &elem
-		k.decoder.Seek(posprimary, io.SeekStart)
+		k.decoder.Seek(posprimary, os.SEEK_SET)
 		k.primarySet = true
 	}
 	return k.primary
@@ -92,14 +93,14 @@ func (k *GptPartitionTable) Backup() (value *PartitionHeader) {
 	if !k.backupSet {
 		var err error
 		var elem PartitionHeader
-		posbackup, _ := k.decoder.Seek(0, io.SeekCurrent) // Cannot fail
-		_, err = k.decoder.Seek(-int64(k.Root().SectorSize()), io.SeekStart)
+		posbackup, _ := k.decoder.Seek(0, os.SEEK_CUR) // Cannot fail
+		_, err = k.decoder.Seek(-int64(k.Root().SectorSize()), os.SEEK_SET)
 		if err != nil {
 			return
 		}
 		err = elem.Decode(k.decoder, k, k.Root())
 		k.backup = &elem
-		k.decoder.Seek(posbackup, io.SeekStart)
+		k.decoder.Seek(posbackup, os.SEEK_SET)
 		k.backupSet = true
 	}
 	return k.backup
@@ -142,19 +143,19 @@ func (k *PartitionEntry) Decode(reader io.ReadSeeker, ancestors ...interface{}) 
 	if err == nil {
 		var elem []byte
 		elem = make([]byte, 0x10)
-		pos, _ := k.decoder.Seek(0, io.SeekCurrent)
+		pos, _ := k.decoder.Seek(0, os.SEEK_CUR)
 		err = binary.Read(k.decoder, binary.LittleEndian, &elem)
 		pos = pos + int64(0x10)
-		_, err = k.decoder.Seek(pos, io.SeekStart)
+		_, err = k.decoder.Seek(pos, os.SEEK_SET)
 		k.typeGuid = elem
 	}
 	if err == nil {
 		var elem []byte
 		elem = make([]byte, 0x10)
-		pos, _ := k.decoder.Seek(0, io.SeekCurrent)
+		pos, _ := k.decoder.Seek(0, os.SEEK_CUR)
 		err = binary.Read(k.decoder, binary.LittleEndian, &elem)
 		pos = pos + int64(0x10)
-		_, err = k.decoder.Seek(pos, io.SeekStart)
+		_, err = k.decoder.Seek(pos, os.SEEK_SET)
 		k.guid = elem
 	}
 	if err == nil {
@@ -175,10 +176,10 @@ func (k *PartitionEntry) Decode(reader io.ReadSeeker, ancestors ...interface{}) 
 	if err == nil {
 		var elem []byte
 		elem = make([]byte, 0x48)
-		pos, _ := k.decoder.Seek(0, io.SeekCurrent)
+		pos, _ := k.decoder.Seek(0, os.SEEK_CUR)
 		err = binary.Read(k.decoder, binary.LittleEndian, &elem)
 		pos = pos + int64(0x48)
-		_, err = k.decoder.Seek(pos, io.SeekStart)
+		_, err = k.decoder.Seek(pos, os.SEEK_SET)
 		k.name = elem
 	}
 	return
@@ -249,10 +250,10 @@ func (k *PartitionHeader) Decode(reader io.ReadSeeker, ancestors ...interface{})
 	if err == nil {
 		var elem []byte
 		elem = make([]byte, 8)
-		pos, _ := k.decoder.Seek(0, io.SeekCurrent)
+		pos, _ := k.decoder.Seek(0, os.SEEK_CUR)
 		err = binary.Read(k.decoder, binary.LittleEndian, &elem)
 		pos = pos + int64(8)
-		_, err = k.decoder.Seek(pos, io.SeekStart)
+		_, err = k.decoder.Seek(pos, os.SEEK_SET)
 		k.signature = elem
 	}
 	if err == nil {
@@ -298,10 +299,10 @@ func (k *PartitionHeader) Decode(reader io.ReadSeeker, ancestors ...interface{})
 	if err == nil {
 		var elem []byte
 		elem = make([]byte, 0x10)
-		pos, _ := k.decoder.Seek(0, io.SeekCurrent)
+		pos, _ := k.decoder.Seek(0, os.SEEK_CUR)
 		err = binary.Read(k.decoder, binary.LittleEndian, &elem)
 		pos = pos + int64(0x10)
-		_, err = k.decoder.Seek(pos, io.SeekStart)
+		_, err = k.decoder.Seek(pos, os.SEEK_SET)
 		k.diskGuid = elem
 	}
 	if err == nil {
@@ -372,17 +373,17 @@ func (k *PartitionHeader) Entries() (value []PartitionEntry) {
 	if !k.entriesSet {
 		var err error
 		var elem PartitionEntry
-		posentries, _ := k.decoder.Seek(0, io.SeekCurrent) // Cannot fail
-		_, err = k.decoder.Seek(int64(k.EntriesStart())*int64(k.Root().SectorSize()), io.SeekStart)
+		posentries, _ := k.decoder.Seek(0, os.SEEK_CUR) // Cannot fail
+		_, err = k.decoder.Seek(int64(k.EntriesStart())*int64(k.Root().SectorSize()), os.SEEK_SET)
 		if err != nil {
 			return
 		}
 		k.entries = []PartitionEntry{}
 		for index := 0; index < int(k.EntriesCount()); index++ {
-			pos, _ := k.decoder.Seek(0, io.SeekCurrent)
+			pos, _ := k.decoder.Seek(0, os.SEEK_CUR)
 			err = elem.Decode(k.decoder, k, k.Root())
 			pos = pos + int64(k.EntriesSize())
-			_, err = k.decoder.Seek(pos, io.SeekStart)
+			_, err = k.decoder.Seek(pos, os.SEEK_SET)
 			if err != nil {
 				if err == io.EOF {
 					err = nil
@@ -391,7 +392,7 @@ func (k *PartitionHeader) Entries() (value []PartitionEntry) {
 			}
 			k.entries = append(k.entries, elem)
 		}
-		k.decoder.Seek(posentries, io.SeekStart)
+		k.decoder.Seek(posentries, os.SEEK_SET)
 		k.entriesSet = true
 	}
 	return k.entries

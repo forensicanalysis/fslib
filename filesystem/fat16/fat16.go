@@ -27,6 +27,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"os"
 	"strings"
 	"unicode/utf16"
 	"unicode/utf8"
@@ -163,7 +164,7 @@ func getOffset(cluster int64, vh volumeHeader) int64 {
 }
 
 func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*directoryEntry, error) {
-	_, err := m.decoder.Seek(getOffset(cluster, m.vh), io.SeekStart)
+	_, err := m.decoder.Seek(getOffset(cluster, m.vh), os.SEEK_SET)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +189,7 @@ func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*direc
 			if err != nil {
 				return nil, err
 			}
-			m.decoder.Seek(-32, io.SeekCurrent) // nolint: errcheck
+			m.decoder.Seek(-32, os.SEEK_CUR) // nolint: errcheck
 
 			err := binary.Read(m.decoder, binary.LittleEndian, &de)
 			if err != nil {
@@ -216,7 +217,7 @@ func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*direc
 			log.Print("filename ", filename, " ", de.FileAttributes&0x10 != 0, de.Startingcluster)
 			files[filename] = &de
 		} else {
-			_, err = m.decoder.Seek(32, io.SeekCurrent)
+			_, err = m.decoder.Seek(32, os.SEEK_CUR)
 			if err != nil {
 				return nil, err
 			}

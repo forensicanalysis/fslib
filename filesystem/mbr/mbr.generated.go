@@ -27,6 +27,7 @@ package mbr
 import (
 	"encoding/binary"
 	"io"
+	"os"
 )
 
 /* MBR (Master Boot Record) partition table is a traditional way of
@@ -72,10 +73,10 @@ func (k *MbrPartitionTable) Decode(reader io.ReadSeeker, ancestors ...interface{
 	if err == nil {
 		var elem []byte
 		elem = make([]byte, 0x1be)
-		pos, _ := k.decoder.Seek(0, io.SeekCurrent)
+		pos, _ := k.decoder.Seek(0, os.SEEK_CUR)
 		err = binary.Read(k.decoder, binary.LittleEndian, &elem)
 		pos = pos + int64(0x1be)
-		_, err = k.decoder.Seek(pos, io.SeekStart)
+		_, err = k.decoder.Seek(pos, os.SEEK_SET)
 		k.bootstrapCode = elem
 	}
 	if err == nil {
@@ -94,10 +95,10 @@ func (k *MbrPartitionTable) Decode(reader io.ReadSeeker, ancestors ...interface{
 	if err == nil {
 		var elem []byte
 		elem = make([]byte, 2)
-		pos, _ := k.decoder.Seek(0, io.SeekCurrent)
+		pos, _ := k.decoder.Seek(0, os.SEEK_CUR)
 		err = binary.Read(k.decoder, binary.LittleEndian, &elem)
 		pos = pos + int64(2)
-		_, err = k.decoder.Seek(pos, io.SeekStart)
+		_, err = k.decoder.Seek(pos, os.SEEK_SET)
 		k.bootSignature = elem
 	}
 	return
