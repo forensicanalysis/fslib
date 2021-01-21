@@ -3,7 +3,7 @@ module github.com/forensicanalysis/fslib
 go 1.12
 
 require (
-	github.com/h2non/filetype v1.1.0
+	github.com/h2non/filetype v1.1.1
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/ledongthuc/pdf v0.0.0-20200323191019-23c5852adbd2
 	github.com/sebdah/goldie v0.0.0-20190531093107-d313ffb52c77 // indirect
