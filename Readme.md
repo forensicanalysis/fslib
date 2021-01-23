@@ -52,7 +52,7 @@ func main() {
 	fs, _ := ntfs.New(image)
 
 	// get handle for root
-	root, _ := fs.Open("/")
+	root, _ := fs.Open(".")
 
 	// get filenames
 	filenames, _ := fslib.Readdirnames(root, 0)
@@ -149,9 +149,7 @@ fs hashsum case/evidence.zip/*
 | **copy** | The copy project provides copy functions for files and directories for afero (https://github.com/spf13/afero) filesystems. |
 | **fallbackfs** | The fallbackfs project implements a meta filesystem that wraps a sequence of file systems. |
 | **fat16** | The fat16 project provides a forensicfs implementation of the FAT16 file systems. |
-| **filesystem** | The filesystem project contains implementations of the forensicfs interface for various file systems and similar data structures. |
 | **filetype** | The filetype project provides functions to identify file types of binary data. |
-| **forensicfs** | The forensicfs project provides defaults for read-only file system items. |
 | **fs** | The fs project implements the fs command line tool that has various subcommands which imitate unix commands but for nested file system structures. |
 | **fsio** | The fsio project provides IO interfaces and functions similar for file system operations. |
 | **fstests** | The fstests project provides functions for testing implementations of the forensicfs. |
@@ -163,7 +161,6 @@ fs hashsum case/evidence.zip/*
 | **recursivefs** | The recursivefs project provides a forensicfs implementation that can open paths in nested forensicfs recursively. |
 | **registryfs** | The registryfs project provides a forensicfs implementation to access the Windows Registry. |
 | **systemfs** | The systemfs project provides a forensicfs implementation that uses the osfs as default, while a ntfs for every partition as a fallback on Windows, on UNIX the behavior is the same as osfs. |
-| **testfs** | The testfs project provides a in memory forensicfs implementation for testing. |
 | **zip** | The zip project provides a forensicfs implementation to access zip files. |
 
 

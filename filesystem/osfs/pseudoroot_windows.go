@@ -25,6 +25,7 @@ import (
 	"errors"
 	"io/fs"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -50,7 +51,7 @@ func SimpleEntries(names []string) (entries []fs.DirEntry) {
 }
 
 // ReadDir lists all partitions in the window pseudo root.
-func (r *Root) ReadDir(n int) (entries []fs.DirEntry, err error) {
+func (r *Root) ReadDir(n int) (partitions []fs.DirEntry, err error) {
 	kernel32, err := syscall.LoadDLL("kernel32.dll")
 	if err != nil {
 		return nil, err
