@@ -166,5 +166,5 @@ func fsFromName(name string, r io.Reader) (fsys fs.FS, err error) {
 	case "NTFS":
 		fsys, err = ntfs.New(readSeekerAt)
 	}
-	return
+	return fsys, err
 }

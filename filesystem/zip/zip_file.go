@@ -66,7 +66,6 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 
 // Name returns the name of the file.
 func (f *File) Name() string {
-
 	return filepath.ToSlash(filepath.Base(f.path))
 }
 

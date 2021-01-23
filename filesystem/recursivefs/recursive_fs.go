@@ -65,7 +65,6 @@ func (fsys *FS) Open(name string) (f fs.File, err error) {
 	var childFS fs.FS = osfs.New()
 	var childName = ""
 	for _, elem := range elems {
-
 		if f != nil {
 			childFS, err = fsFromName(elem.Parser, f)
 			if err != nil {

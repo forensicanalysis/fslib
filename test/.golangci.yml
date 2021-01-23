@@ -84,3 +84,4 @@ issues:
     - deprecated
     - ReplaceAll
     - Comment should end in a period
+    - "`file` can be `io.Closer`"

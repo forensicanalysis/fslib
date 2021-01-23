@@ -84,7 +84,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 	case os.SEEK_CUR:
 		offset += f.offset
 	case os.SEEK_END:
-		offset += int64(f.size)
+		offset += f.size
 	default:
 		return 0, syscall.EINVAL
 	}
