@@ -33,7 +33,6 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
 )
@@ -99,24 +98,24 @@ func (*FS) Name() (name string) { return "System FS" }
 
 // Open opens a file for reading.
 func (systemfs *FS) Open(name string) (item fs.File, err error) {
-	name, err = filesystem.Clean(name)
-	if err != nil {
-		return nil, err
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
 	if name == "/" {
 		return &Root{fs: systemfs}, nil
 	}
 	for _, plugin := range systemfs.plugins {
-		fs, namePart := plugin.FS(name)
-		if fs != nil {
-			return fs.Open(namePart)
+		fsys, namePart := plugin.FS(name)
+		if fsys != nil {
+			return fsys.Open(namePart)
 		}
 	}
 
-	fs := osfs.New()
+	fsys := osfs.New()
 
-	item, err = fs.Open(name)
+	item, err = fsys.Open(name)
 	if err == nil {
 		return item, nil
 	}
@@ -156,9 +155,9 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 
 // Stat returns an os.FileInfo object that describes a file.
 func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
-	name, err = filesystem.Clean(name)
-	if err != nil {
-		return nil, err
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
 	if name == "/" {

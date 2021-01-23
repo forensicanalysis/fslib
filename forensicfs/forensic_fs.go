@@ -27,12 +27,6 @@ import (
 	"syscall"
 )
 
-// FileDefaults implements default methods for files.
-type FileDefaults struct{}
-
-// Readdirnames returns an error for files.
-func (*FileDefaults) Readdirnames(count int) ([]string, error) { return nil, syscall.EPERM }
-
 // FileInfoDefaults implements default methods for file infos.
 type FileInfoDefaults struct{}
 

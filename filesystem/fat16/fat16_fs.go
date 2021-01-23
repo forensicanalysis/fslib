@@ -25,6 +25,7 @@ package fat16
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log"
@@ -32,7 +33,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
@@ -94,11 +94,14 @@ func (m *FS) getVolumeName() (string, error) {
 
 // Open opens a file for reading.
 func (m *FS) Open(name string) (f fs.File, err error) {
-	name, err = filesystem.Clean(name)
-	if err != nil {
-		return
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
-	name = name[1:]
+
+	if name == "." {
+		name = ""
+	}
 
 	name, de, err := m.getDirectoryEntry(2, m.vh.RootdirEntryCount, name)
 	if err != nil {

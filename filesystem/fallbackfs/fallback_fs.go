@@ -28,10 +28,9 @@
 package fallbackfs
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
-
-	"github.com/forensicanalysis/fslib/filesystem"
 )
 
 // New creates a new fallback FS.
@@ -50,9 +49,9 @@ func (*FS) Name() (name string) { return "Fallback FS" }
 
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (item fs.File, err error) {
-	name, err = filesystem.Clean(name)
-	if err != nil {
-		return
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
 	for _, fallbackFilesystem := range fsys.fallbackFilesystems {
@@ -67,9 +66,9 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 
 // Stat returns an os.FileInfo object that describes a file.
 func (fsys *FS) Stat(name string) (info os.FileInfo, err error) {
-	name, err = filesystem.Clean(name)
-	if err != nil {
-		return
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
 	for _, fallbackFilesystem := range fsys.fallbackFilesystems {

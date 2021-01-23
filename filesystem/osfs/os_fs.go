@@ -26,8 +26,8 @@ package osfs
 
 import (
 	"errors"
+	"fmt"
 	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/filesystem"
 	"io/fs"
 	"os"
 	"runtime"
@@ -108,9 +108,9 @@ func sysname(name string) (string, string, error) {
 	if runtime.GOOS == windows && len(name) > 2 && name[2] != '/' {
 		return "", "", errors.New("partition must be followed by a slash")
 	}
-	name, err := filesystem.Clean(name)
-	if err != nil {
-		return name, name, err
+	valid := fs.ValidPath(name)
+	if !valid {
+		return "", "", fmt.Errorf("path %s invalid", name)
 	}
 	if name == "/" {
 		return "/", "/", nil

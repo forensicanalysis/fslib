@@ -1,26 +1,96 @@
 package fslib_test
 
 import (
-	"io/fs"
-	"testing"
-
-	"github.com/forensicanalysis/fslib/filesystem/fat16"
 	"github.com/forensicanalysis/fslib/filesystem/gpt"
 	"github.com/forensicanalysis/fslib/filesystem/mbr"
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
-	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
 	"github.com/forensicanalysis/fslib/filesystem/systemfs"
-	"github.com/forensicanalysis/fslib/filesystem/zip"
+	"io/fs"
+	"os"
+	"testing"
+	"testing/fstest"
+
+	"github.com/forensicanalysis/fslib/filesystem/fat16"
 )
 
-func TestFiles(t *testing.T) {
-	var _ fs.ReadDirFile = &fat16.Item{}
-	var _ fs.ReadDirFile = &gpt.Root{}
-	var _ fs.ReadDirFile = &mbr.Root{}
-	var _ fs.ReadDirFile = &ntfs.Item{}
-	var _ fs.ReadDirFile = &recursivefs.Item{}
-	// var _ fs.ReadDirFile = &registryfs.Root{}
-	// var _ fs.ReadDirFile = &registryfs.Key{}
-	var _ fs.ReadDirFile = &systemfs.Root{}
-	var _ fs.ReadDirFile = &zip.File{}
+func TestFSs(t *testing.T) {
+	tests := []struct {
+		name string
+		fsys fs.FS
+		path string
+	}{
+		// {"FAT16", newFAT(t), "image/alps.jpg"}, TODO
+		// {"GPT", newGPT(t), "p0"},
+		// {"MBR", newMBR(t), "p0"},
+		// {"NTFS", newNTFS(t), "image/alps.jpg"}, TODO
+		// {"OSFS", osfs.New(), "."}, TODO
+		// {"System FS", newSystemFS(t), "."}, TODO
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := fstest.TestFS(tt.fsys, tt.path); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func newFAT(t *testing.T) fs.FS {
+	f, err := os.Open("test/data/filesystem/fat16.dd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fsys, err := fat16.New(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return fsys
+}
+
+func newMBR(t *testing.T) fs.FS {
+	f, err := os.Open("test/data/filesystem/mbr_fat16.dd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fsys, err := mbr.New(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return fsys
+}
+
+func newGPT(t *testing.T) fs.FS {
+	f, err := os.Open("test/data/filesystem/gpt_apfs.dd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fsys, err := gpt.New(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return fsys
+}
+
+func newNTFS(t *testing.T) fs.FS {
+	f, err := os.Open("test/data/filesystem/ntfs.dd")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fsys, err := ntfs.New(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return fsys
+}
+
+func newSystemFS(t *testing.T) fs.FS {
+	fsys, err := systemfs.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return fsys
 }

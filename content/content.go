@@ -24,13 +24,14 @@
 package content
 
 import (
+	"archive/zip"
 	"bytes"
 	"fmt"
+	"io"
+
 	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/filesystem/zip"
 	"github.com/forensicanalysis/fslib/filetype"
 	"github.com/forensicanalysis/fslib/fsio"
-	"io"
 )
 
 // Content returns the binary contents as a string.
@@ -64,17 +65,31 @@ func Content(r fsio.ReadSeekerAt) (content io.Reader, err error) {
 }
 
 func docxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
-	fsys, _ := zip.New(r)
+	size, err := fsio.GetSize(r)
+	if err != nil {
+		return nil, err
+	}
+	fsys, err := zip.NewReader(r, size)
+	if err != nil {
+		return nil, err
+	}
 	f, err := fslib.Open(fsys, "/word/document.xml")
 	return bytes.NewBufferString(xmlContent(f)), err
 }
 
 func xlsxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
 	// unzip -> xl/worksheets/sheetX.xml
-	fsys, _ := zip.New(r)
+	size, err := fsio.GetSize(r)
+	if err != nil {
+		return nil, err
+	}
+	fsys, err := zip.NewReader(r, size)
+	if err != nil {
+		return nil, err
+	}
 	s := &bytes.Buffer{}
 
-	r, err := fslib.Open(fsys, "/xl/sharedStrings.xml")
+	r, err = fslib.Open(fsys, "/xl/sharedStrings.xml")
 	if err == nil {
 		s.WriteString(xmlContent(r))
 	}
@@ -93,7 +108,14 @@ func xlsxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
 
 func pptxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
 	// unzip -> ppt/slides/slideX.xml
-	fsys, _ := zip.New(r)
+	size, err := fsio.GetSize(r)
+	if err != nil {
+		return nil, err
+	}
+	fsys, err := zip.NewReader(r, size)
+	if err != nil {
+		return nil, err
+	}
 	s := &bytes.Buffer{}
 	i := 1
 	for {

@@ -62,9 +62,6 @@ type Item interface {
 
 	// Name returns the name of the file.
 	Name() string
-
-	// Readdirnames returns up to n child items of a directory.
-	// Readdirnames(n int) ([]string, error)
 }
 
 type Readdirnamer interface {
@@ -133,7 +130,7 @@ func ToForensicPath(systemPath string) (name string, err error) {
 	}
 	if runtime.GOOS == windows {
 		name = strings.Replace(name, "\\", "/", -1)
-		name = "/" + name[:1] + name[2:]
+		name = name[:1] + name[2:]
 	}
-	return name, err
+	return name[1:], err
 }

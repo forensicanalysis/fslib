@@ -26,6 +26,7 @@ package registryfs
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -35,7 +36,6 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 
-	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
@@ -59,13 +59,12 @@ func (*FS) Name() (name string) { return "Registry FS" }
 
 // Open opens a file for reading.
 func (fs *FS) Open(name string) (item fs.File, err error) {
-	name, err = filesystem.Clean(name)
-	if err != nil {
-		return nil, err
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
-	name = name[1:]
 
-	if name == "" {
+	if name == "." {
 		return &Root{fs: fs}, nil
 	}
 

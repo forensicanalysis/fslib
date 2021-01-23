@@ -26,6 +26,7 @@ package testfs
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"os"
@@ -34,7 +35,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
@@ -48,9 +48,9 @@ func (*FS) Name() string { return "FS" }
 
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (fs.File, error) {
-	name, err := filesystem.Clean(name)
-	if err != nil {
-		return nil, err
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
 	name = strings.Trim(name, "/")
@@ -65,9 +65,9 @@ func (fsys *FS) Open(name string) (fs.File, error) {
 
 // Stat returns an os.FileInfo object that describes a file.
 func (fsys *FS) Stat(name string) (os.FileInfo, error) {
-	name, err := filesystem.Clean(name)
-	if err != nil {
-		return nil, err
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
 	name = strings.Trim(name, "/")
@@ -89,14 +89,13 @@ func (fsys *FS) CreateDir(name string) {
 	}
 	parts := strings.Split(name, "/")
 	for i := range parts {
-		name = strings.Join(parts[:i+1], "/")
+		name = strings.Join(parts[:i], "/")
 		fsys.items[name] = &Directory{fs: fsys, path: name}
 	}
 }
 
 // CreateFile adds a file and all required parent directories to the file system.
 func (fsys *FS) CreateFile(name string, data []byte) {
-	name = strings.TrimLeft(name, "/")
 	if fsys.items == nil {
 		fsys.items = map[string]fs.File{"": &Directory{fs: fsys, path: ""}}
 	}
@@ -105,7 +104,6 @@ func (fsys *FS) CreateFile(name string, data []byte) {
 
 // File describes a single file in the test file system.
 type File struct {
-	forensicfs.FileDefaults
 	forensicfs.FileInfoDefaults
 	name string
 	data *bytes.Reader

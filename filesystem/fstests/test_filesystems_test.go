@@ -29,9 +29,8 @@ import (
 	fsys "io/fs"
 	"os"
 	"testing"
+	"testing/fstest"
 	"time"
-
-	"github.com/forensicanalysis/fslib/filesystem/testfs"
 
 	"github.com/forensicanalysis/fslib/fsio"
 )
@@ -53,10 +52,10 @@ func TestGetDefaultContainerTests(t *testing.T) {
 }
 
 func TestRunTest(t *testing.T) {
-	fs := &testfs.FS{}
-	fs.CreateFile("test.bar1", []byte("test"))
-	fs.CreateFile("test.bar2", []byte("test"))
-	fs.CreateFile("test.bar3", []byte("test"))
+	fs := fstest.MapFS{}
+	fs["test.bar1"] = &fstest.MapFile{Data: []byte("test")}
+	fs["test.bar2"] = &fstest.MapFile{Data: []byte("test")}
+	fs["test.bar3"] = &fstest.MapFile{Data: []byte("test")}
 	n := func(f fsio.ReadSeekerAt) (fsys.FS, error) { return fs, nil }
 	type args struct {
 		t     *testing.T

@@ -25,6 +25,7 @@ package ntfs
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -33,8 +34,6 @@ import (
 	"time"
 
 	"www.velocidex.com/golang/go-ntfs/parser"
-
-	"github.com/forensicanalysis/fslib/filesystem"
 )
 
 // New creates a new ntfs FS.
@@ -61,24 +60,24 @@ type FS struct {
 func (*FS) Name() (name string) { return "NTFS" }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (item fs.File, err error) {
-	name, err = filesystem.Clean(name)
+func (fsys *FS) Open(name string) (item fs.File, err error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
+	}
+
+	dir, err := fsys.ntfsCtx.GetMFT(5)
 	if err != nil {
 		return nil, err
 	}
+	entry, err := dir.Open(fsys.ntfsCtx, name)
 
-	dir, err := fs.ntfsCtx.GetMFT(5)
-	if err != nil {
-		return nil, err
-	}
-	entry, err := dir.Open(fs.ntfsCtx, name)
-
-	return &Item{entry: entry, name: path.Base(name), path: name, ntfsCtx: fs.ntfsCtx}, err
+	return &Item{entry: entry, name: path.Base(name), path: name, ntfsCtx: fsys.ntfsCtx}, err
 }
 
 // Stat returns an os.FileInfo object that describes a file.
-func (fs *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fs.Open(name)
+func (fsys *FS) Stat(name string) (os.FileInfo, error) {
+	f, err := fsys.Open(name)
 	if err != nil {
 		return nil, err
 	}

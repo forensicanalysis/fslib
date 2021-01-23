@@ -26,17 +26,16 @@ import (
 	"io/ioutil"
 	"reflect"
 	"testing"
-
-	"github.com/forensicanalysis/fslib/filesystem/testfs"
+	"testing/fstest"
 )
 
 func TestFallbackFS_Open(t *testing.T) {
-	mem1 := &testfs.FS{}
-	mem2 := &testfs.FS{}
+	mem1 := fstest.MapFS{}
+	mem2 := fstest.MapFS{}
 
-	mem1.CreateFile("foo", []byte("fs1"))
-	mem2.CreateFile("foo", []byte("fs2"))
-	mem2.CreateFile("bar", []byte("bar2"))
+	mem1["foo"] = &fstest.MapFile{Data: []byte("fs1")}
+	mem2["foo"] = &fstest.MapFile{Data: []byte("fs2")}
+	mem2["bar"] = &fstest.MapFile{Data: []byte("bar2")}
 
 	fallbackFS := New(mem1, mem2)
 

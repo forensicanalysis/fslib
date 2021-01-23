@@ -33,8 +33,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
-
-	"github.com/forensicanalysis/fslib/filesystem/testfs"
+	"testing/fstest"
 )
 
 type MatchTest struct {
@@ -45,91 +44,91 @@ type MatchTest struct {
 }
 
 var matchTests = []MatchTest{
-	{"/*", "/", true, nil, false},
-	{"/\\*", "/", false, nil, false},
-	{"/*", "//", false, nil, false},
-	{"//*", "//", true, nil, false},
-	{"//*", "//debug/", false, nil, false},
-	{"//*", "///", false, nil, false},
-	{"/abc", "/abc", true, nil, true},
-	{"/*", "/abc", true, nil, true},
-	{"/*c", "/abc", true, nil, true},
-	{"/a*", "/a", true, nil, true},
-	{"/a*", "/abc", true, nil, true},
-	{"/a*", "/ab/c", false, nil, true},
-	{"/a*/b", "/abc/b", true, nil, true},
-	{"/a*/b", "/a/c/b", false, nil, true},
-	{"/a*b*c*d*e*/f", "/axbxcxdxe/f", true, nil, true},
-	{"/a*b*c*d*e*/f", "/axbxcxdxexxx/f", true, nil, true},
-	{"/a*b*c*d*e*/f", "/axbxcxdxe/xxx/f", false, nil, true},
-	{"/a*b*c*d*e*/f", "/axbxcxdxexxx/fff", false, nil, true},
-	{"/a*b?c*x", "/abxbbxdbxebxczzx", true, nil, true},
-	{"/a*b?c*x", "/abxbbxdbxebxczzy", false, nil, true},
-	{"/ab[c]", "/abc", true, nil, true},
-	{"/ab[b-d]", "/abc", true, nil, true},
-	{"/ab[e-g]", "/abc", false, nil, true},
-	{"/ab[^c]", "/abc", false, nil, true},
-	{"/ab[^b-d]", "/abc", false, nil, true},
-	{"/ab[^e-g]", "/abc", true, nil, true},
-	{"/a\\*b", "/ab", false, nil, true},
-	{"/a?b", "/a☺b", true, nil, true},
-	{"/a[^a]b", "/a☺b", true, nil, true},
-	{"/a???b", "/a☺b", false, nil, true},
-	{"/a[^a][^a][^a]b", "/a☺b", false, nil, true},
-	{"/[a-ζ]*", "/α", true, nil, true},
-	{"/*[a-ζ]", "/A", false, nil, true},
-	{"/a?b", "/a/b", false, nil, true},
-	{"/a*b", "/a/b", false, nil, true},
-	{"/[]a]", "/]", false, ErrBadPattern, true},
-	{"/[-]", "/-", false, ErrBadPattern, true},
-	{"/[x-]", "/x", false, ErrBadPattern, true},
-	{"/[x-]", "/-", false, ErrBadPattern, true},
-	{"/[x-]", "/z", false, ErrBadPattern, true},
-	{"/[-x]", "/x", false, ErrBadPattern, true},
-	{"/[-x]", "/-", false, ErrBadPattern, true},
-	{"/[-x]", "/a", false, ErrBadPattern, true},
-	{"/[a-b-c]", "/a", false, ErrBadPattern, true},
-	{"/[", "/a", false, ErrBadPattern, true},
-	{"/[^", "/a", false, ErrBadPattern, true},
-	{"/[^bc", "/a", false, ErrBadPattern, true},
-	// {"/a[", "/a", false, nil, false},
-	{"/a[", "/ab", false, ErrBadPattern, true},
-	{"/*x", "/xxx", true, nil, true},
-	{"/[abc]", "/b", true, nil, true},
-	{"/a/**", "/a", false, nil, true},
-	{"/a/**", "/a/b", true, nil, true},
-	{"/a/**", "/a/b/c", true, nil, true},
-	{"/**/c", "/c", true, nil, true},
-	{"/**/c", "/b/c", true, nil, true},
-	{"/**/c", "/a/b/c", true, nil, true},
-	{"/**/c", "/a/b", false, nil, true},
-	{"/**/c", "/abcd", false, nil, true},
-	{"/**/c", "/a/abc", false, nil, true},
-	{"/a/**/b", "/a/b", true, nil, true},
-	{"/a/**/c", "/a/b/c", true, nil, true},
-	{"/a/**/d", "/a/b/c/d", true, nil, true},
-	// {"/a//b/c", "/a/b/c", true, nil, true},
-	// {"/a/b/c", "/a/b//c", true, nil, true},
-	{"/ab{c,d}", "/abc", true, nil, true},
-	{"/ab{c,d,*}", "/abcde", true, nil, true},
-	{"/ab{c,d}[", "/abcd", false, ErrBadPattern, true},
-	{"/abc/**", "/abc/b", true, nil, true},
-	{"/**/abc", "/abc", true, nil, true},
-	{"/abc**", "/abc/b", false, nil, true},
-	{"/abc**", "/abc/b", false, nil, true},
-	{"/**2/d", "/a/b/c/d", false, nil, true},
-	{"/a/**2/d", "/a/b/c/d", true, nil, true},
-	{"/**3/d", "/a/b/c/d", true, nil, true},
-	{"/**5/d", "/a/b/c/d", true, nil, true},
-	{"/**/d", "/f/g/h/i/j/k/d", false, nil, true},
-	{"/**5/d", "/f/g/h/i/j/k/d", false, nil, true},
-	{"/**6/d", "/f/g/h/i/j/k/d", true, nil, true},
-	{"/**7/d", "/f/g/h/i/j/k/d", true, nil, true},
+	{"*", "", true, nil, false},
+	{"\\*", "", false, nil, false},
+	// {"*", ".", false, nil, false},
+	// {"*", "/", true, nil, false},
+	{"*", "debug/", false, nil, false},
+	// {"*", "//", false, nil, false},
+	{"abc", "abc", true, nil, true},
+	{"*", "abc", true, nil, true},
+	{"*c", "abc", true, nil, true},
+	{"a*", "a", true, nil, true},
+	{"a*", "abc", true, nil, true},
+	{"a*", "ab/c", false, nil, true},
+	{"a*/b", "abc/b", true, nil, true},
+	{"a*/b", "a/c/b", false, nil, true},
+	{"a*b*c*d*e*/f", "axbxcxdxe/f", true, nil, true},
+	{"a*b*c*d*e*/f", "axbxcxdxexxx/f", true, nil, true},
+	{"a*b*c*d*e*/f", "axbxcxdxe/xxx/f", false, nil, true},
+	{"a*b*c*d*e*/f", "axbxcxdxexxx/fff", false, nil, true},
+	{"a*b?c*x", "abxbbxdbxebxczzx", true, nil, true},
+	{"a*b?c*x", "abxbbxdbxebxczzy", false, nil, true},
+	{"ab[c]", "abc", true, nil, true},
+	{"ab[b-d]", "abc", true, nil, true},
+	{"ab[e-g]", "abc", false, nil, true},
+	{"ab[^c]", "abc", false, nil, true},
+	{"ab[^b-d]", "abc", false, nil, true},
+	{"ab[^e-g]", "abc", true, nil, true},
+	{"a\\*b", "ab", false, nil, true},
+	{"a?b", "a☺b", true, nil, true},
+	{"a[^a]b", "a☺b", true, nil, true},
+	{"a???b", "a☺b", false, nil, true},
+	{"a[^a][^a][^a]b", "a☺b", false, nil, true},
+	{"[a-ζ]*", "α", true, nil, true},
+	{"*[a-ζ]", "A", false, nil, true},
+	{"a?b", "a/b", false, nil, true},
+	{"a*b", "a/b", false, nil, true},
+	{"[]a]", "]", false, ErrBadPattern, true},
+	{"[-]", "-", false, ErrBadPattern, true},
+	{"[x-]", "x", false, ErrBadPattern, true},
+	{"[x-]", "-", false, ErrBadPattern, true},
+	{"[x-]", "z", false, ErrBadPattern, true},
+	{"[-x]", "x", false, ErrBadPattern, true},
+	{"[-x]", "-", false, ErrBadPattern, true},
+	{"[-x]", "a", false, ErrBadPattern, true},
+	{"[a-b-c]", "a", false, ErrBadPattern, true},
+	{"[", "a", false, ErrBadPattern, true},
+	{"[^", "a", false, ErrBadPattern, true},
+	{"[^bc", "a", false, ErrBadPattern, true},
+	// {"a[", "a", false, nil, false},
+	{"a[", "ab", false, ErrBadPattern, true},
+	{"*x", "xxx", true, nil, true},
+	{"[abc]", "b", true, nil, true},
+	{"a/**", "a", false, nil, true},
+	{"a/**", "a/b", true, nil, true},
+	{"a/**", "a/b/c", true, nil, true},
+	{"**/c", "c", true, nil, true},
+	{"**/c", "b/c", true, nil, true},
+	{"**/c", "a/b/c", true, nil, true},
+	{"**/c", "a/b", false, nil, true},
+	{"**/c", "abcd", false, nil, true},
+	{"**/c", "a/abc", false, nil, true},
+	{"a/**/b", "a/b", true, nil, true},
+	{"a/**/c", "a/b/c", true, nil, true},
+	{"a/**/d", "a/b/c/d", true, nil, true},
+	// {"a//b/c", "a/b/c", true, nil, true},
+	// {"a/b/c", "a/b//c", true, nil, true},
+	{"ab{c,d}", "abc", true, nil, true},
+	{"ab{c,d,*}", "abcde", true, nil, true},
+	{"ab{c,d}[", "abcd", false, ErrBadPattern, true},
+	{"abc/**", "abc/b", true, nil, true},
+	{"**/abc", "abc", true, nil, true},
+	{"abc**", "abc/b", false, nil, true},
+	{"abc**", "abc/b", false, nil, true},
+	{"**2/d", "a/b/c/d", false, nil, true},
+	{"a/**2/d", "a/b/c/d", true, nil, true},
+	{"**3/d", "a/b/c/d", true, nil, true},
+	{"**5/d", "a/b/c/d", true, nil, true},
+	{"**/d", "f/g/h/i/j/k/d", false, nil, true},
+	{"**5/d", "f/g/h/i/j/k/d", false, nil, true},
+	{"**6/d", "f/g/h/i/j/k/d", true, nil, true},
+	{"**7/d", "f/g/h/i/j/k/d", true, nil, true},
 }
 
 func TestMatch(t *testing.T) {
 	for idx, tt := range matchTests {
-		// Since Match() always uses "/" as the separator, we
+		// Since Match() always uses "" as the separator, we
 		// don't need to worry about the tt.testOnDisk flag
 		testMatchWith(t, idx, tt)
 	}
@@ -142,7 +141,7 @@ func testMatchWith(t *testing.T, idx int, tt MatchTest) {
 		}
 	}()
 
-	// Match() always uses "/" as the separator
+	// Match() always uses "" as the separator
 	ok, err := Match(tt.pattern, tt.testPath)
 	if ok != tt.shouldMatch || err != tt.expectedErr {
 		t.Errorf("#%v. Match(%#q, %#q) = %v, %v want %v, %v", idx, tt.pattern, tt.testPath, ok, err, tt.shouldMatch, tt.expectedErr)
@@ -205,8 +204,8 @@ func testGlobWith(t *testing.T, idx int, tt MatchTest) {
 	}()
 
 	tfs := getTestFS()
-	pattern := path.Join("/test", tt.pattern)
-	testPath := path.Join("/test", tt.testPath)
+	pattern := path.Join("test", tt.pattern)
+	testPath := path.Join("test", tt.testPath)
 	matches, err := Glob(tfs, pattern)
 	if inSlice(testPath, matches) != tt.shouldMatch {
 		if tt.shouldMatch {
@@ -240,39 +239,29 @@ func inSlice(s string, a []string) bool {
 	return false
 }
 
-func getTestFS() *testfs.FS {
-	infs := &testfs.FS{}
-	// create the test directory
-	dirs := []string{"/test/a/b/c", "/test/a/c", "/test/abc", "/test/axbxcxdxe/xxx", "/test/axbxcxdxexxx", "/test/b", "/test/f/g/h/i/j/k"}
-	for _, dir := range dirs {
-		infs.CreateDir(dir)
-	}
+func getTestFS() *fstest.MapFS {
+	infs := fstest.MapFS{}
 
 	// create test files
 	files := []string{
-		"/test/a/abc", "/test/a/b/c/d", "/test/a/c/b", "/test/abc/b", "/test/abcd", "/test/abcde", "/test/abxbbxdbxebxczzx",
-		"/test/abxbbxdbxebxczzy", "/test/axbxcxdxe/f", "/test/axbxcxdxe/xxx/f", "/test/axbxcxdxexxx/f",
-		"/test/axbxcxdxexxx/fff", "/test/a☺b", "/test/b/c", "/test/c", "/test/x", "/test/xxx", "/test/z",
-		"/test/α", "/test/f/g/h/i/j/k/l", "/test/f/g/h/i/j/k/d", "/test/f/g/h/i/j/k/u.bin", "/test/f/g/h/i/j/k/v.bin",
+		"test/a/abc", "test/a/b/c/d", "test/a/c/b", "test/abc/b", "test/abcd", "test/abcde", "test/abxbbxdbxebxczzx",
+		"test/abxbbxdbxebxczzy", "test/axbxcxdxe/f", "test/axbxcxdxe/xxx/f", "test/axbxcxdxexxx/f",
+		"test/axbxcxdxexxx/fff", "test/a☺b", "test/b/c", "test/c", "test/x", "test/xxx", "test/z",
+		"test/α", "test/f/g/h/i/j/k/l", "test/f/g/h/i/j/k/d", "test/f/g/h/i/j/k/u.bin", "test/f/g/h/i/j/k/v.bin",
 	}
 
 	for _, file := range files {
-		infs.CreateFile(file, []byte("test"))
+		infs[file] = &fstest.MapFile{Data: []byte("test")}
 	}
 
-	return infs
+	return &infs
 }
 
 func getInFS() fs.FS {
-	infs := &testfs.FS{}
-	content := []byte("test")
-	dirs := []string{"/dir/", "/dir/a/", "/dir/b/", "/dir/a/a/", "/dir/a/b/", "/dir/b/a/", "/dir/b/b/"}
-	for _, dir := range dirs {
-		infs.CreateDir(dir)
-	}
-	files := []string{"/foo.bin", "/dir/bar.bin", "/dir/baz.bin", "/dir/a/a/foo.bin", "/dir/a/b/foo.bin", "/dir/b/a/foo.bin", "/dir/b/b/foo.bin"}
+	infs := fstest.MapFS{}
+	files := []string{"foo.bin", "dir/bar.bin", "dir/baz.bin", "dir/a/a/foo.bin", "dir/a/b/foo.bin", "dir/b/a/foo.bin", "dir/b/b/foo.bin"}
 	for _, file := range files {
-		infs.CreateFile(file, content)
+		infs[file] = &fstest.MapFile{Data: []byte("test")}
 	}
 	return infs
 }
@@ -287,13 +276,13 @@ func Test_expandPath(t *testing.T) {
 		args args
 		want []string
 	}{
-		{"Expand path 1", args{getInFS(), "/*/bar.bin"}, []string{"/dir/bar.bin"}},
-		{"Expand path 2", args{getInFS(), "/dir/*.bin"}, []string{"/dir/bar.bin", "/dir/baz.bin"}},
-		{"Expand path 3", args{getInFS(), "/dir/*/*/foo.bin"}, []string{"/dir/a/a/foo.bin", "/dir/a/b/foo.bin", "/dir/b/a/foo.bin", "/dir/b/b/foo.bin"}},
-		{"Expand path 4", args{getInFS(), "/**"}, []string{"/dir", "/dir/a", "/dir/a/a", "/dir/a/b", "/dir/b", "/dir/b/a", "/dir/b/b", "/dir/bar.bin", "/dir/baz.bin", "/foo.bin"}},
-		{"Expand path 5", args{getInFS(), "/dir/**2/foo.bin"}, []string{"/dir/a/a/foo.bin", "/dir/a/b/foo.bin", "/dir/b/a/foo.bin", "/dir/b/b/foo.bin"}},
-		{"Expand path 6", args{getInFS(), "/dir/**1"}, []string{"/dir/a", "/dir/b", "/dir/bar.bin", "/dir/baz.bin"}},
-		{"Expand path 7", args{getInFS(), "/dir/**10"}, []string{"/dir/a", "/dir/a/a", "/dir/a/a/foo.bin", "/dir/a/b", "/dir/a/b/foo.bin", "/dir/b", "/dir/b/a", "/dir/b/a/foo.bin", "/dir/b/b", "/dir/b/b/foo.bin", "/dir/bar.bin", "/dir/baz.bin"}},
+		{"Expand path 1", args{getInFS(), "*/bar.bin"}, []string{"dir/bar.bin"}},
+		{"Expand path 2", args{getInFS(), "dir/*.bin"}, []string{"dir/bar.bin", "dir/baz.bin"}},
+		{"Expand path 3", args{getInFS(), "dir/*/*/foo.bin"}, []string{"dir/a/a/foo.bin", "dir/a/b/foo.bin", "dir/b/a/foo.bin", "dir/b/b/foo.bin"}},
+		{"Expand path 4", args{getInFS(), "**"}, []string{"dir", "dir/a", "dir/a/a", "dir/a/b", "dir/b", "dir/b/a", "dir/b/b", "dir/bar.bin", "dir/baz.bin", "foo.bin"}},
+		{"Expand path 5", args{getInFS(), "dir/**2/foo.bin"}, []string{"dir/a/a/foo.bin", "dir/a/b/foo.bin", "dir/b/a/foo.bin", "dir/b/b/foo.bin"}},
+		{"Expand path 6", args{getInFS(), "dir/**1"}, []string{"dir/a", "dir/b", "dir/bar.bin", "dir/baz.bin"}},
+		{"Expand path 7", args{getInFS(), "dir/**10"}, []string{"dir/a", "dir/a/a", "dir/a/a/foo.bin", "dir/a/b", "dir/a/b/foo.bin", "dir/b", "dir/b/a", "dir/b/a/foo.bin", "dir/b/b", "dir/b/b/foo.bin", "dir/bar.bin", "dir/baz.bin"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -423,8 +412,8 @@ func Test_readDir(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		{"read dir", args{&testfs.FS{}, "/"}, nil, false},
-		{"read dir error", args{&testfs.FS{}, "/x"}, nil, true},
+		{"read dir", args{&fstest.MapFS{}, ""}, nil, false},
+		{"read dir error", args{&fstest.MapFS{}, "x"}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

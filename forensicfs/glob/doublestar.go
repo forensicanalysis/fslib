@@ -263,7 +263,7 @@ func Glob(fsys fs.FS, pattern string) (matches []string, err error) {
 			return doGlob(fsys, fmt.Sprintf("%s%s", volumeName, "/"), patternComponents[startComponentIndex:], matches)
 		}
 	*/
-	return doGlob(fsys, "/", patternComponents[1:], matches, -2)
+	return doGlob(fsys, "", patternComponents[1:], matches, -2)
 	// otherwise, it's a relative pattern
 	// return doGlob(fsys, "/", patternComponents, matches)
 }

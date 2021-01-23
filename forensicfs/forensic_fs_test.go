@@ -23,37 +23,8 @@ package forensicfs
 
 import (
 	"os"
-	"reflect"
 	"testing"
 )
-
-func TestFileDefaults_Readdirnames(t *testing.T) {
-	type args struct {
-		count int
-	}
-	tests := []struct {
-		name    string
-		f       *FileDefaults
-		args    args
-		want    []string
-		wantErr bool
-	}{
-		{"get error", &FileDefaults{}, args{0}, nil, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			f := &FileDefaults{}
-			got, err := f.Readdirnames(tt.args.count)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FileDefaults.Readdirnames() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FileDefaults.Readdirnames() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestFileInfoDefaults_IsDir(t *testing.T) {
 	tests := []struct {

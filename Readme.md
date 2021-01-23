@@ -55,7 +55,7 @@ func main() {
 	root, _ := fs.Open("/")
 
 	// get filenames
-	filenames, _ := root.Readdirnames(0)
+	filenames, _ := fslib.Readdirnames(root, 0)
 
 	// print filenames
 	fmt.Println(filenames)
@@ -69,7 +69,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib/filesystem/osfs"
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
 	"io/ioutil"
 	"os"
@@ -84,7 +84,7 @@ func main() {
 
 	// create fslib path
 	wd, _ := os.Getwd()
-	fpath, _ := osfs.ToForensicPath(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
+	fpath, _ := fslib.ToForensicPath(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
 
 	// get handle the README.md
 	file, _ := fs.Open(fpath)

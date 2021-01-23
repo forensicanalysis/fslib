@@ -151,8 +151,8 @@ func (m *FS) getDirectoryEntry(cluster int64, count uint16, name string) (filena
 	log.Println("getDirectoryEntry", name, cluster, count)
 	if name == "" {
 		var root [8]byte
-		copy(root[:], "/")
-		return "/", &namedEntry{
+		copy(root[:], ".")
+		return ".", &namedEntry{
 			name: filename,
 			directoryEntry: directoryEntry{
 				Filename:          root,

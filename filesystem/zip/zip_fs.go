@@ -24,13 +24,13 @@ package zip
 
 import (
 	"archive/zip"
+	"fmt"
 	"io/fs"
 	"os"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/afero/zipfs"
 
-	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
@@ -56,24 +56,24 @@ func New(base fsio.ReadSeekerAt) (*FS, error) {
 }
 
 // Name returns the name of the file system.
-func (fs *FS) Name() string {
+func (fsys *FS) Name() string {
 	return "ZIP"
 }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (fs.File, error) {
-	name, err := filesystem.Clean(name)
-	if err != nil {
-		return nil, err
+func (fsys *FS) Open(name string) (fs.File, error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
-	aferoItem, err := fs.internal.Open(name)
+	aferoItem, err := fsys.internal.Open(name)
 	return &File{aferoItem}, err
 }
 
 // Stat returns an os.FileInfo object that describes a file.
-func (fs *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fs.Open(name)
+func (fsys *FS) Stat(name string) (os.FileInfo, error) {
+	f, err := fsys.Open(name)
 	if err != nil {
 		return nil, err
 	}

@@ -22,20 +22,20 @@
 package recursivefs
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
-	"github.com/forensicanalysis/fslib"
 	"io"
 	"io/fs"
 	"path"
 	"strings"
 
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/fat16"
 	"github.com/forensicanalysis/fslib/filesystem/gpt"
 	"github.com/forensicanalysis/fslib/filesystem/mbr"
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
-	"github.com/forensicanalysis/fslib/filesystem/zip"
 	"github.com/forensicanalysis/fslib/filetype"
 	"github.com/forensicanalysis/fslib/fsio"
 )
@@ -49,7 +49,9 @@ func parseRealPath(sample string) (rpath []element, err error) {
 	}
 
 	key := "/"
-	var fsys fslib.FS = osfs.New()
+	var fsys fs.FS = osfs.New()
+	var fsName string
+	var isFS bool
 	for len(parts) > 0 {
 		key = path.Join(key, parts[0])
 		parts = parts[1:]
@@ -64,9 +66,9 @@ func parseRealPath(sample string) (rpath []element, err error) {
 				return nil, err
 			}
 
-			rpath = append(rpath, element{fsys.Name(), key})
+			rpath = append(rpath, element{fsName, key})
 			key = "/"
-			isFs, fsName, err := detectFsFromFile(file)
+			isFS, fsName, err = detectFsFromFile(file)
 			if err != nil {
 				return nil, fmt.Errorf("error detection fsys %s: %w", key, err)
 			}
@@ -74,11 +76,11 @@ func parseRealPath(sample string) (rpath []element, err error) {
 			if err != nil {
 				return nil, fmt.Errorf("could not get fsys from name %s: %w", fsName, err)
 			}
-			if !isFs && len(parts) > 0 {
+			if !isFS && len(parts) > 0 {
 				return nil, errors.New("could not resolve path")
 			}
 		} else if len(parts) == 0 {
-			rpath = append(rpath, element{fsys.Name(), key})
+			rpath = append(rpath, element{fsName, key})
 		}
 	}
 	return rpath, nil
@@ -110,20 +112,24 @@ func detectFsFromFile(base fslib.Item) (isFs bool, fs string, err error) {
 	return true, fs, err
 }
 
-func fsFromName(name string, f fsio.ReadSeekerAt) (fs fslib.FS, err error) {
+func fsFromName(name string, f fsio.ReadSeekerAt) (fsys fs.FS, err error) {
 	switch name {
 	case "OsFs":
-		fs = osfs.New()
+		fsys = osfs.New()
 	case "ZIP":
-		fs, err = zip.New(f)
+		size, err := fsio.GetSize(f)
+		if err != nil {
+			return nil, err
+		}
+		fsys, err = zip.NewReader(f, size)
 	case "FAT16":
-		fs, err = fat16.New(f)
+		fsys, err = fat16.New(f)
 	case "MBR":
-		fs, err = mbr.New(f)
+		fsys, err = mbr.New(f)
 	case "GPT":
-		fs, err = gpt.New(f)
+		fsys, err = gpt.New(f)
 	case "NTFS":
-		fs, err = ntfs.New(f)
+		fsys, err = ntfs.New(f)
 	}
 	return
 }

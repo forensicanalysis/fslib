@@ -72,13 +72,13 @@ func GetDefaultContainerTests() map[string]*PathTest {
 	var anySys interface{}
 
 	// Path Test
-	rootTest := PathTest{"Root Test", "/", "/", 0, os.ModeDir | 0777, anyTime, true, anySys, rootFiles, []byte{}}
-	dir1Test := PathTest{"Dir 1 Test", "/document", "document", 0, os.ModeDir | 0755, dirTime, true, anySys, dirFiles, []byte{}}
-	dir2Test := PathTest{"Dir 2 Test", "/container", "container", 0, os.ModeDir | 0755, dir2Time, true, anySys, dir2Files, []byte{}}
-	file1Test := PathTest{"File 1 Test", "/README.md", "README.md", 496, 0644, fileTime, false, anySys, []string{}, file1Head}
-	file2Test := PathTest{"File 2 Test", "/image/alps.jpg", "alps.jpg", 344415, 0644, fileTime, false, anySys, []string{}, file2Head}
-	file3Test := PathTest{"File 3 Test", "/image/alps.png", "alps.png", 1338018, 0644, fileTime, false, anySys, []string{}, file3Head}
-	file4Test := PathTest{"File 4 Test", "/image/alps.tiff", "alps.tiff", 4994190, 0644, fileTime, false, anySys, []string{}, file4Head}
+	rootTest := PathTest{"Root Test", ".", ".", 0, os.ModeDir | 0777, anyTime, true, anySys, rootFiles, []byte{}}
+	dir1Test := PathTest{"Dir 1 Test", "document", "document", 0, os.ModeDir | 0755, dirTime, true, anySys, dirFiles, []byte{}}
+	dir2Test := PathTest{"Dir 2 Test", "container", "container", 0, os.ModeDir | 0755, dir2Time, true, anySys, dir2Files, []byte{}}
+	file1Test := PathTest{"File 1 Test", "README.md", "README.md", 496, 0644, fileTime, false, anySys, []string{}, file1Head}
+	file2Test := PathTest{"File 2 Test", "image/alps.jpg", "alps.jpg", 344415, 0644, fileTime, false, anySys, []string{}, file2Head}
+	file3Test := PathTest{"File 3 Test", "image/alps.png", "alps.png", 1338018, 0644, fileTime, false, anySys, []string{}, file3Head}
+	file4Test := PathTest{"File 4 Test", "image/alps.tiff", "alps.tiff", 4994190, 0644, fileTime, false, anySys, []string{}, file4Head}
 
 	return map[string]*PathTest{
 		"rootTest":  &rootTest,

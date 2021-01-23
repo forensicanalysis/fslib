@@ -32,7 +32,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/forensicfs"
 	"github.com/forensicanalysis/fslib/fsio"
 )
@@ -50,34 +49,34 @@ func New(decoder io.ReadSeeker) (*FS, error) {
 }
 
 // Name returns the filesystem name.
-func (fs *FS) Name() string { return "MBR" }
+func (fsys *FS) Name() string { return "MBR" }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (fs.File, error) {
-	name, err := filesystem.Clean(name)
-	if err != nil {
-		return nil, err
+func (fsys *FS) Open(name string) (fs.File, error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
-	if name == "/" {
-		return &Root{mbr: fs.mbr}, nil
+	if name == "." {
+		return &Root{mbr: fsys.mbr}, nil
 	}
-	if !strings.HasPrefix(name, "/p") {
-		return nil, fmt.Errorf("needs to start with '/p' is %s", name)
+	if !strings.HasPrefix(name, "p") {
+		return nil, fmt.Errorf("needs to start with 'p' is %s", name)
 	}
-	name = name[2:]
+	name = name[1:]
 	index, err := strconv.Atoi(name)
 	if err != nil {
 		return nil, err
 	}
-	partition := fs.mbr.Partitions()[index]
+	partition := fsys.mbr.Partitions()[index]
 	f := NewPartition(index, &partition)
 	return f, nil
 }
 
 // Stat returns an os.FileInfo object that describes a partition.
-func (fs *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fs.Open(name)
+func (fsys *FS) Stat(name string) (os.FileInfo, error) {
+	f, err := fsys.Open(name)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,6 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 
 // Partition implements fs.File
 type Partition struct {
-	forensicfs.FileDefaults
 	*io.SectionReader
 	name      int
 	partition *PartitionEntry
@@ -141,7 +139,7 @@ type Root struct {
 }
 
 // Name always returns / for MBR roots.
-func (r *Root) Name() string { return "/" }
+func (r *Root) Name() string { return "." }
 
 func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
 	var partitionInfos []fs.DirEntry

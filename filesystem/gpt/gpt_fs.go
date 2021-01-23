@@ -26,13 +26,12 @@ package gpt
 import (
 	"fmt"
 	"io"
-	fsys "io/fs"
+	"io/fs"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/forensicfs"
 	"github.com/forensicanalysis/fslib/fsio"
 )
@@ -50,36 +49,36 @@ func New(decoder io.ReadSeeker) (*FS, error) {
 }
 
 // Name returns the filesystem name.
-func (fs *FS) Name() string {
+func (fsys *FS) Name() string {
 	return "GPT"
 }
 
 // Open returns a File for the given location.
-func (fs *FS) Open(name string) (fsys.File, error) {
-	name, err := filesystem.Clean(name)
-	if err != nil {
-		return nil, err
+func (fsys *FS) Open(name string) (fs.File, error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
-	if name == "/" {
-		return &Root{gpt: fs.gpt}, nil
+	if name == "." {
+		return &Root{gpt: fsys.gpt}, nil
 	}
-	if !strings.HasPrefix(name, "/p") {
-		return nil, fmt.Errorf("needs to start with '/p' is %s", name)
+	if !strings.HasPrefix(name, "p") {
+		return nil, fmt.Errorf("needs to start with 'p' is %s", name)
 	}
-	name = name[2:]
+	name = name[1:]
 	index, err := strconv.Atoi(name)
 	if err != nil {
 		return nil, err
 	}
-	partitionEntry := fs.gpt.Primary().Entries()[index]
+	partitionEntry := fsys.gpt.Primary().Entries()[index]
 	f := NewPartition(index, &partitionEntry)
 	return f, nil
 }
 
 // Stat returns an os.FileInfo object that describes a partition.
-func (fs *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fs.Open(name)
+func (fsys *FS) Stat(name string) (os.FileInfo, error) {
+	f, err := fsys.Open(name)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +87,6 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 
 // Partition implements fs.File
 type Partition struct {
-	forensicfs.FileDefaults
 	*io.SectionReader
 	name      int
 	partition *PartitionEntry
@@ -134,10 +132,9 @@ func (p *Partition) ModTime() time.Time { return time.Time{} }
 // Sys returns the PartitionEntry.
 func (p *Partition) Sys() interface{} { return p.partition }
 
-func (p *Partition) Type() fsys.FileMode { return p.Mode() }
+func (p *Partition) Type() fs.FileMode { return p.Mode() }
 
-func (p *Partition) Info() (fsys.FileInfo, error) { return p, nil }
-
+func (p *Partition) Info() (fs.FileInfo, error) { return p, nil }
 
 // Root is a pseudo root directory containing the partitions.
 type Root struct {
@@ -146,10 +143,10 @@ type Root struct {
 }
 
 // Name always returns '/' for GPT roots.
-func (r *Root) Name() string { return "/" }
+func (r *Root) Name() string { return "." }
 
-func (r *Root) ReadDir(count int) ([]fsys.DirEntry, error) {
-	var partitionInfos []fsys.DirEntry
+func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
+	var partitionInfos []fs.DirEntry
 	partitions := r.gpt.Primary().Entries()
 	for index, partition := range partitions {
 		if count != 0 && index == count {
