@@ -22,7 +22,6 @@
 package fallbackfs
 
 import (
-	"io/fs"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -49,9 +48,9 @@ func TestFallbackFS_Open(t *testing.T) {
 		wantData []byte
 		wantErr  bool
 	}{
-		{"Fallback Test 1", fallbackFS, args{"/foo"}, []byte("fs1"), false},
-		{"Fallback Test 2", fallbackFS, args{"/bar"}, []byte("bar2"), false},
-		{"Fallback Test failing", fallbackFS, args{"bar"}, []byte("bar2"), true},
+		{"Fallback Test 1", fallbackFS, args{"foo"}, []byte("fs1"), false},
+		{"Fallback Test 2", fallbackFS, args{"bar"}, []byte("bar2"), false},
+		{"Fallback Test failing", fallbackFS, args{"/bar"}, []byte("bar2"), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -76,29 +75,6 @@ func TestFallbackFS_Open(t *testing.T) {
 				if info.IsDir() {
 					t.Errorf("FallbackFS.IsDir() = %v, want %v", info.IsDir(), false)
 				}
-			}
-		})
-	}
-}
-
-func TestFS_Name(t *testing.T) {
-	type fields struct {
-		fallbackFilesystems []fs.FS
-	}
-	tests := []struct {
-		name     string
-		fields   fields
-		wantName string
-	}{
-		{"Name", fields{nil}, "Fallback FS"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			f := &FS{
-				fallbackFilesystems: tt.fields.fallbackFilesystems,
-			}
-			if gotName := f.Name(); gotName != tt.wantName {
-				t.Errorf("FS.Name() = %v, want %v", gotName, tt.wantName)
 			}
 		})
 	}

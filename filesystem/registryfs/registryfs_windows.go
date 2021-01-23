@@ -35,8 +35,6 @@ import (
 	"time"
 
 	"golang.org/x/sys/windows/registry"
-
-	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
 var registryRoots = map[string]registry.Key{
@@ -89,7 +87,6 @@ func (fs *FS) Stat(name string) (os.FileInfo, error) {
 
 // Root is a pseudo root for the Windows registry.
 type Root struct {
-	forensicfs.DirectoryDefaults
 	fs *FS
 }
 
@@ -131,7 +128,6 @@ func (r *Root) Stat() (os.FileInfo, error) { return r, nil }
 
 // Key is an entry in the registry.
 type Key struct {
-	forensicfs.DirectoryDefaults
 	Key  *registry.Key
 	name string
 	path string

@@ -55,9 +55,6 @@ func New(decoder fsio.ReadSeekerAt) (*FS, error) {
 	return &FS{vh: vh, decoder: decoder}, err
 }
 
-// Name returns the name of the file system.
-func (m *FS) Name() string { return "FAT16" }
-
 /*
 func (m *FS) getVolumeName() (string, error) {
 	rootDirStart := (int64(m.vh.SectorsPerFat)*int64(m.vh.FatCount) + 1) * 512
@@ -112,15 +109,6 @@ func (m *FS) Open(name string) (f fs.File, err error) {
 	return f, nil
 }
 
-// Stat returns an os.FileInfo object that describes a file.
-func (m *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := m.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	return f.Stat()
-}
-
 // Item describes files and directories in the FAT16 file system.
 type Item struct {
 	*io.SectionReader
@@ -172,33 +160,6 @@ func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
 	for name, entry := range entries {
 		if name != "." && name != ".." {
 			infos = append(infos, entry)
-			n--
-			if n == 0 {
-				break
-			}
-		}
-	}
-	return infos, err
-}
-
-// Readdirnames returns up to n child items of a directory.
-func (i *Item) Readdirnames(n int) ([]string, error) {
-	if !i.IsDir() {
-		return nil, errors.New("cannot call Readdirnames on a file")
-	}
-	de := i.directoryEntry
-
-	size := int64(de.FileSize)
-	if size == 0 {
-		size = int64(i.fs.vh.SectorSize) * int64(i.fs.vh.SectorsPerCluster)
-	}
-
-	log.Printf("Readdirnames startingcluster: %d size: %d", de.Startingcluster, size)
-	entries, err := i.fs.getDirectoryEntries(int64(de.Startingcluster), uint16(size/32))
-	var infos []string
-	for name := range entries {
-		if name != "." && name != ".." {
-			infos = append(infos, name)
 			n--
 			if n == 0 {
 				break

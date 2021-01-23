@@ -23,6 +23,7 @@
 package filetype
 
 import (
+	"bufio"
 	"io"
 	"strings"
 
@@ -65,9 +66,9 @@ func newFiletype(id ID, t types.Type, matcher func([]byte) bool, layer int) *Fil
 }
 
 // DetectReader identifies a Filetype for an io.Reader.
-func DetectReader(r io.Reader) (*Filetype, error) {
-	head := make([]byte, 8192)
-	if _, err := r.Read(head); err != nil {
+func DetectReader(r *bufio.Reader) (*Filetype, error) {
+	head, err := r.Peek(8192)
+	if err != nil && err != io.EOF {
 		return nil, err
 	}
 

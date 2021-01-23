@@ -135,7 +135,7 @@ func TestOSFSItem_Readdirnames(t *testing.T) {
 }
 
 func TestWindowsRoot(t *testing.T) {
-	root, err := New().Open("/")
+	root, err := New().Open(".")
 	if err != nil {
 		t.Error(err)
 		return

@@ -23,21 +23,20 @@
 package content
 
 import (
-	"io"
-
+	"bytes"
 	"github.com/ledongthuc/pdf"
-
-	"github.com/forensicanalysis/fslib/fsio"
+	"io"
 )
 
 // PDFContent returns the text data from a pdf file.
-func PDFContent(r fsio.ReadSeekerAt) (io.Reader, error) {
-	size, err := fsio.GetSize(r)
+func PDFContent(r io.Reader) (io.Reader, error) {
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
+	br := bytes.NewReader(b)
 
-	file, err := pdf.NewReader(r, size)
+	file, err := pdf.NewReader(br, br.Size())
 	if err != nil {
 		return nil, err
 	}

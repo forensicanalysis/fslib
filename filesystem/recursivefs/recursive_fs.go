@@ -28,10 +28,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/forensicanalysis/fslib/fsio"
 	"io/fs"
 	"os"
-	"path"
 	"sort"
 )
 
@@ -48,38 +48,42 @@ type FS struct{}
 func New() *FS { return &FS{} }
 
 // Name returns the filesystem name.
-func (fs *FS) Name() string { return "RecFS" }
+func (fsys *FS) Name() string { return "RecFS" }
 
 // Open returns a File for the given location.
-func (fs *FS) Open(name string) (f fs.File, err error) {
-	name = path.Clean(name)
+func (fsys *FS) Open(name string) (f fs.File, err error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
+	}
 
 	elems, err := parseRealPath(name)
 	if err != nil {
 		return
 	}
 
+	var childFS fs.FS = osfs.New()
+	var childName = ""
 	for _, elem := range elems {
-		if readSeekerAtItem, ok := f.(fsio.ReadSeekerAt); f == nil || ok {
-			childFS, err := fsFromName(elem.Parser, readSeekerAtItem)
+
+		if f != nil {
+			childFS, err = fsFromName(elem.Parser, f)
 			if err != nil {
 				return nil, err
 			}
 
-			if f != nil {
-				fi, err := f.Stat()
-				if err == nil && fi.IsDir() {
-					f.Close() // nolint: errcheck
-				}
+			fi, err := f.Stat()
+			if err == nil && fi.IsDir() {
+				f.Close() // nolint: errcheck
 			}
-
-			f, err = childFS.Open(elem.Key)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, errors.New("not a file does not implement Seek and ReadAt")
 		}
+
+		f, err = childFS.Open(elem.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		childName = elem.Key
 	}
 
 	fi, err := f.Stat()
@@ -87,49 +91,49 @@ func (fs *FS) Open(name string) (f fs.File, err error) {
 		return nil, err
 	}
 
-	i, err := fslib.FileX(f)
-	if err != nil {
-		return nil, err
-	}
-
 	if fi.IsDir() {
-		return &Item{Item: i, path: name, recursiveFS: fs, isFS: false}, nil
+		return &Item{File: f, path: name, recursiveFS: fsys, isFS: false}, nil
 	}
 
-	isFS, ifs, err := detectFsFromFile(i)
+	isFS, ifs, err := detectFsFromFile(name, f)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Item{Item: i, path: name, innerFSName: ifs, recursiveFS: fs, isFS: isFS}, nil
+	f, err = reopen(f, childFS, childName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Item{File: f, path: name, innerFSName: ifs, recursiveFS: fsys, isFS: isFS}, nil
 }
 
 // Stat returns an os.FileInfo object that describes a file.
-func (fs *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fs.Open(name)
+func (fsys *FS) Stat(name string) (os.FileInfo, error) {
+	f, err := fsys.Open(name)
 	if err != nil {
 		return nil, err
 	}
 	return f.Stat()
 }
 
-// Item describes files and directories in the  file system.
+// Item describes files and directories in the file system.
 type Item struct {
-	fslib.Item
+	fs.File
 	path        string
 	innerFSName string
 	recursiveFS *FS
 	isFS        bool
 }
 
-// DirEntry returns up to n child items of a directory.
+// ReadDir returns up to n child items of a directory.
 func (i *Item) ReadDir(n int) (items []fs.DirEntry, err error) {
 	if !i.isFS {
-		items, err = fslib.ReadDir(i.Item, n)
+		items, err = fslib.ReadDir(i.File, n)
 	} else {
-		if readSeekerAtItem, ok := i.Item.(fsio.ReadSeekerAt); ok {
+		if readSeekerAtItem, ok := i.File.(fsio.ReadSeekerAt); ok {
 			innerFS, _ := fsFromName(i.innerFSName, readSeekerAtItem)
-			root, _ := innerFS.Open("/")
+			root, _ := innerFS.Open(".")
 			items, err = fslib.ReadDir(root, n)
 		} else {
 			return nil, errors.New("not a file does not implement Seek and ReadAt")
@@ -146,30 +150,9 @@ func (i *Item) ReadDir(n int) (items []fs.DirEntry, err error) {
 	return items, nil
 }
 
-// Readdirnames returns up to n child items of a directory.
-func (i *Item) Readdirnames(n int) (items []string, err error) {
-	if !i.isFS {
-		items, err = fslib.Readdirnames(i.Item, n)
-	} else {
-		if readSeekerAtItem, ok := i.Item.(fsio.ReadSeekerAt); ok {
-			innerFS, _ := fsFromName(i.innerFSName, readSeekerAtItem)
-			root, _ := innerFS.Open("/")
-			items, err = fslib.Readdirnames(root, n)
-		} else {
-			return nil, errors.New("not a file does not implement Seek and ReadAt")
-		}
-	}
-	if err != nil {
-		return nil, fmt.Errorf("could not Readdirnames %#v: %w", i, err)
-	}
-
-	sort.Strings(items)
-	return items, nil
-}
-
 // Stat return an os.FileInfo object that describes a file.
 func (i *Item) Stat() (os.FileInfo, error) {
-	info, err := i.Item.Stat()
+	info, err := i.File.Stat()
 	return &Info{info, i.isFS}, err
 }
 

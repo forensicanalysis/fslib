@@ -39,7 +39,7 @@ func ExampleNTFSReaddirnames() {
 	fs, _ := ntfs.New(image)
 
 	// get handle for root
-	root, _ := fs.Open("/")
+	root, _ := fs.Open(".")
 
 	// get filenames
 	filenames, _ := fslib.Readdirnames(root, 0)

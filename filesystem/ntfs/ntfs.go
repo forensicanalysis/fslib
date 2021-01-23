@@ -56,15 +56,13 @@ type FS struct {
 	ntfsCtx *parser.NTFSContext
 }
 
-// Name returns the name of the file system.
-func (*FS) Name() (name string) { return "NTFS" }
-
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (item fs.File, err error) {
 	valid := fs.ValidPath(name)
 	if !valid {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
+	name = "/" + name
 
 	dir, err := fsys.ntfsCtx.GetMFT(5)
 	if err != nil {
@@ -73,15 +71,6 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 	entry, err := dir.Open(fsys.ntfsCtx, name)
 
 	return &Item{entry: entry, name: path.Base(name), path: name, ntfsCtx: fsys.ntfsCtx}, err
-}
-
-// Stat returns an os.FileInfo object that describes a file.
-func (fsys *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fsys.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	return f.Stat()
 }
 
 // Item describes files and directories in the NTFS.
@@ -139,44 +128,45 @@ type DirEntry struct {
 	info *parser.FileInfo
 }
 
-func (d DirEntry) Name() string {
+func (d *DirEntry) Name() string {
 	return d.info.Name
 }
 
-func (d DirEntry) IsDir() bool {
+func (d *DirEntry) IsDir() bool {
 	return d.info.IsDir
 }
 
-func (d DirEntry) Size() int64 {
+func (d *DirEntry) Size() int64 {
 	return d.info.Size
 }
 
-func (d DirEntry) Mode() fs.FileMode {
+func (d *DirEntry) Mode() fs.FileMode {
 	if d.IsDir() {
 		return fs.ModeDir
 	}
 	return 0
 }
 
-func (d DirEntry) ModTime() time.Time {
+func (d *DirEntry) ModTime() time.Time {
 	return d.info.Mtime
 }
 
-func (d DirEntry) Sys() interface{} {
+func (d *DirEntry) Sys() interface{} {
 	return d.info
 }
 
-func (d DirEntry) Type() fs.FileMode {
+func (d *DirEntry) Type() fs.FileMode {
 	if d.IsDir() {
 		return fs.ModeDir
 	}
 	return 0
 }
 
-func (d DirEntry) Info() (fs.FileInfo, error) {
+func (d *DirEntry) Info() (fs.FileInfo, error) {
 	return d, nil
 }
 
+// ReadDir returns up to n child items of a directory.
 func (i *Item) ReadDir(n int) (entries []fs.DirEntry, err error) {
 	infos := parser.ListDir(i.ntfsCtx, i.entry)
 
@@ -187,30 +177,12 @@ func (i *Item) ReadDir(n int) (entries []fs.DirEntry, err error) {
 		if info.Name == "" || info.Name == "." {
 			continue
 		}
-		entries = append(entries, DirEntry{info})
-		// TODO: some path like $BadClus:$Bad are not listed
+		entries = append(entries, &DirEntry{info})
+		// TODO: some paths like $BadClus:$Bad are not listed
 	}
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].Name() < entries[j].Name()
 	})
-	return
-}
-
-// Readdirnames returns up to n child items of a directory.
-func (i *Item) Readdirnames(n int) (items []string, err error) {
-	infos := parser.ListDir(i.ntfsCtx, i.entry)
-
-	for _, info := range infos {
-		if n != 0 && len(items) == n {
-			break
-		}
-		if info.Name == "" || info.Name == "." {
-			continue
-		}
-		items = append(items, info.Name)
-		// TODO: some path like $BadClus:$Bad are not listed
-	}
-	sort.Strings(items)
 	return
 }
 

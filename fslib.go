@@ -33,7 +33,6 @@
 package fslib
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -43,14 +42,6 @@ import (
 )
 
 const windows = "windows"
-
-// FS is an interface for read-only file systems.
-type FS interface {
-	fs.FS
-
-	// Name returns the name of the file system.
-	Name() string
-}
 
 // Item is an interface for elements (e.g. files and directories) in read-only file
 // systems.
@@ -84,34 +75,6 @@ func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
 		return directory.ReadDir(n)
 	}
 	return nil, fmt.Errorf("%v does not implement ReadDir", file)
-}
-
-func FSX(fsys fs.FS) (FS, error) {
-	fx, ok := fsys.(FS)
-	if !ok {
-		return nil, errors.New("fs does not implement fslib.FS")
-	}
-	return fx, nil
-}
-
-func FileX(f fs.File) (Item, error) {
-	fx, ok := f.(Item)
-	if !ok {
-		return nil, fmt.Errorf("%v does not implement fslib.Item", f)
-	}
-	return fx, nil
-}
-
-func Open(fsys fs.FS, name string) (Item, error) {
-	f, err := fsys.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	fx, ok := f.(Item)
-	if !ok {
-		return nil, errors.New("file does not implement fslib.Item")
-	}
-	return fx, nil
 }
 
 func InfosToNames(infos []fs.DirEntry) (names []string) {

@@ -30,9 +30,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
-	"github.com/forensicanalysis/fslib/forensicfs"
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
@@ -47,9 +47,6 @@ func New(decoder io.ReadSeeker) (*FS, error) {
 	err := mbr.Decode(decoder)
 	return &FS{mbr: &mbr}, err
 }
-
-// Name returns the filesystem name.
-func (fsys *FS) Name() string { return "MBR" }
 
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (fs.File, error) {
@@ -72,15 +69,6 @@ func (fsys *FS) Open(name string) (fs.File, error) {
 	partition := fsys.mbr.Partitions()[index]
 	f := NewPartition(index, &partition)
 	return f, nil
-}
-
-// Stat returns an os.FileInfo object that describes a partition.
-func (fsys *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fsys.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	return f.Stat()
 }
 
 // Partition implements fs.File
@@ -134,13 +122,17 @@ func (p *Partition) Info() (fs.FileInfo, error) { return p, nil }
 
 // Root is a pseudo root directory for a Master Boot Record.
 type Root struct {
-	forensicfs.DirectoryDefaults
 	mbr *MbrPartitionTable
+}
+
+func (r *Root) Read([]byte) (int, error) {
+	return 0, syscall.EPERM
 }
 
 // Name always returns / for MBR roots.
 func (r *Root) Name() string { return "." }
 
+// ReadDir lists all partitions in the MBR.
 func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
 	var partitionInfos []fs.DirEntry
 	partitions := r.mbr.Partitions()
@@ -151,20 +143,6 @@ func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
 		if partition.NumSectors() != 0 {
 			p := NewPartition(index, &partitions[index])
 			partitionInfos = append(partitionInfos, p)
-		}
-	}
-	return partitionInfos, nil
-}
-
-// Readdirnames lists all partitions in the MBR.
-func (r *Root) Readdirnames(count int) ([]string, error) {
-	var partitionInfos []string
-	for index, partition := range r.mbr.Partitions() {
-		if count != 0 && index == count {
-			return partitionInfos, nil
-		}
-		if partition.NumSectors() != 0 {
-			partitionInfos = append(partitionInfos, "p"+strconv.Itoa(index))
 		}
 	}
 	return partitionInfos, nil

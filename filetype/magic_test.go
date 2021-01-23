@@ -22,6 +22,7 @@
 package filetype
 
 import (
+	"bufio"
 	"io"
 	"os"
 	"path"
@@ -68,7 +69,8 @@ func TestIdentify(t *testing.T) {
 				t.Fatalf("Could not open file %s", tt.args.filename)
 			}
 			defer file.Close()
-			got, err := DetectReader(file)
+
+			got, err := DetectReader(bufio.NewReaderSize(file, 8*1024))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DetectReader() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -169,7 +171,7 @@ func TestDetectReader(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DetectReader(tt.args.r)
+			got, err := DetectReader(bufio.NewReader(tt.args.r))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DetectReader() error = %v, wantErr %v", err, tt.wantErr)
 				return

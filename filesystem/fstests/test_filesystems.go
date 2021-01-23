@@ -121,8 +121,6 @@ func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (
 
 	if namedFS, ok := fsys.(Named); ok {
 		assert.EqualValues(t, name, namedFS.Name())
-	} else {
-		assert.Fail(t, "FS must have a name")
 	}
 
 	// test no leading slash

@@ -25,18 +25,13 @@ package zip
 import (
 	"archive/zip"
 	"fmt"
-	"io/fs"
-	"os"
-
-	"github.com/spf13/afero"
-	"github.com/spf13/afero/zipfs"
-
 	"github.com/forensicanalysis/fslib/fsio"
+	"io/fs"
 )
 
 // FS implements a read-only file system for zip files.
 type FS struct {
-	internal afero.Fs
+	internal *zip.Reader
 }
 
 // New creates a new zip FS.
@@ -51,13 +46,7 @@ func New(base fsio.ReadSeekerAt) (*FS, error) {
 		return nil, err
 	}
 
-	aferoFS := zipfs.New(zr)
-	return &FS{aferoFS}, nil
-}
-
-// Name returns the name of the file system.
-func (fsys *FS) Name() string {
-	return "ZIP"
+	return &FS{zr}, nil
 }
 
 // Open opens a file for reading.
@@ -68,14 +57,5 @@ func (fsys *FS) Open(name string) (fs.File, error) {
 	}
 
 	aferoItem, err := fsys.internal.Open(name)
-	return &File{aferoItem}, err
-}
-
-// Stat returns an os.FileInfo object that describes a file.
-func (fsys *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fsys.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	return f.Stat()
+	return &File{name, aferoItem}, err
 }

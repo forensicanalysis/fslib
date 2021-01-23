@@ -22,17 +22,19 @@
 package zip
 
 import (
+	"errors"
+	"fmt"
 	"github.com/forensicanalysis/fslib"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
-
-	"github.com/spf13/afero"
 )
 
 // File describes files and directories in the zip file system.
 type File struct {
-	internal afero.File
+	path     string
+	internal fs.File
 }
 
 // Close closes the file freeing the resource. Other IO operations fail after
@@ -48,46 +50,40 @@ func (f *File) Read(p []byte) (n int, err error) {
 
 // ReadAt reads bytes starting at off into passed buffer.
 func (f *File) ReadAt(p []byte, off int64) (n int, err error) {
-	return f.internal.ReadAt(p, off)
+	if readerAt, ok := f.internal.(io.ReaderAt); ok {
+		return readerAt.ReadAt(p, off)
+	}
+	return 0, errors.New("does not implement ReadAt")
 }
 
 // Seek move the current offset to the given position.
 func (f *File) Seek(offset int64, whence int) (int64, error) {
-	return f.internal.Seek(offset, whence)
+	if readerAt, ok := f.internal.(io.Seeker); ok {
+		return readerAt.Seek(offset, whence)
+	}
+	return 0, errors.New("does not implement Seek")
 }
 
 // Name returns the name of the file.
 func (f *File) Name() string {
-	return filepath.ToSlash(filepath.Base(f.internal.Name()))
+
+	return filepath.ToSlash(filepath.Base(f.path))
 }
 
 // Readdirnames returns up to n child items of a directory.
 func (f *File) ReadDir(count int) ([]fs.DirEntry, error) {
-	if count == 0 {
-		count = -1
-	}
-
-	infos, err := f.internal.Readdir(count)
-	if err != nil {
-		return nil, err
-	}
-	entries := fslib.InfosToEntries(infos)
-	return entries, nil
+	entries, err := fslib.ReadDir(f.internal, count)
+	return uniqueEntries(entries), err
 }
 
 // Readdirnames returns up to n child items of a directory.
 func (f *File) Readdirnames(count int) (names []string, err error) {
-	if count == 0 {
-		count = -1
-	}
-	return f.internal.Readdirnames(count)
+	names, err = fslib.Readdirnames(f.internal, count)
+	return uniqueStrings(names), err
 }
 
 // Stat return an os.FileInfo object that describes a file.
 func (f *File) Stat() (os.FileInfo, error) {
-	/*if f.Name() == "/" {
-		return &RootInfo{}, nil
-	}*/
 	return f.internal.Stat()
 }
 
@@ -103,4 +99,31 @@ func (f *File) Sys() interface{} {
 	}
 
 	return attr
+}
+
+func uniqueStrings(intSlice []string) []string {
+	keys := make(map[string]bool)
+	var list []string
+	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
+func uniqueEntries(entries []fs.DirEntry) []fs.DirEntry {
+	keys := make(map[string]bool)
+	var list []fs.DirEntry
+	for _, entry := range entries {
+		if fmt.Sprintf("%T", entry) != "zip.headerFileInfo" {
+			continue
+		}
+		if _, value := keys[entry.Name()]; !value {
+			keys[entry.Name()] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }

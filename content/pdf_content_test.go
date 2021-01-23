@@ -24,6 +24,7 @@ package content
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -62,7 +63,7 @@ func TestPDFContent(t *testing.T) {
 			if err != nil {
 				return
 			}
-			b, err := ioutil.ReadAll(got)
+			b, err := io.ReadAll(got)
 			if err != nil {
 				log.Fatal(err)
 			}

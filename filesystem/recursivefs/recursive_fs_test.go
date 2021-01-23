@@ -194,8 +194,8 @@ func TestParseRealPath(t *testing.T) {
 		wantRpath []element
 		wantErr   bool
 	}{
-		{"Test 1", args{"../../test/data/container/zip.zip/image"}, []element{{"OsFs", zippath}, {"ZIP", "/image"}}, false},
-		{"Test 2", args{"../../test/data/filesystem/mbr_fat16.dd/p0/IMAGE"}, []element{{"OsFs", fatpath}, {"MBR", "/p0"}, {"FAT16", "/IMAGE"}}, false},
+		{"Test 1", args{"../../test/data/container/zip.zip/image"}, []element{{"OsFs", zippath}, {"ZIP", "image"}}, false},
+		{"Test 2", args{"../../test/data/filesystem/mbr_fat16.dd/p0/IMAGE"}, []element{{"OsFs", fatpath}, {"MBR", "p0"}, {"FAT16", "IMAGE"}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

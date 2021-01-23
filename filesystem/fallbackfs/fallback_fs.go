@@ -44,9 +44,6 @@ type FS struct {
 	fallbackFilesystems []fs.FS
 }
 
-// Name returns the name of the file system.
-func (*FS) Name() (name string) { return "Fallback FS" }
-
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (item fs.File, err error) {
 	valid := fs.ValidPath(name)

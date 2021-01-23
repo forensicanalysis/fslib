@@ -57,12 +57,12 @@ func Test_MBR(t *testing.T) {
 		// Root
 		"Root": {
 			TestName:    "Root",
-			Path:        "/",
+			Path:        ".",
 			InfoSize:    0,
 			InfoMode:    os.ModeDir,
 			InfoModTime: time.Time{},
 			InfoIsDir:   true,
-			FileName:    "/",
+			FileName:    ".",
 			// FileReaddir:      []os.FileInfo{},
 			FileReaddirnames: []string{"p0"},
 			Head:             []byte{},
@@ -70,7 +70,7 @@ func Test_MBR(t *testing.T) {
 		// Partition
 		"Partition 0": {
 			TestName:    "Partition 0",
-			Path:        "/p0",
+			Path:        "p0",
 			InfoSize:    34816 * 512,
 			InfoMode:    0,
 			InfoModTime: time.Time{},

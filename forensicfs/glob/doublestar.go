@@ -246,26 +246,7 @@ func Glob(fsys fs.FS, pattern string) (matches []string, err error) {
 		return nil, nil
 	}
 
-	// On Windows systems, this will return the drive name ('C:') for filesystem
-	// paths, or \\<server>\<share> for UNC paths. On other systems, it will
-	// return an empty string. Since absolute paths on non-Windows systems start
-	// with a slash, patternComponent[0] == volumeName will return true for both
-	// absolute Windows paths and absolute non-Windows paths, but we need a
-	// separate check for UNC paths.
-	/*
-		volumeName := filepath.VolumeName(pattern)
-		isWindowsUNC := strings.HasPrefix(pattern, `\\`)
-		if isWindowsUNC || patternComponents[0] == volumeName {
-			startComponentIndex := 1
-			if isWindowsUNC {
-				startComponentIndex = 4
-			}
-			return doGlob(fsys, fmt.Sprintf("%s%s", volumeName, "/"), patternComponents[startComponentIndex:], matches)
-		}
-	*/
-	return doGlob(fsys, "", patternComponents[1:], matches, -2)
-	// otherwise, it's a relative pattern
-	// return doGlob(fsys, "/", patternComponents, matches)
+	return doGlob(fsys, ".", patternComponents, matches, -2)
 }
 
 // Perform a glob.

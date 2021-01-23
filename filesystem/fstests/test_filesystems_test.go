@@ -71,7 +71,7 @@ func TestRunTest(t *testing.T) {
 		{"RunTest Folder", args{t, "FS", "filesystem/ntfs.dd", n, map[string]*PathTest{
 			"mem": {
 				TestName:         "",                                              //string
-				Path:             "/",                                             //string
+				Path:             ".",                                             //string
 				FileName:         ".",                                             //string
 				InfoSize:         0,                                               //int64
 				InfoMode:         os.ModeDir,                                      //os.FileMode
@@ -85,7 +85,7 @@ func TestRunTest(t *testing.T) {
 		{"RunTest File", args{t, "FS", "filesystem/ntfs.dd", n, map[string]*PathTest{
 			"mem": {
 				TestName:         "",             //string
-				Path:             "/test.bar1",   //string
+				Path:             "test.bar1",   //string
 				FileName:         "test.bar1",    //string
 				InfoSize:         4,              //int64
 				InfoMode:         0,              //os.FileMode

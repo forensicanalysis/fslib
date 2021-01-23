@@ -22,7 +22,6 @@
 package systemfs
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"os"
 	"runtime"
@@ -30,17 +29,15 @@ import (
 	"time"
 
 	"github.com/forensicanalysis/fslib/filesystem/osfs"
-	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
 // Root is a pseudo root directory for windows partitions.
 type Root struct {
-	forensicfs.DirectoryDefaults
 	fs *FS
 }
 
 // Name always returns / for window pseudo roots.
-func (*Root) Name() (name string) { return "/" }
+func (*Root) Name() (name string) { return "." }
 
 // Close does not do anything for window pseudo roots.
 func (*Root) Close() error { return nil }
@@ -65,25 +62,26 @@ func (r *Root) Stat() (os.FileInfo, error) {
 	return r, nil
 }
 
-func (r *Root) ReadDir(n int) (entries []fs.DirEntry, err error) {
-	return fslib.ReadDirFromNames(n, r.Readdirnames)
+func (r *Root) Read([]byte) (int, error) {
+	return 0, syscall.EPERM
 }
 
-// Readdirnames lists all partitions in the window pseudo root.
-func (r *Root) Readdirnames(n int) (partitions []string, err error) {
+func (r *Root) ReadDir(n int) (entries []fs.DirEntry, err error) {
 	if runtime.GOOS != "windows" {
 		return nil, syscall.EPERM
 	}
 
 	root := osfs.Root{}
-	partitions, err = root.Readdirnames(0)
-	if err != nil {
-		return nil, err
-	}
+	return root.ReadDir(0)
+	/*
+		if err != nil {
+			return nil, err
+		}
 
-	for _, plugin := range r.fs.plugins {
-		partitions = append(partitions, plugin.Names()...)
-	}
+		for _, plugin := range r.fs.plugins {
+			partitions = append(partitions, plugin.Names()...)
+		}
 
-	return partitions, nil
+		return partitions, nil
+	*/
 }

@@ -23,16 +23,18 @@ package osfs
 
 import (
 	"os"
+	"syscall"
 	"time"
-
-	"github.com/forensicanalysis/fslib/forensicfs"
 )
 
 // Root is a pseudo root directory for windows partitions.
-type Root struct{ forensicfs.DirectoryDefaults }
+type Root struct{  }
 
+func (r *Root) Read([]byte) (int, error) {
+	return 0, syscall.EPERM
+}
 // Name always returns / for window pseudo roots.
-func (*Root) Name() (name string) { return "/" }
+func (*Root) Name() (name string) { return "." }
 
 // Close does not do anything for window pseudo roots.
 func (*Root) Close() error { return nil }
@@ -53,6 +55,6 @@ func (*Root) IsDir() bool { return true }
 func (*Root) Sys() interface{} { return nil }
 
 // Stat returns the windows pseudo roots itself as os.FileMode.
-func (root *Root) Stat() (os.FileInfo, error) {
-	return root, nil
+func (r *Root) Stat() (os.FileInfo, error) {
+	return r, nil
 }

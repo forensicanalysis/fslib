@@ -28,6 +28,7 @@ package glob
 
 import (
 	"io/fs"
+	"log"
 	"path"
 	"reflect"
 	"sort"
@@ -251,7 +252,10 @@ func getTestFS() *fstest.MapFS {
 	}
 
 	for _, file := range files {
-		infs[file] = &fstest.MapFile{Data: []byte("test")}
+		if !fs.ValidPath(file) {
+			log.Fatal(file)
+		}
+		infs[file] = &fstest.MapFile{Data: []byte("")}
 	}
 
 	return &infs
@@ -261,7 +265,10 @@ func getInFS() fs.FS {
 	infs := fstest.MapFS{}
 	files := []string{"foo.bin", "dir/bar.bin", "dir/baz.bin", "dir/a/a/foo.bin", "dir/a/b/foo.bin", "dir/b/a/foo.bin", "dir/b/b/foo.bin"}
 	for _, file := range files {
-		infs[file] = &fstest.MapFile{Data: []byte("test")}
+		if !fs.ValidPath(file) {
+			log.Fatal(file)
+		}
+		infs[file] = &fstest.MapFile{Data: []byte("")}
 	}
 	return infs
 }
@@ -412,7 +419,7 @@ func Test_readDir(t *testing.T) {
 		want    []string
 		wantErr bool
 	}{
-		{"read dir", args{&fstest.MapFS{}, ""}, nil, false},
+		{"read dir", args{&fstest.MapFS{}, "."}, nil, false},
 		{"read dir error", args{&fstest.MapFS{}, "x"}, nil, true},
 	}
 	for _, tt := range tests {

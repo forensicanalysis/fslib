@@ -31,7 +31,6 @@ import (
 	"io/fs"
 	"os"
 	"runtime"
-	"sort"
 )
 
 const windows = "windows"
@@ -115,7 +114,7 @@ func sysname(name string) (string, string, error) {
 	if name == "/" {
 		return "/", "/", nil
 	}
-	sysname := name
+	sysname := "/" + name
 	if runtime.GOOS == windows {
 		sysname = string(name[1]) + ":"
 		if len(name) > 2 {
@@ -138,14 +137,9 @@ func (i *Item) Name() string {
 	return i.File.Name()
 }
 
-// Readdirnames returns up to n child items of a directory.
-func (i *Item) Readdirnames(n int) (items []string, err error) {
-	items, err = i.File.Readdirnames(n)
-	if items == nil {
-		items = []string{}
-	}
-	sort.Strings(items)
-	return items, err
+// ReadDir returns up to n child items of a directory.
+func (i *Item) ReadDir(n int) (items []fs.DirEntry, err error) {
+	return i.File.ReadDir(n)
 }
 
 // Close closes the file freeing the resource. Usually additional IO operations

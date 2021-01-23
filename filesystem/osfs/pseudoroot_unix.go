@@ -31,8 +31,3 @@ import (
 func (*Root) ReadDir(int) ([]fs.DirEntry, error) {
 	return nil, syscall.EPERM
 }
-
-// Readdirnames fails on UNIX.
-func (*Root) Readdirnames(int) ([]string, error) {
-	return nil, syscall.EPERM
-}

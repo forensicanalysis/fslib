@@ -23,19 +23,34 @@ package osfs
 
 import (
 	"errors"
-	"github.com/forensicanalysis/fslib"
 	"io/fs"
-	"strings"
 	"syscall"
 	"unsafe"
 )
 
-func (r *Root) ReadDir(n int) (entries []fs.DirEntry, err error) {
-	return fslib.ReadDirFromNames(n, r.Readdirnames)
+
+type SimpleEntry struct {
+	name string
 }
 
-// Readdirnames lists all partitions in the window pseudo root.
-func (r *Root) Readdirnames(n int) (partitions []string, err error) {
+func (e *SimpleEntry) Name() string               { return e.name }
+func (e *SimpleEntry) IsDir() bool                { return true }
+func (e *SimpleEntry) Type() fs.FileMode          { return fs.ModeDir }
+func (e *SimpleEntry) Info() (fs.FileInfo, error) { return e, nil }
+func (e *SimpleEntry) Size() int64                { return 0 }
+func (e *SimpleEntry) Mode() fs.FileMode          { return fs.ModeDir }
+func (e *SimpleEntry) ModTime() time.Time         { return time.Time{} }
+func (e *SimpleEntry) Sys() interface{}           { return nil }
+
+func SimpleEntries(names []string) (entries []fs.DirEntry) {
+	for _, name := range names {
+		entries = append(entries, &SimpleEntry{name: name})
+	}
+	return entries
+}
+
+// ReadDir lists all partitions in the window pseudo root.
+func (r *Root) ReadDir(n int) (entries []fs.DirEntry, err error) {
 	kernel32, err := syscall.LoadDLL("kernel32.dll")
 	if err != nil {
 		return nil, err
@@ -56,7 +71,7 @@ func (r *Root) Readdirnames(n int) (partitions []string, err error) {
 		return nil, errors.New("partitions could not be listed")
 	}
 	for i := 0; i < int(returnLength); i += 4 {
-		partitions = append(partitions, strings.ToUpper(string(lpBuffer[i])))
+		partitions = append(partitions, &SimpleEntry{strings.ToUpper(string(lpBuffer[i]))})
 	}
 
 	return partitions, nil

@@ -26,7 +26,6 @@ package systemfs
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"log"
 	"os"
@@ -61,7 +60,7 @@ func newFS(plugins []pluginFS) (fs.FS, error) {
 		plugins: plugins,
 	}
 	root := osfs.Root{}
-	partitions, err := root.Readdirnames(0)
+	partitions, err := root.ReadDir(0)
 	if err != nil {
 		return fsys, err
 	}
@@ -75,10 +74,10 @@ func newFS(plugins []pluginFS) (fs.FS, error) {
 
 	var ntfsPartitions []string
 	for _, partition := range partitions {
-		_, close, err := fsys.NTFSOpen("/" + partition + "/$MFT")
+		_, close, err := fsys.NTFSOpen("/" + partition.Name() + "/$MFT")
 
 		if err == nil {
-			ntfsPartitions = append(ntfsPartitions, partition)
+			ntfsPartitions = append(ntfsPartitions, partition.Name())
 			close()
 		}
 	}
@@ -92,9 +91,6 @@ type FS struct {
 	ntfsPartitions []string
 	plugins        []pluginFS
 }
-
-// Name returns the name of the file system.
-func (*FS) Name() (name string) { return "System FS" }
 
 // Open opens a file for reading.
 func (systemfs *FS) Open(name string) (item fs.File, err error) {
@@ -145,11 +141,12 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 
 	log.Printf("low level open %s", name[2:])
 
-	item, err := fslib.Open(lowLevelFS, name[2:])
+	item, err := lowLevelFS.Open(name[2:])
 	if err != nil {
 		return nil, nil, err
 	}
-	i := &Item{Item: item, base: base}
+
+	i := &Item{File: item, base: base}
 	return i, i.Close, nil
 }
 
@@ -197,20 +194,20 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 
 	log.Printf("low level open %s", name[2:])
 
-	info, err = lowLevelFS.Stat(name[2:])
+	info, err = fs.Stat(lowLevelFS, name[2:])
 	return info, err
 }
 
 // Item describes files and directories in the file system.
 type Item struct {
-	fslib.Item
+	fs.File
 	base *os.File
 }
 
 // Close closes the file freeing the resource. Usually additional IO operations
 // fail after closing.
 func (i *Item) Close() error {
-	i.Item.Close() // nolint:errcheck
+	i.File.Close() // nolint:errcheck
 	return i.base.Close()
 }
 

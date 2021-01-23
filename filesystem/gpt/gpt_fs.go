@@ -30,9 +30,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
-	"github.com/forensicanalysis/fslib/forensicfs"
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
@@ -46,11 +46,6 @@ func New(decoder io.ReadSeeker) (*FS, error) {
 	gpt := GptPartitionTable{}
 	err := gpt.Decode(decoder)
 	return &FS{gpt: &gpt}, err
-}
-
-// Name returns the filesystem name.
-func (fsys *FS) Name() string {
-	return "GPT"
 }
 
 // Open returns a File for the given location.
@@ -74,15 +69,6 @@ func (fsys *FS) Open(name string) (fs.File, error) {
 	partitionEntry := fsys.gpt.Primary().Entries()[index]
 	f := NewPartition(index, &partitionEntry)
 	return f, nil
-}
-
-// Stat returns an os.FileInfo object that describes a partition.
-func (fsys *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fsys.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	return f.Stat()
 }
 
 // Partition implements fs.File
@@ -138,13 +124,17 @@ func (p *Partition) Info() (fs.FileInfo, error) { return p, nil }
 
 // Root is a pseudo root directory containing the partitions.
 type Root struct {
-	forensicfs.DirectoryDefaults
 	gpt *GptPartitionTable
+}
+
+func (r *Root) Read([]byte) (int, error) {
+	return 0, syscall.EPERM
 }
 
 // Name always returns '/' for GPT roots.
 func (r *Root) Name() string { return "." }
 
+// ReadDir lists all partitions in the GPT.
 func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
 	var partitionInfos []fs.DirEntry
 	partitions := r.gpt.Primary().Entries()
@@ -155,20 +145,6 @@ func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
 		if partition.FirstLba() != 0 || partition.LastLba() != 0 {
 			p := NewPartition(index, &partitions[index])
 			partitionInfos = append(partitionInfos, p)
-		}
-	}
-	return partitionInfos, nil
-}
-
-// Readdirnames lists all partitions in the GPT.
-func (r *Root) Readdirnames(count int) ([]string, error) {
-	var partitionInfos []string
-	for index, partition := range r.gpt.Primary().Entries() {
-		if count != 0 && index == count {
-			return partitionInfos, nil
-		}
-		if partition.FirstLba() != 0 || partition.LastLba() != 0 {
-			partitionInfos = append(partitionInfos, "p"+strconv.Itoa(index))
 		}
 	}
 	return partitionInfos, nil

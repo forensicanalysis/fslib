@@ -24,107 +24,127 @@
 package content
 
 import (
-	"archive/zip"
+	"bufio"
 	"bytes"
 	"fmt"
-	"io"
-
-	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem/buffer"
+	"github.com/forensicanalysis/fslib/filesystem/zip"
 	"github.com/forensicanalysis/fslib/filetype"
 	"github.com/forensicanalysis/fslib/fsio"
+	"io"
 )
 
 // Content returns the binary contents as a string.
-func Content(r fsio.ReadSeekerAt) (content io.Reader, err error) {
-	detectedType, err := filetype.DetectReader(r)
+func Content(r io.Reader) (content io.Reader, err error) {
+	bufReader := bufio.NewReaderSize(r, 8192)
+
+	detectedType, err := filetype.DetectReader(bufReader)
 	if err != nil {
 		return nil, err
 	}
 
 	switch detectedType {
 	case filetype.Docx:
-		return docxContent(r)
+		return docxContent(bufReader)
 	case filetype.Pptx:
-		return pptxContent(r)
+		return pptxContent(bufReader)
 	case filetype.Xlsx:
-		return xlsxContent(r)
+		return xlsxContent(bufReader)
 	case filetype.Pdf:
-		return PDFContent(r)
-	}
-
-	_, err = r.Seek(0, 0)
-	if err != nil {
-		return nil, err
+		return PDFContent(bufReader)
 	}
 
 	buf := &bytes.Buffer{}
-	if err = StringsReader(r, buf); err != nil {
+	if err = StringsReader(bufReader, buf); err != nil {
 		return nil, err
 	}
 	return buf, nil
 }
 
-func docxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
-	size, err := fsio.GetSize(r)
+func docxContent(r io.Reader) (io.Reader, error) {
+	fsys, err := bufferedZipFS(r)
 	if err != nil {
 		return nil, err
 	}
-	fsys, err := zip.NewReader(r, size)
+	f, err := fsys.Open("word/document.xml")
+
 	if err != nil {
 		return nil, err
 	}
-	f, err := fslib.Open(fsys, "/word/document.xml")
-	return bytes.NewBufferString(xmlContent(f)), err
+	br, err := fsio.MaybeBufferedReader(f)
+	if err != nil {
+		return nil, err
+	}
+	return bytes.NewBufferString(xmlContent(br)), nil
 }
 
-func xlsxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
+func xlsxContent(r io.Reader) (io.Reader, error) {
 	// unzip -> xl/worksheets/sheetX.xml
-	size, err := fsio.GetSize(r)
+	fsys, err := bufferedZipFS(r)
 	if err != nil {
 		return nil, err
 	}
-	fsys, err := zip.NewReader(r, size)
-	if err != nil {
-		return nil, err
-	}
-	s := &bytes.Buffer{}
 
-	r, err = fslib.Open(fsys, "/xl/sharedStrings.xml")
+	s := &bytes.Buffer{}
+	f, err := fsys.Open("xl/sharedStrings.xml")
 	if err == nil {
-		s.WriteString(xmlContent(r))
+		br, err := fsio.MaybeBufferedReader(f)
+		if err != nil {
+			return nil, err
+		}
+		s.WriteString(xmlContent(br))
 	}
 
 	i := 1
 	for {
-		r, err := fslib.Open(fsys, fmt.Sprintf("/xl/worksheets/sheet%d.xml", i))
+		f, err := fsys.Open(fmt.Sprintf("xl/worksheets/sheet%d.xml", i))
 		if err != nil {
 			break
 		}
-		s.WriteString(xmlContent(r))
+
+		br, err := fsio.MaybeBufferedReader(f)
+		if err != nil {
+			return nil, err
+		}
+		s.WriteString(xmlContent(br))
 		i++
 	}
 	return s, nil
 }
 
-func pptxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
+func pptxContent(r io.Reader) (io.Reader, error) {
 	// unzip -> ppt/slides/slideX.xml
-	size, err := fsio.GetSize(r)
-	if err != nil {
-		return nil, err
-	}
-	fsys, err := zip.NewReader(r, size)
+	fsys, err := bufferedZipFS(r)
 	if err != nil {
 		return nil, err
 	}
 	s := &bytes.Buffer{}
 	i := 1
 	for {
-		r, err := fslib.Open(fsys, fmt.Sprintf("/ppt/slides/slide%d.xml", i))
+		f, err := fsys.Open(fmt.Sprintf("ppt/slides/slide%d.xml", i))
 		if err != nil {
 			break
 		}
-		s.WriteString(xmlContent(r))
+		br, err := fsio.MaybeBufferedReader(f)
+		if err != nil {
+			return nil, err
+		}
+		s.WriteString(xmlContent(br))
 		i++
 	}
 	return s, nil
+}
+
+func bufferedZipFS(r io.Reader) (*buffer.FS, error) {
+	br, err := fsio.MaybeBufferedReader(r)
+	if err != nil {
+		return nil, err
+	}
+	zipfs, err := zip.New(br)
+	if err != nil {
+		return nil, err
+	}
+	fsys := buffer.New(zipfs)
+
+	return fsys, nil
 }

@@ -24,11 +24,10 @@ package fslib_test
 import (
 	"fmt"
 	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
 	"io/ioutil"
 	"os"
 	"path"
-
-	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
 )
 
 func ExampleReadFile() {

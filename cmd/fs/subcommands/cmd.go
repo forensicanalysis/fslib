@@ -263,10 +263,7 @@ func stringsCmd(_ *cobra.Command, args []string) {
 		r, err := fsys.Open(name)
 		exitOnError(err)
 
-		fx, err := fslib.FileX(r)
-		exitOnError(err)
-
-		ascii, err := content.Content(fx)
+		ascii, err := content.Content(r)
 		exitOnError(err)
 		fmt.Println(ascii)
 	}

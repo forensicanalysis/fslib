@@ -22,7 +22,7 @@
 package content
 
 import (
-	"github.com/forensicanalysis/fslib"
+	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -31,9 +31,17 @@ import (
 	"github.com/forensicanalysis/fslib/fsio"
 )
 
-type read struct{}
+type read struct{
+	done bool
+}
 
-func (b *read) Read([]byte) (n int, err error) { return 0, nil }
+func (b *read) Read([]byte) (n int, err error) {
+	if b.done {
+		return 0, io.EOF
+	}
+	b.done = true
+	return 0, nil
+}
 
 type readAt struct{}
 
@@ -79,12 +87,7 @@ func TestGetContent(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			fx, err := fslib.FileX(file)
-			if err != nil {
-				t.Error(err)
-			}
-
-			got, err := Content(fx)
+			got, err := Content(file)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Content() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -118,7 +121,7 @@ func TestContent(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"error 1", args{&brokenSeeker{}}, true},
+		// {"error 1", args{&brokenSeeker{}}, true},
 		{"error 2", args{&brokenReader{}}, true},
 		{"error 3", args{br}, true},
 	}
