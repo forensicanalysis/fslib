@@ -27,15 +27,11 @@ package osfs
 import (
 	"errors"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"sort"
 	"strings"
-	"time"
-
-	"gopkg.in/djherbis/times.v1"
 
 	"github.com/forensicanalysis/fslib/filesystem"
 )
@@ -67,7 +63,7 @@ func ToForensicPath(systemPath string) (name string, err error) {
 		return "", err
 	}
 	if runtime.GOOS == windows {
-		name = strings.ReplaceAll(name, "\\", "/")
+		name = strings.Replace(name, "\\", "/", -1)
 		name = "/" + name[:1] + name[2:]
 	}
 	return name, err
@@ -184,25 +180,4 @@ func (i *Item) Stat() (os.FileInfo, error) {
 type Info struct {
 	os.FileInfo
 	syspath string
-}
-
-// Sys returns a map of item attributes.
-func (i *Info) Sys() interface{} {
-	attributes := map[string]interface{}{}
-
-	t, err := times.Stat(i.syspath)
-	if err != nil {
-		log.Printf("could not stat times for %s: %s", err, i.syspath)
-	}
-	if err == nil {
-		attributes["accessed"] = t.AccessTime().UTC().Format(time.RFC3339Nano)
-		attributes["modified"] = t.ModTime().UTC().Format(time.RFC3339Nano)
-		if t.HasChangeTime() {
-			attributes["changed"] = t.ChangeTime().UTC().Format(time.RFC3339Nano)
-		}
-		if t.HasBirthTime() {
-			attributes["created"] = t.BirthTime().UTC().Format(time.RFC3339Nano)
-		}
-	}
-	return attributes
 }

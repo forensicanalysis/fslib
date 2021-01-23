@@ -116,11 +116,11 @@ func (i *Item) ReadAt(p []byte, off int64) (n int, err error) {
 // Seek move the current offset to the given position.
 func (i *Item) Seek(pos int64, whence int) (offset int64, err error) {
 	switch whence {
-	case io.SeekStart:
+	case os.SEEK_SET:
 		i.offset = pos
-	case io.SeekCurrent:
+	case os.SEEK_CUR:
 		i.offset += pos
-	case io.SeekEnd:
+	case os.SEEK_END:
 		i.offset = i.Size() - pos
 	}
 

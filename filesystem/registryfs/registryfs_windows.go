@@ -1,3 +1,5 @@
+// +build go1.8
+
 // Copyright (c) 2019 Siemens AG
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -70,7 +72,7 @@ func (fs *FS) Open(name string) (item fs.File, err error) {
 	parts := strings.Split(name, "/")
 	root := registryRoots[parts[0]]
 	for i := range parts {
-		parts[i] = strings.ReplaceAll(parts[i], `\`, `/`)
+		parts[i] = strings.Replace(parts[i], `\`, `/`, -1)
 	}
 
 	k, err := registry.OpenKey(root, filepath.Join(parts[1:]...), registry.READ|registry.QUERY_VALUE|registry.ENUMERATE_SUB_KEYS)
@@ -150,7 +152,7 @@ func (rk *Key) Readdirnames(n int) (items []string, err error) {
 		return items, fmt.Errorf("error ReadSubKeyNames: %w", err)
 	}
 	for _, subKeyName := range subKeyNames {
-		items = append(items, strings.ReplaceAll(subKeyName, `/`, `\`))
+		items = append(items, strings.Replace(subKeyName, `/`, `\`, -1))
 	}
 	sort.Strings(items)
 	return items, nil

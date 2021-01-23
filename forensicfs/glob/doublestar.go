@@ -28,6 +28,7 @@
 package glob
 
 import (
+	"io/fs"
 	"path"
 	"regexp"
 	"strconv"

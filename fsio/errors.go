@@ -23,7 +23,7 @@ package fsio
 
 import (
 	"errors"
-	"io"
+	"os"
 )
 
 // ErrorReader mocks a Reader that fails after some Reads.
@@ -71,11 +71,11 @@ func (e *ErrorSeeker) Seek(off int64, whence int) (int64, error) {
 	}
 	e.seekCount++
 	switch whence {
-	case io.SeekCurrent:
+	case os.SEEK_CUR:
 		e.position += off
-	case io.SeekStart:
+	case os.SEEK_SET:
 		e.position = off
-	case io.SeekEnd:
+	case os.SEEK_END:
 		e.position = e.Size + off
 	}
 	return e.position, nil
