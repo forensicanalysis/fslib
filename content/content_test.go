@@ -22,6 +22,7 @@
 package content
 
 import (
+	"github.com/forensicanalysis/fslib"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -78,7 +79,12 @@ func TestGetContent(t *testing.T) {
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Content(file)
+			fx, err := fslib.FileX(file)
+			if err != nil {
+				t.Error(err)
+			}
+
+			got, err := Content(fx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Content() error = %v, wantErr %v", err, tt.wantErr)
 				return

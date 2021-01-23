@@ -23,10 +23,10 @@ package zip
 
 import (
 	"bytes"
+	"io/fs"
 	"os"
 	"testing"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/fstests"
 	"github.com/forensicanalysis/fslib/fsio"
 )

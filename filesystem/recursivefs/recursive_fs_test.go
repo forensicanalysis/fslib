@@ -22,11 +22,10 @@
 package recursivefs
 
 import (
+	"github.com/forensicanalysis/fslib"
 	"path"
 	"reflect"
 	"testing"
-
-	"github.com/forensicanalysis/fslib/filesystem/osfs"
 )
 
 func TestRecursiveFS_OpenRead(t *testing.T) {
@@ -46,7 +45,7 @@ func TestRecursiveFS_OpenRead(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &FS{}
-			name, err := osfs.ToForensicPath(tt.args.name)
+			name, err := fslib.ToForensicPath(tt.args.name)
 			if err != nil {
 				t.Error(err)
 				return
@@ -90,7 +89,7 @@ func TestRecursiveFS_OpenDirList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &FS{}
-			name, err := osfs.ToForensicPath(tt.args.name)
+			name, err := fslib.ToForensicPath(tt.args.name)
 			if err != nil {
 				t.Error(err)
 				return
@@ -103,7 +102,7 @@ func TestRecursiveFS_OpenDirList(t *testing.T) {
 			if gotF == nil {
 				return
 			}
-			names, err := gotF.Readdirnames(0)
+			names, err := fslib.Readdirnames(gotF, 0)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FS.Open() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -141,7 +140,7 @@ func TestRecursiveFS_Readdir(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := &FS{}
-			name, err := osfs.ToForensicPath(tt.args.name)
+			name, err := fslib.ToForensicPath(tt.args.name)
 			if err != nil {
 				t.Error(err)
 				return
@@ -154,7 +153,7 @@ func TestRecursiveFS_Readdir(t *testing.T) {
 			if gotF == nil {
 				return
 			}
-			fileNames, err := gotF.Readdirnames(0)
+			fileNames, err := fslib.Readdirnames(gotF, 0)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FS.Open() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -175,12 +174,12 @@ func TestRecursiveFS_Readdir(t *testing.T) {
 }
 
 func TestParseRealPath(t *testing.T) {
-	zippath, err := osfs.ToForensicPath("../../test/data/container/zip.zip")
+	zippath, err := fslib.ToForensicPath("../../test/data/container/zip.zip")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	fatpath, err := osfs.ToForensicPath("../../test/data/filesystem/mbr_fat16.dd")
+	fatpath, err := fslib.ToForensicPath("../../test/data/filesystem/mbr_fat16.dd")
 	if err != nil {
 		t.Error(err)
 		return
@@ -200,7 +199,7 @@ func TestParseRealPath(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			name, err := osfs.ToForensicPath(tt.args.sample)
+			name, err := fslib.ToForensicPath(tt.args.sample)
 			if err != nil {
 				t.Error(err)
 				return

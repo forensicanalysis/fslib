@@ -33,36 +33,108 @@
 package fslib
 
 import (
+	"errors"
+	"fmt"
 	"io"
-	"os"
+	"io/fs"
+	"path/filepath"
+	"runtime"
+	"strings"
 )
+
+const windows = "windows"
 
 // FS is an interface for read-only file systems.
 type FS interface {
+	fs.FS
+
 	// Name returns the name of the file system.
 	Name() string
-
-	// Open opens a file for reading.
-	Open(path string) (Item, error)
-
-	// Stat return an os.FileInfo object that describes a file.
-	Stat(path string) (os.FileInfo, error)
 }
 
 // Item is an interface for elements (e.g. files and directories) in read-only file
 // systems.
 type Item interface {
-	io.Closer
-	io.Reader
+	fs.File
+
 	io.ReaderAt
 	io.Seeker
 
 	// Name returns the name of the file.
 	Name() string
 
-	// Stat returns an os.FileInfo object that describes a file.
-	Stat() (os.FileInfo, error)
-
 	// Readdirnames returns up to n child items of a directory.
+	// Readdirnames(n int) ([]string, error)
+}
+
+type Readdirnamer interface {
 	Readdirnames(n int) ([]string, error)
+}
+
+func Readdirnames(file fs.File, n int) (names []string, err error) {
+	if directory, ok := file.(Readdirnamer); ok {
+		return directory.Readdirnames(n)
+	}
+	infos, err := ReadDir(file, n)
+	if err != nil {
+		return nil, err
+	}
+	return InfosToNames(infos), nil
+}
+
+func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
+	if directory, ok := file.(fs.ReadDirFile); ok {
+		return directory.ReadDir(n)
+	}
+	return nil, fmt.Errorf("%v does not implement ReadDir", file)
+}
+
+func FSX(fsys fs.FS) (FS, error) {
+	fx, ok := fsys.(FS)
+	if !ok {
+		return nil, errors.New("fs does not implement fslib.FS")
+	}
+	return fx, nil
+}
+
+func FileX(f fs.File) (Item, error) {
+	return f.(Item), nil
+	fx, ok := f.(Item)
+	if !ok {
+		return nil, fmt.Errorf("%v does not implement fslib.Item", f)
+	}
+	return fx, nil
+}
+
+func Open(fsys fs.FS, name string) (Item, error) {
+	f, err := fsys.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	fx, ok := f.(Item)
+	if !ok {
+		return nil, errors.New("file does not implement fslib.Item")
+	}
+	return fx, nil
+}
+
+func InfosToNames(infos []fs.DirEntry) (names []string) {
+	for _, info := range infos {
+		names = append(names, info.Name())
+	}
+	return names
+}
+
+// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fslib path
+// ('/C/Windows').
+func ToForensicPath(systemPath string) (name string, err error) {
+	name, err = filepath.Abs(systemPath)
+	if err != nil {
+		return "", err
+	}
+	if runtime.GOOS == windows {
+		name = strings.Replace(name, "\\", "/", -1)
+		name = "/" + name[:1] + name[2:]
+	}
+	return name, err
 }

@@ -23,6 +23,7 @@ package fslib_test
 
 import (
 	"fmt"
+	"github.com/forensicanalysis/fslib"
 	"os"
 
 	"github.com/forensicanalysis/fslib/filesystem/ntfs"
@@ -41,7 +42,7 @@ func ExampleNTFSReaddirnames() {
 	root, _ := fs.Open("/")
 
 	// get filenames
-	filenames, _ := root.Readdirnames(0)
+	filenames, _ := fslib.Readdirnames(root, 0)
 
 	// print filenames
 	fmt.Println(filenames)

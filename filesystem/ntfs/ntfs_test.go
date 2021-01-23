@@ -24,13 +24,13 @@ package ntfs
 import (
 	"bytes"
 	"io"
+	"io/fs"
 	"os"
 	"reflect"
 	"sort"
 	"testing"
 	"time"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/fstests"
 	"github.com/forensicanalysis/fslib/fsio"
 )

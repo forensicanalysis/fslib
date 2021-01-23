@@ -240,7 +240,7 @@ func doMatching(patternComponents, nameComponents []string) (matched bool, err e
 //
 // Note: this is meant as a drop-in replacement for filepath.Glob().
 //
-func Glob(fs fs.FS, pattern string) (matches []string, err error) {
+func Glob(fsys fs.FS, pattern string) (matches []string, err error) {
 	patternComponents := splitPathOnSeparator(pattern, '/')
 	if len(patternComponents) == 0 {
 		return nil, nil
@@ -260,16 +260,16 @@ func Glob(fs fs.FS, pattern string) (matches []string, err error) {
 			if isWindowsUNC {
 				startComponentIndex = 4
 			}
-			return doGlob(fs, fmt.Sprintf("%s%s", volumeName, "/"), patternComponents[startComponentIndex:], matches)
+			return doGlob(fsys, fmt.Sprintf("%s%s", volumeName, "/"), patternComponents[startComponentIndex:], matches)
 		}
 	*/
-	return doGlob(fs, "/", patternComponents[1:], matches, -2)
+	return doGlob(fsys, "/", patternComponents[1:], matches, -2)
 	// otherwise, it's a relative pattern
-	// return doGlob(fs, "/", patternComponents, matches)
+	// return doGlob(fsys, "/", patternComponents, matches)
 }
 
 // Perform a glob.
-func doGlob(fs fs.FS, basedir string, components, matches []string, depth int) ([]string, error) { //nolint:gocyclo,gocognit,funlen
+func doGlob(fsys fs.FS, basedir string, components, matches []string, depth int) ([]string, error) { //nolint:gocyclo,gocognit,funlen
 	if depth == 0 && len(components) < 2 || depth == -1 {
 		return matches, nil
 	}
@@ -280,7 +280,7 @@ func doGlob(fs fs.FS, basedir string, components, matches []string, depth int) (
 	}
 
 	// Stat will return an error if the file/directory doesn't exist
-	fi, err := fs.Stat(basedir)
+	fi, err := fs.Stat(fsys, basedir)
 	if err != nil {
 		return matches, nil
 	}
@@ -296,7 +296,7 @@ func doGlob(fs fs.FS, basedir string, components, matches []string, depth int) (
 		return matches, nil
 	}
 
-	filenames, err := readDir(fs, basedir)
+	filenames, err := readDir(fsys, basedir)
 	if err != nil {
 		return matches, err
 	}
@@ -306,7 +306,7 @@ func doGlob(fs fs.FS, basedir string, components, matches []string, depth int) (
 
 		// if the current component is a doublestar, we'll try depth-first
 		for _, filename := range filenames {
-			fi, err = fs.Stat(path.Join(basedir, filename))
+			fi, err = fs.Stat(fsys, path.Join(basedir, filename))
 			if err != nil {
 				continue
 			}
@@ -316,7 +316,7 @@ func doGlob(fs fs.FS, basedir string, components, matches []string, depth int) (
 				if lastComponent {
 					matches = append(matches, path.Join(basedir, filename))
 				}
-				matches, err = doGlob(fs, path.Join(basedir, filename), components[patIdx:], matches, depth-1)
+				matches, err = doGlob(fsys, path.Join(basedir, filename), components[patIdx:], matches, depth-1)
 			} else if lastComponent {
 				// if the pattern's last component is a doublestar, we match filenames, too
 				matches = append(matches, path.Join(basedir, filename))
@@ -340,7 +340,7 @@ func doGlob(fs fs.FS, basedir string, components, matches []string, depth int) (
 			if lastComponent {
 				matches = append(matches, path.Join(basedir, filename))
 			} else {
-				matches, err = doGlob(fs, path.Join(basedir, filename), components[patIdx+1:], matches, depth-1)
+				matches, err = doGlob(fsys, path.Join(basedir, filename), components[patIdx+1:], matches, depth-1)
 			}
 		}
 	}
@@ -360,16 +360,14 @@ func skipComponents(components []string) (patLen, patIdx int) {
 	return patLen, patIdx
 }
 
-func readDir(fs fs.FS, basedir string) ([]string, error) {
-	// read directory
-	dir, err := fs.Open(basedir)
+func readDir(fsys fs.FS, basedir string) ([]string, error) {
+	dir, err := fsys.Open(basedir)
 	if err != nil {
 		return nil, err
 	}
 	defer dir.Close()
 
-	filenames, _ := dir.Readdirnames(-1)
-	return filenames, nil
+	return fslib.Readdirnames(dir, 0)
 }
 
 func getDepth(components []string, patIdx int, depth int) int {

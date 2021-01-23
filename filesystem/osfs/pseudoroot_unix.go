@@ -24,10 +24,15 @@
 package osfs
 
 import (
+	"io/fs"
 	"syscall"
 )
 
+func (*Root) ReadDir(int) ([]fs.DirEntry, error) {
+	return nil, syscall.EPERM
+}
+
 // Readdirnames fails on UNIX.
-func (*Root) Readdirnames(n int) (partitions []string, err error) {
+func (*Root) Readdirnames(int) ([]string, error) {
 	return nil, syscall.EPERM
 }

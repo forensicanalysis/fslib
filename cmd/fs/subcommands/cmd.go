@@ -27,6 +27,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
+	"github.com/forensicanalysis/fslib"
 	"io"
 	"io/ioutil"
 	"log"
@@ -38,7 +39,6 @@ import (
 	"github.com/xlab/treeprint"
 
 	"github.com/forensicanalysis/fslib/content"
-	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
 	"github.com/forensicanalysis/fslib/filetype"
 )
@@ -144,14 +144,15 @@ func executeCommands() error {
 func exitOnError(err error) {
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
-		os.Exit(1)
+		// os.Exit(1)
+		log.Fatal(err)
 	}
 }
 
 func catCmd(_ *cobra.Command, args []string) {
 	for _, arg := range args {
 		func() {
-			name, err := osfs.ToForensicPath(arg)
+			name, err := fslib.ToForensicPath(arg)
 			exitOnError(err)
 			r, err := recursivefs.New().Open(name)
 			exitOnError(err)
@@ -167,7 +168,7 @@ func fileCmd(_ *cobra.Command, args []string) {
 	b := make([]byte, 8192)
 	for _, arg := range args {
 		func() {
-			name, err := osfs.ToForensicPath(arg)
+			name, err := fslib.ToForensicPath(arg)
 			exitOnError(err)
 			f, err := recursivefs.New().Open(name)
 			exitOnError(err)
@@ -188,7 +189,7 @@ func hashsumCmd(_ *cobra.Command, args []string) {
 		sha512hash := sha512.New()
 		hash := io.MultiWriter(md5hash, sha1hash, sha256hash, sha512hash)
 
-		name, err := osfs.ToForensicPath(arg)
+		name, err := fslib.ToForensicPath(arg)
 		exitOnError(err)
 		r, err := recursivefs.New().Open(name)
 		exitOnError(err)
@@ -209,7 +210,7 @@ func lsCmd(_ *cobra.Command, args []string) {
 
 	fs := recursivefs.New()
 	for _, arg := range args {
-		name, err := osfs.ToForensicPath(arg)
+		name, err := fslib.ToForensicPath(arg)
 		exitOnError(err)
 		fi, err := recursivefs.New().Stat(name)
 		exitOnError(err)
@@ -217,8 +218,9 @@ func lsCmd(_ *cobra.Command, args []string) {
 			f, err := recursivefs.New().Open(name)
 			exitOnError(err)
 
-			fileNames, err := f.Readdirnames(0)
+			infos, err := fslib.ReadDir(f, 0)
 			exitOnError(err)
+			fileNames := fslib.InfosToNames(infos)
 
 			sort.Strings(fileNames)
 			for _, fileName := range fileNames {
@@ -241,7 +243,7 @@ func lsCmd(_ *cobra.Command, args []string) {
 
 func statCmd(_ *cobra.Command, args []string) {
 	for _, arg := range args {
-		name, err := osfs.ToForensicPath(arg)
+		name, err := fslib.ToForensicPath(arg)
 		exitOnError(err)
 		fi, err := recursivefs.New().Stat(name)
 		exitOnError(err)
@@ -255,11 +257,16 @@ func statCmd(_ *cobra.Command, args []string) {
 
 func stringsCmd(_ *cobra.Command, args []string) {
 	for _, arg := range args {
-		name, err := osfs.ToForensicPath(arg)
+		name, err := fslib.ToForensicPath(arg)
 		exitOnError(err)
-		r, err := recursivefs.New().Open(name)
+		fsys := recursivefs.New()
+		r, err := fsys.Open(name)
 		exitOnError(err)
-		ascii, err := content.Content(r)
+
+		fx, err := fslib.FileX(r)
+		exitOnError(err)
+
+		ascii, err := content.Content(fx)
 		exitOnError(err)
 		fmt.Println(ascii)
 	}
@@ -275,7 +282,7 @@ func treeCmd(_ *cobra.Command, args []string) {
 }
 
 func getChildren(tree treeprint.Tree, subpath string) {
-	name, err := osfs.ToForensicPath(subpath)
+	name, err := fslib.ToForensicPath(subpath)
 	exitOnError(err)
 	fi, err := recursivefs.New().Stat(name)
 	if err != nil {
@@ -289,8 +296,10 @@ func getChildren(tree treeprint.Tree, subpath string) {
 			fmt.Println("tree", err)
 			return
 		}
-		files, err := f.Readdirnames(0)
+
+		infos, err := fslib.ReadDir(f, 0)
 		exitOnError(err)
+		files := fslib.InfosToNames(infos)
 		exitOnError(f.Close())
 		sort.Strings(files)
 		for _, item := range files {

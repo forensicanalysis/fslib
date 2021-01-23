@@ -26,11 +26,11 @@ package content
 import (
 	"bytes"
 	"fmt"
-	"io"
-
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem/zip"
 	"github.com/forensicanalysis/fslib/filetype"
 	"github.com/forensicanalysis/fslib/fsio"
+	"io"
 )
 
 // Content returns the binary contents as a string.
@@ -64,24 +64,24 @@ func Content(r fsio.ReadSeekerAt) (content io.Reader, err error) {
 }
 
 func docxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
-	fs, _ := zip.New(r)
-	f, err := fs.Open("/word/document.xml")
+	fsys, _ := zip.New(r)
+	f, err := fslib.Open(fsys, "/word/document.xml")
 	return bytes.NewBufferString(xmlContent(f)), err
 }
 
 func xlsxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
 	// unzip -> xl/worksheets/sheetX.xml
-	fs, _ := zip.New(r)
+	fsys, _ := zip.New(r)
 	s := &bytes.Buffer{}
 
-	r, err := fs.Open("/xl/sharedStrings.xml")
+	r, err := fslib.Open(fsys, "/xl/sharedStrings.xml")
 	if err == nil {
 		s.WriteString(xmlContent(r))
 	}
 
 	i := 1
 	for {
-		r, err := fs.Open(fmt.Sprintf("/xl/worksheets/sheet%d.xml", i))
+		r, err := fslib.Open(fsys, fmt.Sprintf("/xl/worksheets/sheet%d.xml", i))
 		if err != nil {
 			break
 		}
@@ -93,11 +93,11 @@ func xlsxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
 
 func pptxContent(r fsio.ReadSeekerAt) (io.Reader, error) {
 	// unzip -> ppt/slides/slideX.xml
-	fs, _ := zip.New(r)
+	fsys, _ := zip.New(r)
 	s := &bytes.Buffer{}
 	i := 1
 	for {
-		r, err := fs.Open(fmt.Sprintf("/ppt/slides/slide%d.xml", i))
+		r, err := fslib.Open(fsys, fmt.Sprintf("/ppt/slides/slide%d.xml", i))
 		if err != nil {
 			break
 		}

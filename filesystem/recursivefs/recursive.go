@@ -24,6 +24,7 @@ package recursivefs
 import (
 	"errors"
 	"fmt"
+	"github.com/forensicanalysis/fslib"
 	"io"
 	"io/fs"
 	"path"
@@ -48,7 +49,7 @@ func parseRealPath(sample string) (rpath []element, err error) {
 	}
 
 	key := "/"
-	var fsys fs.FS = osfs.New()
+	var fsys fslib.FS = osfs.New()
 	for len(parts) > 0 {
 		key = path.Join(key, parts[0])
 		parts = parts[1:]
@@ -58,7 +59,7 @@ func parseRealPath(sample string) (rpath []element, err error) {
 		}
 
 		if !info.IsDir() {
-			file, err := fsys.Open(key)
+			file, err := fslib.Open(fsys, key)
 			if err != nil {
 				return nil, err
 			}
@@ -83,7 +84,7 @@ func parseRealPath(sample string) (rpath []element, err error) {
 	return rpath, nil
 }
 
-func detectFsFromFile(base fs.File) (isFs bool, fs string, err error) {
+func detectFsFromFile(base fslib.Item) (isFs bool, fs string, err error) {
 	ext := strings.TrimLeft(path.Ext(base.Name()), ".")
 
 	t, err := filetype.DetectReaderByExtension(base, ext)
@@ -109,7 +110,7 @@ func detectFsFromFile(base fs.File) (isFs bool, fs string, err error) {
 	return true, fs, err
 }
 
-func fsFromName(name string, f fsio.ReadSeekerAt) (fs fs.FS, err error) {
+func fsFromName(name string, f fsio.ReadSeekerAt) (fs fslib.FS, err error) {
 	switch name {
 	case "OsFs":
 		fs = osfs.New()

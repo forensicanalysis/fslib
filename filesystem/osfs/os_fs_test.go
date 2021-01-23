@@ -22,6 +22,7 @@
 package osfs
 
 import (
+	"io/fs"
 	"reflect"
 	"runtime"
 	"sort"
@@ -155,13 +156,14 @@ func TestWindowsRoot(t *testing.T) {
 	for _, tt := range tests {
 		if runtime.GOOS == "windows" {
 			t.Run(tt.name, func(t *testing.T) {
-				gotItems, err := tt.item.Readdirnames(tt.args.n)
+				gotItems, err := fslib.ReadDir(tt.item, tt.args.n)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Readdirnames() error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}
 
-				if !isSubset(gotItems, tt.wantItems) {
+				filenames := fslib.InfosToNames(gotItems)
+				if !isSubset(filenames, tt.wantItems) {
 					t.Errorf("Readdirnames() gotItems = %v, want %v", gotItems, tt.wantItems)
 				}
 			})
@@ -191,7 +193,7 @@ func TestWindowsRoot(t *testing.T) {
 }*/
 
 func TestOSFS_Open(t *testing.T) {
-	fs, _, _ := getOSFS(t)
+	fsys, _, _ := getOSFS(t)
 	type args struct {
 		name string
 	}
@@ -202,11 +204,11 @@ func TestOSFS_Open(t *testing.T) {
 		wantItem fs.File
 		wantErr  bool
 	}{
-		{"Open fail", fs, args{"foo"}, nil, true},
+		{"Open fail", fsys, args{"foo"}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotItem, err := fs.OpenSystemPath(tt.args.name)
+			gotItem, err := fsys.OpenSystemPath(tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Open() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -235,7 +237,7 @@ func TestToForensicPath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if (tt.windowsTest && runtime.GOOS == "windows") || !tt.windowsTest {
-				gotName, err := ToForensicPath(tt.args.systemPath)
+				gotName, err := fslib.ToForensicPath(tt.args.systemPath)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("ToForensicPath() error = %v, wantErr %v", err, tt.wantErr)
 					return

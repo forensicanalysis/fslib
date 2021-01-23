@@ -26,14 +26,12 @@ package osfs
 
 import (
 	"errors"
+	"github.com/forensicanalysis/fslib"
+	"github.com/forensicanalysis/fslib/filesystem"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"runtime"
 	"sort"
-	"strings"
-
-	"github.com/forensicanalysis/fslib/filesystem"
 )
 
 const windows = "windows"
@@ -55,24 +53,10 @@ func isLetter(c byte) bool {
 	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
 }
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fslib path
-// ('/C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
-	name, err = filepath.Abs(systemPath)
-	if err != nil {
-		return "", err
-	}
-	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
-		name = "/" + name[:1] + name[2:]
-	}
-	return name, err
-}
-
 // OpenSystemPath opens a normal path (e.g. 'C:\Windows') instead of a fslib path
 // ('/C/Windows').
 func (fs *FS) OpenSystemPath(syspath string) (item fs.File, err error) {
-	syspath, err = ToForensicPath(syspath)
+	syspath, err = fslib.ToForensicPath(syspath)
 	if err != nil {
 		return nil, err
 	}

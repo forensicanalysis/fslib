@@ -26,6 +26,7 @@ package testfs
 
 import (
 	"bytes"
+	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"os"
 	"path"
@@ -152,6 +153,10 @@ type Directory struct {
 
 // Name returns the name of the directory.
 func (d *Directory) Name() (name string) { return path.Base(name) }
+
+func (d *Directory) ReadDir(n int) (entries []fs.DirEntry, err error) {
+	return fslib.ReadDirFromNames(n, d.Readdirnames)
+}
 
 // Readdirnames returns up to n child items of a directory.
 func (d *Directory) Readdirnames(n int) (items []string, err error) {

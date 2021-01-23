@@ -134,6 +134,11 @@ func (p *Partition) ModTime() time.Time { return time.Time{} }
 // Sys returns the PartitionEntry.
 func (p *Partition) Sys() interface{} { return p.partition }
 
+func (p *Partition) Type() fsys.FileMode { return p.Mode() }
+
+func (p *Partition) Info() (fsys.FileInfo, error) { return p, nil }
+
+
 // Root is a pseudo root directory containing the partitions.
 type Root struct {
 	forensicfs.DirectoryDefaults
@@ -142,6 +147,20 @@ type Root struct {
 
 // Name always returns '/' for GPT roots.
 func (r *Root) Name() string { return "/" }
+
+func (r *Root) ReadDir(count int) ([]fsys.DirEntry, error) {
+	var partitionInfos []fsys.DirEntry
+	for index, partition := range r.gpt.Primary().Entries() {
+		if count != 0 && index == count {
+			return partitionInfos, nil
+		}
+		if partition.FirstLba() != 0 || partition.LastLba() != 0 {
+			p := NewPartition(index, &partition)
+			partitionInfos = append(partitionInfos, p)
+		}
+	}
+	return partitionInfos, nil
+}
 
 // Readdirnames lists all partitions in the GPT.
 func (r *Root) Readdirnames(count int) ([]string, error) {

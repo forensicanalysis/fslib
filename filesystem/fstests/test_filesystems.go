@@ -26,6 +26,7 @@
 package fstests
 
 import (
+	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"log"
 	"os"
@@ -93,80 +94,83 @@ func GetDefaultContainerTests() map[string]*PathTest {
 // RunTest executes a set of tests.
 func RunTest(t *testing.T, name, file string, new func(fsio.ReadSeekerAt) (fs.FS, error), tests map[string]*PathTest) {
 	t.Run(name, func(t *testing.T) {
-		fs := osfs.New()
-		base, err := fs.OpenSystemPath("../../test/data/" + file)
+		fsys := osfs.New()
+		base, err := fsys.OpenSystemPath("../../test/data/" + file)
 		assert.NoError(t, err)
 		assert.NotNil(t, base)
-		checkFS(t, base, new, name, tests)
+		if readSeekerAtBase, ok := base.(fsio.ReadSeekerAt); ok {
+			checkFS(t, readSeekerAtBase, new, name, tests)
+		} else {
+			assert.Fail(t, "File does not implement ReadAt and Seek")
+		}
 	})
+}
+
+type Named interface {
+	Name() string
 }
 
 func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (fs.FS, error), name string, tests map[string]*PathTest) {
 	// test creation
-	fs, err := new(base)
+	fsys, err := new(base)
 	assert.NoError(t, err)
 
 	log.Print("check FS ", name)
 	log.Print("-------------------")
-	assert.NotNil(t, fs)
-	assert.EqualValues(t, name, fs.Name())
+	assert.NotNil(t, fsys)
+
+	if namedFS, ok := fsys.(Named); ok {
+		assert.EqualValues(t, name, namedFS.Name())
+	} else {
+		assert.Fail(t, "FS must have a name")
+	}
 
 	// test no leading slash
-	// _, err = fs.Open("no_slash")
+	// _, err = fsys.Open("no_slash")
 	// assert.Error(t, err)
 
 	// test not existing path
-	_, err = fs.Open("/non_existing")
+	_, err = fsys.Open("/non_existing")
 	assert.Error(t, err)
 
 	for _, tt := range tests {
-		t.Run(tt.TestName, checkPath(name, tt, fs))
+		t.Run(tt.TestName, checkPath(name, tt, fsys))
 	}
 }
 
-func checkPath(name string, tt *PathTest, fs fs.FS) func(t *testing.T) {
+func checkPath(name string, tt *PathTest, fsys fs.FS) func(t *testing.T) {
 	return func(t *testing.T) {
 		log.Print("------------------------------")
 		log.Print(name, " ", tt.TestName)
 		log.Print("------------------------------")
-		log.Print("test fs.Stat")
-		stat, err := fs.Stat(tt.Path)
+		log.Print("test fsys.Stat")
+		stat, err := fs.Stat(fsys, tt.Path)
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, tt.InfoSize, stat.Size())
 			assert.EqualValues(t, tt.InfoIsDir, stat.IsDir())
 		}
 
 		log.Print("-------------------")
-		log.Print("test fs.Open")
-		file, err := fs.Open(tt.Path)
+		log.Print("test fsys.Open")
+		file, err := fsys.Open(tt.Path)
 		if assert.NoError(t, err) {
 			log.Print("-------------------")
 			log.Print("test item.Name")
-			assert.EqualValues(t, tt.FileName, file.Name())
+			if namedFile, ok := file.(Named); ok {
+				assert.EqualValues(t, tt.FileName, namedFile.Name())
+			} else {
+				assert.Fail(t, "File must have a name")
+			}
+
 			// fileInfos, err := file.Readdir(0)
 			// assert.NoError(t, err)
 			// assert.EqualValues(t, test.FileReaddir, fileInfos)
 			if tt.InfoIsDir {
 				log.Print("-------------------")
 				log.Print("test dir.Readdirnames(0)")
-				filenames, err := file.Readdirnames(0)
+				filenames, err := fslib.Readdirnames(file, 0)
 				if assert.NoError(t, err) {
 					assert.ElementsMatch(t, tt.FileReaddirnames, filenames, "dirnames do not match %s %s", tt.FileReaddirnames, filenames)
-				}
-
-				min := func(a, b int) int {
-					if a < b {
-						return a
-					}
-					return b
-				}
-				for _, i := range []int{1, 3, 1000} {
-					log.Print("-------------------")
-					log.Printf("test dir.Readdirnames(%d)", i)
-					filenames, err = file.Readdirnames(i)
-					if assert.NoError(t, err) {
-						assert.Equal(t, min(i, len(tt.FileReaddirnames)), len(filenames), "dirnames do not match %s %s", tt.FileReaddirnames, filenames)
-					}
 				}
 			}
 
@@ -182,3 +186,4 @@ func checkPath(name string, tt *PathTest, fs fs.FS) func(t *testing.T) {
 		}
 	}
 }
+

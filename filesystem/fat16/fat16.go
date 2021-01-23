@@ -26,9 +26,11 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"strings"
+	"time"
 	"unicode/utf16"
 	"unicode/utf8"
 )
@@ -69,6 +71,46 @@ type directoryEntry struct {
 	FileSize          uint32
 }
 
+type namedEntry struct {
+	directoryEntry
+	name string
+}
+
+func (d *namedEntry) Name() string {
+	return d.name
+}
+
+func (d *namedEntry) IsDir() bool {
+	return d.FileAttributes&0x10 != 0
+}
+
+func (d *namedEntry) Size() int64 {
+	return int64(d.FileSize)
+}
+
+func (d *namedEntry) Mode() fs.FileMode {
+	if d.FileAttributes&0x10 != 0 {
+		return os.ModeDir
+	}
+	return 0
+}
+
+func (d *namedEntry) ModTime() time.Time {
+	return time.Time{} // TODO parse d.Timecreated
+}
+
+func (d *namedEntry) Type() fs.FileMode {
+	return d.Mode()
+}
+
+func (d *namedEntry) Info() (fs.FileInfo, error) {
+	return d, nil
+}
+
+func (d *namedEntry) Sys() interface{} {
+	return d
+}
+
 type lfnEntry struct {
 	SequenceNumber  uint8
 	Filename1       [10]byte
@@ -105,19 +147,22 @@ func formatFilename(de *directoryEntry) string {
 	return filename
 }
 
-func (m *FS) getDirectoryEntry(cluster int64, count uint16, name string) (filename string, de *directoryEntry, err error) {
+func (m *FS) getDirectoryEntry(cluster int64, count uint16, name string) (filename string, de *namedEntry, err error) {
 	log.Println("getDirectoryEntry", name, cluster, count)
 	if name == "" {
 		var root [8]byte
 		copy(root[:], "/")
-		return "/", &directoryEntry{
-			Filename:          root,
-			FilenameExtension: [3]byte{},
-			FileAttributes:    0x10,
-			Timecreated:       [2]byte{},
-			Datecreated:       [2]byte{},
-			Startingcluster:   2,
-			FileSize:          uint32(m.vh.RootdirEntryCount) * 32,
+		return "/", &namedEntry{
+			name: filename,
+			directoryEntry: directoryEntry{
+				Filename:          root,
+				FilenameExtension: [3]byte{},
+				FileAttributes:    0x10,
+				Timecreated:       [2]byte{},
+				Datecreated:       [2]byte{},
+				Startingcluster:   2,
+				FileSize:          uint32(m.vh.RootdirEntryCount) * 32,
+			},
 		}, nil
 	}
 
@@ -163,13 +208,13 @@ func getOffset(cluster int64, vh volumeHeader) int64 {
 	return pos
 }
 
-func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*directoryEntry, error) {
+func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*namedEntry, error) {
 	_, err := m.decoder.Seek(getOffset(cluster, m.vh), os.SEEK_SET)
 	if err != nil {
 		return nil, err
 	}
 
-	files := map[string]*directoryEntry{}
+	files := map[string]*namedEntry{}
 
 	var currentFilename []byte
 	for i := uint16(0); i < count; i++ {
@@ -215,7 +260,7 @@ func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*direc
 			}
 
 			log.Print("filename ", filename, " ", de.FileAttributes&0x10 != 0, de.Startingcluster)
-			files[filename] = &de
+			files[filename] = &namedEntry{name: filename, directoryEntry: de}
 		} else {
 			_, err = m.decoder.Seek(32, os.SEEK_CUR)
 			if err != nil {

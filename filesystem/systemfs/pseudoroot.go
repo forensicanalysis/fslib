@@ -22,6 +22,8 @@
 package systemfs
 
 import (
+	"github.com/forensicanalysis/fslib"
+	"io/fs"
 	"os"
 	"runtime"
 	"syscall"
@@ -61,6 +63,10 @@ func (*Root) Sys() interface{} { return nil }
 // Stat returns the windows pseudo roots itself as os.FileMode.
 func (r *Root) Stat() (os.FileInfo, error) {
 	return r, nil
+}
+
+func (r *Root) ReadDir(n int) (entries []fs.DirEntry, err error) {
+	return fslib.ReadDirFromNames(n, r.Readdirnames)
 }
 
 // Readdirnames lists all partitions in the window pseudo root.

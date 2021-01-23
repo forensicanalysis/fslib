@@ -130,6 +130,10 @@ func (p *Partition) ModTime() time.Time { return time.Time{} }
 // Sys returns the PartitionEntry.
 func (p *Partition) Sys() interface{} { return p.partition }
 
+func (p *Partition) Type() fs.FileMode { return p.Mode() }
+
+func (p *Partition) Info() (fs.FileInfo, error) { return p, nil }
+
 // Root is a pseudo root directory for a Master Boot Record.
 type Root struct {
 	forensicfs.DirectoryDefaults
@@ -138,6 +142,20 @@ type Root struct {
 
 // Name always returns / for MBR roots.
 func (r *Root) Name() string { return "/" }
+
+func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
+	var partitionInfos []fs.DirEntry
+	for index, partition := range r.mbr.Partitions() {
+		if count != 0 && index == count {
+			return partitionInfos, nil
+		}
+		if partition.NumSectors() != 0 {
+			p := NewPartition(index, &partition)
+			partitionInfos = append(partitionInfos, p)
+		}
+	}
+	return partitionInfos, nil
+}
 
 // Readdirnames lists all partitions in the MBR.
 func (r *Root) Readdirnames(count int) ([]string, error) {

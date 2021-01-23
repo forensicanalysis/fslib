@@ -23,13 +23,19 @@ package osfs
 
 import (
 	"errors"
+	"github.com/forensicanalysis/fslib"
+	"io/fs"
 	"strings"
 	"syscall"
 	"unsafe"
 )
 
+func (r *Root) ReadDir(n int) (entries []fs.DirEntry, err error) {
+	return fslib.ReadDirFromNames(n, r.Readdirnames)
+}
+
 // Readdirnames lists all partitions in the window pseudo root.
-func (*Root) Readdirnames(n int) (partitions []string, err error) {
+func (r *Root) Readdirnames(n int) (partitions []string, err error) {
 	kernel32, err := syscall.LoadDLL("kernel32.dll")
 	if err != nil {
 		return nil, err

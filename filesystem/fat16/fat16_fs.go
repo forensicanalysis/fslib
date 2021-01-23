@@ -52,9 +52,7 @@ func New(decoder fsio.ReadSeekerAt) (*FS, error) {
 	}
 	decoder.Seek(0, 0) // nolint: errcheck
 
-	fs := &FS{vh: vh, decoder: decoder}
-
-	return fs, err
+	return &FS{vh: vh, decoder: decoder}, err
 }
 
 // Name returns the name of the file system.
@@ -106,7 +104,7 @@ func (m *FS) Open(name string) (f fs.File, err error) {
 	if err != nil {
 		return nil, err
 	}
-	f = NewItem(name, m, de)
+	f = NewItem(name, m, &de.directoryEntry)
 
 	return f, nil
 }
@@ -154,10 +152,36 @@ func (i *Item) Name() string {
 	return i.name // string(bytes.TrimRight(i.directoryEntry.Filename[:], "\x00"))
 }
 
+func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
+	if !i.IsDir() {
+		return nil, errors.New("cannot call Readdirnames on a file")
+	}
+	de := i.directoryEntry
+
+	size := int64(de.FileSize)
+	if size == 0 {
+		size = int64(i.fs.vh.SectorSize) * int64(i.fs.vh.SectorsPerCluster)
+	}
+
+	log.Printf("Readdirnames startingcluster: %d size: %d", de.Startingcluster, size)
+	entries, err := i.fs.getDirectoryEntries(int64(de.Startingcluster), uint16(size/32))
+	var infos []fs.DirEntry
+	for name, entry := range entries {
+		if name != "." && name != ".." {
+			infos = append(infos, entry)
+			n--
+			if n == 0 {
+				break
+			}
+		}
+	}
+	return infos, err
+}
+
 // Readdirnames returns up to n child items of a directory.
 func (i *Item) Readdirnames(n int) ([]string, error) {
 	if !i.IsDir() {
-		return []string{}, errors.New("cannot call Readdirnames on a file")
+		return nil, errors.New("cannot call Readdirnames on a file")
 	}
 	de := i.directoryEntry
 

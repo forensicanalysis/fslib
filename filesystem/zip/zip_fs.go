@@ -24,12 +24,12 @@ package zip
 
 import (
 	"archive/zip"
+	"io/fs"
 	"os"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/afero/zipfs"
 
-	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filesystem"
 	"github.com/forensicanalysis/fslib/fsio"
 )

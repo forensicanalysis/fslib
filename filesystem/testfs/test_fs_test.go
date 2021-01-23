@@ -22,6 +22,7 @@
 package testfs
 
 import (
+	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"reflect"
 	"testing"
@@ -72,8 +73,8 @@ func TestTestFS_CreateFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fs := getInFS()
-			fs.CreateFile(tt.args.name, tt.args.data)
+			fsys := getInFS()
+			fsys.CreateFile(tt.args.name, tt.args.data)
 		})
 	}
 }
@@ -87,8 +88,8 @@ func TestTestFS_Name(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fs := getInFS()
-			if got := fs.Name(); got != tt.want {
+			fsys := getInFS()
+			if got := fsys.Name(); got != tt.want {
 				t.Errorf("Name() = %v, want %v", got, tt.want)
 			}
 		})
@@ -106,7 +107,7 @@ func TestTestFS_Open(t *testing.T) {
 		want    fs.File
 		wantErr bool
 	}{
-		{"Open", args{"/dir"}, &Directory{path: "dir", fs: fs}, false},
+		{"Open", args{"/dir"}, &Directory{path: "dir", fs: fsys}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -140,11 +141,12 @@ func TestTestFolder_Readdirnames(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			fsys := getInFS()
 			d, _ := fsys.Open(tt.dir)
-			gotItems, err := d.Readdirnames(tt.args.in0)
+			gotItems, err := fslib.Readdirnames(d, tt.args.in0)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Readdirnames() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if !reflect.DeepEqual(gotItems, tt.wantItems) {
 				t.Errorf("Readdirnames() gotItems = %v, want %v", gotItems, tt.wantItems)
 			}

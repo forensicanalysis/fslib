@@ -22,6 +22,8 @@
 package zip
 
 import (
+	"github.com/forensicanalysis/fslib"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -57,6 +59,20 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 // Name returns the name of the file.
 func (f *File) Name() string {
 	return filepath.ToSlash(filepath.Base(f.internal.Name()))
+}
+
+// Readdirnames returns up to n child items of a directory.
+func (f *File) ReadDir(count int) ([]fs.DirEntry, error) {
+	if count == 0 {
+		count = -1
+	}
+
+	infos, err := f.internal.Readdir(count)
+	if err != nil {
+		return nil, err
+	}
+	entries := fslib.InfosToEntries(infos)
+	return entries, nil
 }
 
 // Readdirnames returns up to n child items of a directory.

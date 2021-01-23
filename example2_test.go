@@ -23,11 +23,11 @@ package fslib_test
 
 import (
 	"fmt"
+	"github.com/forensicanalysis/fslib"
 	"io/ioutil"
 	"os"
 	"path"
 
-	"github.com/forensicanalysis/fslib/filesystem/osfs"
 	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
 )
 
@@ -39,7 +39,7 @@ func ExampleReadFile() {
 
 	// create fslib path
 	wd, _ := os.Getwd()
-	fpath, _ := osfs.ToForensicPath(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
+	fpath, _ := fslib.ToForensicPath(path.Join(wd, "test/data/filesystem/fat16.dd/README.md"))
 
 	// get handle the README.md
 	file, _ := fs.Open(fpath)

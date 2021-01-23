@@ -26,6 +26,7 @@ package systemfs
 
 import (
 	"fmt"
+	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"log"
 	"os"
@@ -57,34 +58,34 @@ func newFS(plugins []pluginFS) (fs.FS, error) {
 		return osfs.New(), nil
 	}
 
-	fs := &FS{
+	fsys := &FS{
 		plugins: plugins,
 	}
 	root := osfs.Root{}
 	partitions, err := root.Readdirnames(0)
 	if err != nil {
-		return fs, err
+		return fsys, err
 	}
 
 	for _, plugin := range plugins {
 		err = plugin.Setup()
 		if err != nil {
-			return fs, err
+			return fsys, err
 		}
 	}
 
 	var ntfsPartitions []string
 	for _, partition := range partitions {
-		_, close, err := fs.NTFSOpen("/" + partition + "/$MFT")
+		_, close, err := fsys.NTFSOpen("/" + partition + "/$MFT")
 
 		if err == nil {
 			ntfsPartitions = append(ntfsPartitions, partition)
 			close()
 		}
 	}
-	fs.ntfsPartitions = ntfsPartitions
+	fsys.ntfsPartitions = ntfsPartitions
 
-	return fs, nil
+	return fsys, nil
 }
 
 // FS implements a read-only file system for all operating systems.
@@ -145,11 +146,11 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 
 	log.Printf("low level open %s", name[2:])
 
-	item, err := lowLevelFS.Open(name[2:])
+	item, err := fslib.Open(lowLevelFS, name[2:])
 	if err != nil {
 		return nil, nil, err
 	}
-	i := &Item{File: item, base: base}
+	i := &Item{Item: item, base: base}
 	return i, i.Close, nil
 }
 
@@ -203,14 +204,14 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 
 // Item describes files and directories in the file system.
 type Item struct {
-	fs.File
+	fslib.Item
 	base *os.File
 }
 
 // Close closes the file freeing the resource. Usually additional IO operations
 // fail after closing.
 func (i *Item) Close() error {
-	i.File.Close() // nolint:errcheck
+	i.Item.Close() // nolint:errcheck
 	return i.base.Close()
 }
 
