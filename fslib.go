@@ -98,7 +98,6 @@ func FSX(fsys fs.FS) (FS, error) {
 }
 
 func FileX(f fs.File) (Item, error) {
-	return f.(Item), nil
 	fx, ok := f.(Item)
 	if !ok {
 		return nil, fmt.Errorf("%v does not implement fslib.Item", f)

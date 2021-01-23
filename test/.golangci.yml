@@ -82,3 +82,5 @@ issues:
     - (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
     - G104
     - deprecated
+    - ReplaceAll
+    - Comment should end in a period

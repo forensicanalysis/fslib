@@ -145,12 +145,13 @@ func (r *Root) Name() string { return "/" }
 
 func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
 	var partitionInfos []fs.DirEntry
-	for index, partition := range r.mbr.Partitions() {
+	partitions := r.mbr.Partitions()
+	for index, partition := range partitions {
 		if count != 0 && index == count {
 			return partitionInfos, nil
 		}
 		if partition.NumSectors() != 0 {
-			p := NewPartition(index, &partition)
+			p := NewPartition(index, &partitions[index])
 			partitionInfos = append(partitionInfos, p)
 		}
 	}
