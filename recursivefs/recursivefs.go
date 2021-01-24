@@ -28,7 +28,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"os"
 	"sort"
 
 	"github.com/forensicanalysis/fslib"
@@ -108,8 +107,8 @@ func (fsys *FS) Open(name string) (f fs.File, err error) {
 	return &Item{File: f, path: name, innerFSName: ifs, recursiveFS: fsys, isFS: isFS}, nil
 }
 
-// Stat returns an os.FileInfo object that describes a file.
-func (fsys *FS) Stat(name string) (os.FileInfo, error) {
+// Stat returns an fs.FileInfo object that describes a file.
+func (fsys *FS) Stat(name string) (fs.FileInfo, error) {
 	f, err := fsys.Open(name)
 	if err != nil {
 		return nil, err
@@ -150,15 +149,15 @@ func (i *Item) ReadDir(n int) (items []fs.DirEntry, err error) {
 	return items, nil
 }
 
-// Stat return an os.FileInfo object that describes a file.
-func (i *Item) Stat() (os.FileInfo, error) {
+// Stat return an fs.FileInfo object that describes a file.
+func (i *Item) Stat() (fs.FileInfo, error) {
 	info, err := i.File.Stat()
 	return &Info{info, i.isFS}, err
 }
 
-// Info wraps the os.FileInfo.
+// Info wraps the fs.FileInfo.
 type Info struct {
-	os.FileInfo
+	fs.FileInfo
 	isFS bool
 }
 

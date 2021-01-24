@@ -118,8 +118,8 @@ func (i *Item) Seek(offset int64, whence int) (int64, error) {
 // fail after closing.
 func (*Item) Close() error { return nil }
 
-// Stat return an os.FileInfo object that describes a file.
-func (i *Item) Stat() (os.FileInfo, error) { return i, nil }
+// Stat return an fs.FileInfo object that describes a file.
+func (i *Item) Stat() (fs.FileInfo, error) { return i, nil }
 
 // Mode returns the os.FileMode.
 func (i *Item) Mode() os.FileMode {

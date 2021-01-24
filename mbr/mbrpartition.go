@@ -40,8 +40,8 @@ func (p *Partition) Size() int64 { return int64(p.partition.NumSectors() * 512) 
 // Close does not do anything for MBR partitions.
 func (p *Partition) Close() error { return nil }
 
-// Stat return an os.FileInfo object that describes a file.
-func (p *Partition) Stat() (os.FileInfo, error) { return p, nil }
+// Stat return an fs.FileInfo object that describes a file.
+func (p *Partition) Stat() (fs.FileInfo, error) { return p, nil }
 
 // IsDir returns false for partition.
 func (p *Partition) IsDir() bool { return false }

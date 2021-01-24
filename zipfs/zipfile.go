@@ -26,7 +26,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"os"
 	"path/filepath"
 
 	"github.com/forensicanalysis/fslib"
@@ -76,8 +75,8 @@ func (f *File) ReadDir(count int) ([]fs.DirEntry, error) {
 	return uniqueEntries(entries), err
 }
 
-// Stat return an os.FileInfo object that describes a file.
-func (f *File) Stat() (os.FileInfo, error) {
+// Stat return an fs.FileInfo object that describes a file.
+func (f *File) Stat() (fs.FileInfo, error) {
 	return f.internal.Stat()
 }
 

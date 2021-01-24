@@ -54,4 +54,4 @@ func (r *Root) Sys() interface{} { return nil }
 func (r *Root) Close() error { return nil }
 
 // Stat returns the MBR pseudo roots itself as os.FileMode.
-func (r *Root) Stat() (os.FileInfo, error) { return r, nil }
+func (r *Root) Stat() (fs.FileInfo, error) { return r, nil }

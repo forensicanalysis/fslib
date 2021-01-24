@@ -45,8 +45,8 @@ func (p *Partition) Size() int64 {
 // Close does not do anything for GPT partitions.
 func (p *Partition) Close() error { return nil }
 
-// Stat return an os.FileInfo object that describes a file.
-func (p *Partition) Stat() (os.FileInfo, error) { return p, nil }
+// Stat return an fs.FileInfo object that describes a file.
+func (p *Partition) Stat() (fs.FileInfo, error) { return p, nil }
 
 // Mode returns 0 for partitions.
 func (p *Partition) Mode() os.FileMode { return 0 }

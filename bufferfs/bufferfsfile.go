@@ -104,6 +104,6 @@ func (f *File) ReadDir(count int) (fi []fs.DirEntry, err error) {
 	return fslib.ReadDir(f.file, count)
 }
 
-func (f *File) Stat() (os.FileInfo, error) {
+func (f *File) Stat() (fs.FileInfo, error) {
 	return f.file.Stat()
 }

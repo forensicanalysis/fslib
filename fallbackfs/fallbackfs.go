@@ -30,7 +30,6 @@ package fallbackfs
 import (
 	"fmt"
 	"io/fs"
-	"os"
 )
 
 // New creates a new fallback FS.
@@ -61,8 +60,8 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 	return
 }
 
-// Stat returns an os.FileInfo object that describes a file.
-func (fsys *FS) Stat(name string) (info os.FileInfo, err error) {
+// Stat returns an fs.FileInfo object that describes a file.
+func (fsys *FS) Stat(name string) (info fs.FileInfo, err error) {
 	valid := fs.ValidPath(name)
 	if !valid {
 		return nil, fmt.Errorf("path %s invalid", name)

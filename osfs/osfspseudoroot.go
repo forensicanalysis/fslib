@@ -22,6 +22,7 @@
 package osfs
 
 import (
+	"io/fs"
 	"os"
 	"syscall"
 	"time"
@@ -56,6 +57,6 @@ func (*Root) IsDir() bool { return true }
 func (*Root) Sys() interface{} { return nil }
 
 // Stat returns the windows pseudo roots itself as os.FileMode.
-func (r *Root) Stat() (os.FileInfo, error) {
+func (r *Root) Stat() (fs.FileInfo, error) {
 	return r, nil
 }

@@ -44,6 +44,6 @@ func (m *FS) Open(name string) (item fs.File, err error) {
 }
 
 // Stat fails for non Windows operating systems.
-func (m *FS) Stat(name string) (os.FileInfo, error) {
+func (m *FS) Stat(name string) (fs.FileInfo, error) {
 	return nil, errors.New("registry only supported on Windows")
 }

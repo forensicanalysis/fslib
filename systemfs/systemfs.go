@@ -124,8 +124,8 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 	return i, i.Close, nil
 }
 
-// Stat returns an os.FileInfo object that describes a file.
-func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
+// Stat returns an fs.FileInfo object that describes a file.
+func (systemfs *FS) Stat(name string) (info fs.FileInfo, err error) {
 	valid := fs.ValidPath(name)
 	if !valid {
 		return nil, fmt.Errorf("path %s invalid", name)

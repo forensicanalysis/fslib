@@ -78,8 +78,8 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 	return &Item{File: *file, syspath: sysname}, err
 }
 
-// Stat returns an os.FileInfo object that describes a file.
-func (fsys *FS) Stat(name string) (os.FileInfo, error) {
+// Stat returns an fs.FileInfo object that describes a file.
+func (fsys *FS) Stat(name string) (fs.FileInfo, error) {
 	name, sysname, err := sysname(name)
 	if err != nil {
 		return nil, err
@@ -130,14 +130,14 @@ type Item struct {
 	syspath string
 }
 
-// Stat return an os.FileInfo object that describes a file.
-func (i *Item) Stat() (os.FileInfo, error) {
+// Stat return an fs.FileInfo object that describes a file.
+func (i *Item) Stat() (fs.FileInfo, error) {
 	info, err := os.Lstat(i.syspath)
 	return &Info{info, i.syspath}, err
 }
 
-// Info wraps os.FileInfo for native OS items.
+// Info wraps fs.FileInfo for native OS items.
 type Info struct {
-	os.FileInfo
+	fs.FileInfo
 	syspath string
 }

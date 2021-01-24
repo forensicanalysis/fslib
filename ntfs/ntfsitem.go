@@ -84,7 +84,7 @@ func (i *Item) ReadDir(n int) (entries []fs.DirEntry, err error) {
 func (i *Item) Close() error { return nil }
 
 // Stat returns the MBR pseudo roots itself as os.FileMode.
-func (i *Item) Stat() (os.FileInfo, error) { return i, nil }
+func (i *Item) Stat() (fs.FileInfo, error) { return i, nil }
 
 // IsDir returns if the item is a file.
 func (i *Item) IsDir() bool { return i.entry.IsDir(i.ntfsCtx) }

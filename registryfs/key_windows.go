@@ -5,7 +5,6 @@ import (
 	"golang.org/x/sys/windows/registry"
 	"io"
 	"io/fs"
-	"os"
 )
 
 // Key is an entry in the registry.
@@ -61,8 +60,8 @@ func subKeyInfo(rk *Key, subKeyName string) (*registry.KeyInfo, error) {
 // after closing.
 func (rk *Key) Close() error { return rk.Key.Close() }
 
-// Stat return an os.FileInfo object that describes a key.
-func (rk *Key) Stat() (os.FileInfo, error) {
+// Stat return an fs.FileInfo object that describes a key.
+func (rk *Key) Stat() (fs.FileInfo, error) {
 	info, err := rk.Key.Stat()
 	return &KeyInfo{info, rk.name}, err
 }
