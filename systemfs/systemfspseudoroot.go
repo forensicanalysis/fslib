@@ -73,15 +73,4 @@ func (r *Root) ReadDir(n int) (entries []fs.DirEntry, err error) {
 
 	root := osfs.Root{}
 	return root.ReadDir(0)
-	/*
-		if err != nil {
-			return nil, err
-		}
-
-		for _, plugin := range r.fs.plugins {
-			partitions = append(partitions, plugin.Names()...)
-		}
-
-		return partitions, nil
-	*/
 }

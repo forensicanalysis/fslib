@@ -38,38 +38,19 @@ import (
 
 // New creates a new system FS.
 func New() (fs.FS, error) {
-	return newFS(nil)
+	return newFS()
 }
 
-func NewWithPlugins(plugins ...pluginFS) (fs.FS, error) {
-	return newFS(plugins)
-}
-
-type pluginFS interface {
-	Setup() error
-	Names() []string
-	FS(name string) (fs.FS, string)
-}
-
-func newFS(plugins []pluginFS) (fs.FS, error) {
+func newFS() (fs.FS, error) {
 	if runtime.GOOS != "windows" {
 		return osfs.New(), nil
 	}
 
-	fsys := &FS{
-		plugins: plugins,
-	}
+	fsys := &FS{}
 	root := osfs.Root{}
 	partitions, err := root.ReadDir(0)
 	if err != nil {
 		return fsys, err
-	}
-
-	for _, plugin := range plugins {
-		err = plugin.Setup()
-		if err != nil {
-			return fsys, err
-		}
 	}
 
 	var ntfsPartitions []string
@@ -89,7 +70,6 @@ func newFS(plugins []pluginFS) (fs.FS, error) {
 // FS implements a read-only file system for all operating systems.
 type FS struct {
 	ntfsPartitions []string
-	plugins        []pluginFS
 }
 
 // Open opens a file for reading.
@@ -99,14 +79,8 @@ func (systemfs *FS) Open(name string) (item fs.File, err error) {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
-	if name == "/" {
+	if name == "." {
 		return &Root{fs: systemfs}, nil
-	}
-	for _, plugin := range systemfs.plugins {
-		fsys, namePart := plugin.FS(name)
-		if fsys != nil {
-			return fsys.Open(namePart)
-		}
 	}
 
 	fsys := osfs.New()
@@ -157,14 +131,8 @@ func (systemfs *FS) Stat(name string) (info os.FileInfo, err error) {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
-	if name == "/" {
+	if name == "." {
 		return &Root{fs: systemfs}, nil
-	}
-	for _, plugin := range systemfs.plugins {
-		fsys, namePart := plugin.FS(name)
-		if fsys != nil {
-			return fs.Stat(fsys, namePart)
-		}
 	}
 
 	fsys := osfs.New()
