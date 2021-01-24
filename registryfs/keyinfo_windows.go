@@ -2,7 +2,6 @@ package registryfs
 
 import (
 	"io/fs"
-	"os"
 	"time"
 
 	"golang.org/x/sys/windows/registry"
@@ -36,7 +35,7 @@ func (rk *KeyInfo) Sys() interface{} { return rk.KeyInfo }
 // Mode returns the fs.FileMode.
 func (rk *KeyInfo) Mode() fs.FileMode {
 	if rk.IsDir() {
-		return os.ModeDir
+		return fs.ModeDir
 	}
 	return 0
 }

@@ -2,7 +2,6 @@ package fat16
 
 import (
 	"io/fs"
-	"os"
 	"strings"
 	"time"
 )
@@ -45,7 +44,7 @@ func (d *namedEntry) Size() int64 {
 
 func (d *namedEntry) Mode() fs.FileMode {
 	if d.FileAttributes&0x10 != 0 {
-		return os.ModeDir
+		return fs.ModeDir
 	}
 	return 0
 }

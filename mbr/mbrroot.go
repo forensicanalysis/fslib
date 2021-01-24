@@ -2,7 +2,6 @@ package mbr
 
 import (
 	"io/fs"
-	"os"
 	"syscall"
 	"time"
 )
@@ -38,8 +37,8 @@ func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
 // Size returns 0 for MBR pseudo roots.
 func (r *Root) Size() int64 { return 0 }
 
-// Mode returns os.ModeDir for MBR pseudo roots.
-func (r *Root) Mode() fs.FileMode { return os.ModeDir }
+// Mode returns fs.ModeDir for MBR pseudo roots.
+func (r *Root) Mode() fs.FileMode { return fs.ModeDir }
 
 // ModTime returns the zero time (0001-01-01 00:00) for MBR pseudo roots.
 func (r *Root) ModTime() time.Time { return time.Time{} }

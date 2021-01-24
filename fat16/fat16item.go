@@ -25,7 +25,6 @@ import (
 	"io"
 	"io/fs"
 	"log"
-	"os"
 	"syscall"
 	"time"
 )
@@ -125,7 +124,7 @@ func (i *Item) Stat() (fs.FileInfo, error) { return i, nil }
 func (i *Item) Mode() fs.FileMode {
 	var mode fs.FileMode
 	if i.directoryEntry.FileAttributes&0x10 != 0 {
-		mode |= os.ModeDir
+		mode |= fs.ModeDir
 	}
 	return mode
 }

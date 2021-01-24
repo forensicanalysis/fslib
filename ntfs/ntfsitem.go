@@ -95,7 +95,7 @@ func (i *Item) ModTime() time.Time { return time.Time{} }
 // Mode returns the fs.FileMode.
 func (i *Item) Mode() fs.FileMode {
 	if i.IsDir() {
-		return os.ModeDir
+		return fs.ModeDir
 	}
 	return 0
 }

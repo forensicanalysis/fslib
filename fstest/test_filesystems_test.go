@@ -26,8 +26,7 @@
 package fstest
 
 import (
-	fsys "io/fs"
-	"os"
+	"io/fs"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -52,16 +51,16 @@ func TestGetDefaultContainerTests(t *testing.T) {
 }
 
 func TestRunTest(t *testing.T) {
-	fs := fstest.MapFS{}
-	fs["test.bar1"] = &fstest.MapFile{Data: []byte("test")}
-	fs["test.bar2"] = &fstest.MapFile{Data: []byte("test")}
-	fs["test.bar3"] = &fstest.MapFile{Data: []byte("test")}
-	n := func(f fsio.ReadSeekerAt) (fsys.FS, error) { return fs, nil }
+	fsys := fstest.MapFS{}
+	fsys["test.bar1"] = &fstest.MapFile{Data: []byte("test")}
+	fsys["test.bar2"] = &fstest.MapFile{Data: []byte("test")}
+	fsys["test.bar3"] = &fstest.MapFile{Data: []byte("test")}
+	n := func(f fsio.ReadSeekerAt) (fs.FS, error) { return fsys, nil }
 	type args struct {
 		t     *testing.T
 		name  string
 		file  string
-		new   func(fsio.ReadSeekerAt) (fsys.FS, error)
+		new   func(fsio.ReadSeekerAt) (fs.FS, error)
 		tests map[string]*PathTest
 	}
 	tests := []struct {
@@ -74,7 +73,7 @@ func TestRunTest(t *testing.T) {
 				Path:             ".",                                             //string
 				FileName:         ".",                                             //string
 				InfoSize:         0,                                               //int64
-				InfoMode:         os.ModeDir,                                      //fs.FileMode
+				InfoMode:         fs.ModeDir,                                      //fs.FileMode
 				InfoModTime:      time.Time{},                                     //time.Time
 				InfoIsDir:        true,                                            //bool
 				InfoSys:          nil,                                             //interface{}

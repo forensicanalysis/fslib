@@ -24,7 +24,6 @@ package zipfs
 import (
 	"bytes"
 	"io/fs"
-	"os"
 	"testing"
 
 	"github.com/forensicanalysis/fslib/fsio"
@@ -60,7 +59,7 @@ func TestNewReadZipFs(t *testing.T) {
 func Test_ZIP(t *testing.T) {
 	tests := fstest.GetDefaultContainerTests()
 
-	tests["rootTest"].InfoMode = os.ModeDir
+	tests["rootTest"].InfoMode = fs.ModeDir
 
 	fstest.RunTest(t, "ZIP", "container/zip.zip", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
 }

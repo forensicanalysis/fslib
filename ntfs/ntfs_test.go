@@ -25,7 +25,6 @@ import (
 	"bytes"
 	"io"
 	"io/fs"
-	"os"
 	"reflect"
 	"sort"
 	"testing"
@@ -44,15 +43,15 @@ func Test_NTFSImage(t *testing.T) {
 	}
 
 	tests["rootTest"].InfoModTime = time.Date(2019, time.August, 21, 17, 40, 04, 0, time.UTC)
-	tests["rootTest"].InfoMode = os.ModeDir
+	tests["rootTest"].InfoMode = fs.ModeDir
 	tests["rootTest"].FileReaddirnames = append(tests["rootTest"].FileReaddirnames, extra...)
 	sort.Strings(tests["rootTest"].FileReaddirnames)
 
 	tests["dir1Test"].InfoModTime = time.Date(2019, time.August, 21, 17, 40, 04, 0, time.UTC)
-	tests["dir1Test"].InfoMode = os.ModeDir
+	tests["dir1Test"].InfoMode = fs.ModeDir
 
 	tests["dir2Test"].InfoModTime = time.Date(2019, time.August, 21, 17, 40, 04, 0, time.UTC)
-	tests["dir2Test"].InfoMode = os.ModeDir
+	tests["dir2Test"].InfoMode = fs.ModeDir
 
 	tests["file1Test"].InfoModTime = time.Date(2019, time.August, 21, 17, 40, 04, 0, time.UTC)
 	tests["file1Test"].InfoMode = 0

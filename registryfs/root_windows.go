@@ -2,7 +2,6 @@ package registryfs
 
 import (
 	"io/fs"
-	"os"
 	"time"
 )
 
@@ -30,8 +29,8 @@ func (r *Root) Read([]byte) (int, error) { return 0, nil }
 // Size returns 0 for registry pseudo roots.
 func (r *Root) Size() int64 { return 0 }
 
-// Mode returns os.ModeDir for registry pseudo roots.
-func (r *Root) Mode() fs.FileMode { return os.ModeDir }
+// Mode returns fs.ModeDir for registry pseudo roots.
+func (r *Root) Mode() fs.FileMode { return fs.ModeDir }
 
 // ModTime returns the zero time (0001-01-01 00:00) for registry pseudo roots.
 func (r *Root) ModTime() time.Time { return time.Time{} }

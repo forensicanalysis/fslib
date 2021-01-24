@@ -69,7 +69,7 @@ func TestNew(t *testing.T) {
 		want map[string]interface{}
 	}{
 		{"File Attributes", f, map[string]interface{}{"mode": fs.FileMode(0666), "modified": nil}},
-		{"Folder Attributes", dir, map[string]interface{}{"mode": fs.FileMode(0777) | os.ModeDir, "modified": nil}},
+		{"Folder Attributes", dir, map[string]interface{}{"mode": fs.FileMode(0777) | fs.ModeDir, "modified": nil}},
 	}
 	for _, tt := range tests {
 		if runtime.GOOS == "windows" {

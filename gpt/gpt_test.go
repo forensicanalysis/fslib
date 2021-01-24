@@ -70,7 +70,7 @@ func Test_GPT(t *testing.T) {
 			TestName:    "Root",
 			Path:        ".",
 			InfoSize:    0,
-			InfoMode:    os.ModeDir,
+			InfoMode:    fs.ModeDir,
 			InfoModTime: time.Time{},
 			InfoIsDir:   true,
 			FileName:    ".",

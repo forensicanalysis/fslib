@@ -55,14 +55,14 @@ func Test_FAT16(t *testing.T) {
 
 	anyTime := time.Time{}
 	tests["rootTest"].InfoModTime = anyTime
-	tests["rootTest"].InfoMode = os.ModeDir
+	tests["rootTest"].InfoMode = fs.ModeDir
 	tests["rootTest"].InfoSize = 32 * 512
 
 	tests["dir1Test"].InfoModTime = anyTime
-	tests["dir1Test"].InfoMode = os.ModeDir
+	tests["dir1Test"].InfoMode = fs.ModeDir
 
 	tests["dir2Test"].InfoModTime = anyTime
-	tests["dir2Test"].InfoMode = os.ModeDir
+	tests["dir2Test"].InfoMode = fs.ModeDir
 
 	tests["file1Test"].InfoModTime = anyTime
 	tests["file1Test"].InfoMode = 0

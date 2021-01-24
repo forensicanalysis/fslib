@@ -23,7 +23,6 @@ package systemfs
 
 import (
 	"io/fs"
-	"os"
 	"runtime"
 	"syscall"
 	"time"
@@ -45,8 +44,8 @@ func (*Root) Close() error { return nil }
 // Size returns 0 for window pseudo roots.
 func (*Root) Size() int64 { return 0 }
 
-// Mode returns os.ModeDir for window pseudo roots.
-func (*Root) Mode() fs.FileMode { return os.ModeDir }
+// Mode returns fs.ModeDir for window pseudo roots.
+func (*Root) Mode() fs.FileMode { return fs.ModeDir }
 
 // ModTime returns the zero time (0001-01-01 00:00) for window pseudo roots.
 func (*Root) ModTime() time.Time { return time.Time{} }
