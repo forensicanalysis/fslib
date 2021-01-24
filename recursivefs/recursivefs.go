@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-// Package recursivefs provides a forensicfs implementation that can open paths in
+// Package recursivefs provides an io/fs implementation that can open paths in
 // nested forensicfs recursively. The forensicfs are identified using the filetype
 // library. This way e.g. a file in a zip inside a disk image can be accessed.
 package recursivefs

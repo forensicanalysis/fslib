@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-// Package fat16 provides a forensicfs implementation of the FAT16 file systems.
+// Package fat16 provides an io/fs implementation of the FAT16 file systems.
 package fat16
 
 import (

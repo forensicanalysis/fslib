@@ -25,11 +25,30 @@
 // Additionally, file systems for live access to the currently mounted file system
 // and registry (on Windows) are implemented.
 //
+// File systems supported
+//
+// - Native OS file system (directory listing for Windows root provides list of drives)
+// - ZIP
+// - NTFS
+// - FAT16
+// - MBR
+// - GPT
+// - Windows Registry (live not from files)
+//
+// Meta file systems
+//
+// - ⭐ **Recursive FS**: Access container files on file systems recursively, e.g. `"ntfs.dd/forensic.zip/Computer forensics - Wikipedia.pdf"`
+// - Buffer FS: Buffer accessed files of an underlying file system
+// - System FS: Similar to the native OS file system, but falls back to NTFS on failing access on Windows
+//
 // Paths
 //
-// Paths in fslib use the following conventions:
-//     - all paths are separated by forward slashes '/' (yes, even the windows registry)
-//     - all paths need to start with forward slashes '/' (exception: the OSFS accepts relative paths)
+// Paths in fslib use [io/fs](https://tip.golang.org/pkg/io/fs/#ValidPath) conventions:
+//
+// > - Path names passed to open are unrooted, slash-separated sequences of path elements, like “x/y/z”.
+// > - Path names must not contain a “.” or “..” or empty element, except for the special case that the root directory is named “.”.
+// > - Paths are slash-separated on all systems, even Windows.
+// > - Backslashes must not appear in path names.
 package fslib
 
 import (

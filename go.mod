@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/h2non/filetype v1.1.0
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
+	github.com/pkg/errors v0.8.1
 	github.com/sebdah/goldie v0.0.0-20190531093107-d313ffb52c77 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1

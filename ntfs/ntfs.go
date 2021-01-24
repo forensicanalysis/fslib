@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-// Package ntfs provides a forensicfs implementation of the New Technology File
+// Package ntfs provides an io/fs implementation of the New Technology File
 // System (NTFS).
 package ntfs
 

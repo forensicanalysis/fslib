@@ -33,19 +33,28 @@ func (rk *Key) ReadDir(n int) (entries []fs.DirEntry, err error) {
 		return nil, fmt.Errorf("error ReadSubKeyNames: %w", err)
 	}
 	for _, subKeyName := range subKeyNames {
-		subKey, err := registry.OpenKey(*rk.Key, subKeyName, registry.READ|registry.QUERY_VALUE|registry.ENUMERATE_SUB_KEYS)
+		info, err := subKeyInfo(rk, subKeyName)
 		if err != nil {
-			return nil, err
+			items = append(items, &KeyInfo{name: subKeyName, KeyInfo: &registry.KeyInfo{}})
+			continue
 		}
-		info, err := subKey.Stat()
-		if err != nil {
-			return nil, err
-		}
-		subKey.Close()
 
-		items = append(items, &KeyInfo{KeyInfo: info, name: subKeyName})
+		items = append(items, &KeyInfo{name: subKeyName, KeyInfo: info})
 	}
 	return items, nil
+}
+
+func subKeyInfo(rk *Key, subKeyName string) (*registry.KeyInfo, error) {
+	subKey, err := registry.OpenKey(*rk.Key, subKeyName, registry.READ)
+	if err != nil {
+		return nil, err
+	}
+	defer subKey.Close()
+	info, err := subKey.Stat()
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 // Close closes the key freeing the resource. Usually additional IO operations fail

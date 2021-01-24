@@ -67,6 +67,7 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 		parts[i] = strings.Replace(parts[i], `\`, `/`, -1)
 	}
 
-	k, err := registry.OpenKey(root, filepath.Join(parts[1:]...), registry.READ|registry.QUERY_VALUE|registry.ENUMERATE_SUB_KEYS)
+	p := filepath.Join(parts[1:]...)
+	k, err := registry.OpenKey(root, p, registry.READ|registry.QUERY_VALUE|registry.ENUMERATE_SUB_KEYS)
 	return &Key{Key: &k, name: path.Base(name), path: name, fs: fsys}, err
 }

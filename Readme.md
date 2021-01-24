@@ -16,7 +16,7 @@ access disk images of with different partitioning and file systems.
 Additionally, file systems for live access to the currently mounted file system
 and registry (on Windows) are implemented.
 
-Some of the file systems supported:-
+## File systems supported
 
 - Native OS file system (directory listing for Windows root provides list of drives)
 - ZIP
@@ -26,7 +26,7 @@ Some of the file systems supported:-
 - GPT
 - Windows Registry (live not from files)
 
-Meta file systems:
+## Meta file systems
 
 - ⭐ **Recursive FS**: Access container files on file systems recursively, e.g. `"ntfs.dd/forensic.zip/Computer forensics - Wikipedia.pdf"`
 - Buffer FS: Buffer accessed files of an underlying file system
@@ -57,8 +57,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/filesystem/ntfs"
+	"github.com/forensicanalysis/fslib/ntfs"
+	"io/fs"
 	"os"
 )
 
@@ -92,8 +92,8 @@ package main
 import (
 	"fmt"
 	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
-	"io/ioutil"
+	"github.com/forensicanalysis/fslib/recursivefs"
+	"io"
 	"os"
 	"path"
 )

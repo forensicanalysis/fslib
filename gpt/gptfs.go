@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-// Package gpt provides a forensicfs implementation of the GUID partition table
+// Package gpt provides an io/fs implementation of the GUID partition table
 // (GPT).
 package gpt
 

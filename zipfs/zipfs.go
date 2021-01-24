@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-// Package zip provides a forensicfs implementation to access zip files.
+// Package zip provides an io/fs implementation to access zip files.
 package zipfs
 
 import (

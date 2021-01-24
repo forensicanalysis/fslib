@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-// Package osfs provides a forensicfs implementation of the native OS file system.
+// Package osfs provides an io/fs implementation of the native OS file system.
 // In windows paths are changed from "C:\Windows" to "/C/Windows" to comply with
 // the path specifications of the fslib.
 package osfs

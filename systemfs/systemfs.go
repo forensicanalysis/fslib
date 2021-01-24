@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-// Package systemfs provides a forensicfs implementation that uses the osfs as
+// Package systemfs provides an io/fs implementation that uses the osfs as
 // default, while a ntfs for every partition as a fallback on Windows, on UNIX the
 // behavior is the same as osfs.
 package systemfs

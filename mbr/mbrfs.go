@@ -19,7 +19,7 @@
 //
 // Author(s): Jonas Plum
 
-// Package mbr provides a forensicfs implementation of the Master Boot Record (MBR)
+// Package mbr provides an io/fs implementation of the Master Boot Record (MBR)
 // partition table.
 package mbr
 

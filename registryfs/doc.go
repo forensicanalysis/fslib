@@ -19,6 +19,6 @@
 //
 // Author(s): Jonas Plum
 
-// Package registryfs provides a forensicfs implementation to access the Windows
+// Package registryfs provides an io/fs implementation to access the Windows
 // Registry.
 package registryfs
