@@ -76,7 +76,7 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 		return nil, err
 	}
 
-	return &Item{internal: *file, syspath: sysname}, err
+	return &Item{File: *file, syspath: sysname}, err
 }
 
 // Stat returns an fs.FileInfo object that describes a file.
