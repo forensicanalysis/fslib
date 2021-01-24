@@ -35,8 +35,10 @@ jobs:
           mv repo path/src/github.com/forensicanalysis/fslib
           # cp -r path/src/github.com/forensicanalysis/fslib/replace/context path/src
           # echo "package afero" > path/src/github.com/spf13/afero/memmap.go
-          mkdir -p path/src/io
+          mkdir -p path/src/io path/src/internal
+
           cp -r $(go env GOROOT)/src/io/fs path/src/io
+          cp -r $(go env GOROOT)/src/internal/oserror path/src/internal
           cp -r $(go env GOROOT)/src/context path/src
         shell: bash
       - name: Build with go 1.9.7
@@ -163,3 +165,4 @@ jobs:
         uses: actions/checkout@v2
       - run: godoc2readme --template .github/readme-template.md . > README2.md
       - run: diff Readme.md README2.md
+        continue-on-error: true

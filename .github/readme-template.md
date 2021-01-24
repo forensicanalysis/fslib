@@ -43,7 +43,6 @@ but for nested file system structures.
  - **fs hashsum**: Print hashsums
  - **fs ls**: List directory contents
  - **fs stat**: Display file status
- - **fs strings**: Find the printable strings in an object, or other binary, file
  - **fs tree**: List contents of directories in a tree-like format
 
 
@@ -81,8 +80,3 @@ fs hashsum case/evidence.zip/*
 ## Contact
 
 For feedback, questions and discussions you can use the [Open Source DFIR Slack](https://github.com/open-source-dfir/slack).
-
-## Acknowledgment
-
-The development of this software was partially sponsored by Siemens CERT, but
-is not an official Siemens product.
