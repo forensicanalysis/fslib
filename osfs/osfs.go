@@ -30,6 +30,7 @@ import (
 	"io/fs"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/forensicanalysis/fslib"
 )
@@ -75,7 +76,7 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 		return nil, err
 	}
 
-	return &Item{File: *file, syspath: sysname}, err
+	return &Item{internal: *file, syspath: sysname}, err
 }
 
 // Stat returns an fs.FileInfo object that describes a file.
@@ -138,6 +139,27 @@ func (i *Item) Stat() (fs.FileInfo, error) {
 
 // Info wraps fs.FileInfo for native OS items.
 type Info struct {
-	fs.FileInfo
+	internal os.FileInfo
 	syspath string
 }
+
+func (i *Info) Name() string {
+	return i.internal.Name()
+}
+
+func (i *Info) Size() int64 {
+	return i.internal.Size()
+}
+
+func (i *Info) Mode() fs.FileMode {
+	return fs.FileMode(i.internal.Mode())
+}
+
+func (i *Info) ModTime() time.Time {
+	return i.internal.ModTime()
+}
+
+func (i *Info) IsDir() bool {
+	return i.internal.IsDir()
+}
+

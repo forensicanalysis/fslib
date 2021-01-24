@@ -26,7 +26,6 @@ package registryfs
 import (
 	"errors"
 	"io/fs"
-	"os"
 )
 
 // New creates a new dummy registry FS.
