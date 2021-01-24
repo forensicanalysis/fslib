@@ -74,7 +74,7 @@ func TestRunTest(t *testing.T) {
 				Path:             ".",                                             //string
 				FileName:         ".",                                             //string
 				InfoSize:         0,                                               //int64
-				InfoMode:         os.ModeDir,                                      //os.FileMode
+				InfoMode:         os.ModeDir,                                      //fs.FileMode
 				InfoModTime:      time.Time{},                                     //time.Time
 				InfoIsDir:        true,                                            //bool
 				InfoSys:          nil,                                             //interface{}
@@ -88,7 +88,7 @@ func TestRunTest(t *testing.T) {
 				Path:             "test.bar1",    //string
 				FileName:         "test.bar1",    //string
 				InfoSize:         4,              //int64
-				InfoMode:         0,              //os.FileMode
+				InfoMode:         0,              //fs.FileMode
 				InfoModTime:      time.Time{},    //time.Time
 				InfoIsDir:        false,          //bool
 				InfoSys:          nil,            //interface{}

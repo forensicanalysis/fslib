@@ -39,7 +39,7 @@ func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
 func (r *Root) Size() int64 { return 0 }
 
 // Mode returns os.ModeDir for GPT pseudo roots.
-func (r *Root) Mode() os.FileMode { return os.ModeDir }
+func (r *Root) Mode() fs.FileMode { return os.ModeDir }
 
 // ModTime returns the zero time (0001-01-01 00:00) for GPT pseudo roots.
 func (r *Root) ModTime() time.Time { return time.Time{} }
@@ -53,5 +53,5 @@ func (r *Root) Sys() interface{} { return nil }
 // Close does not do anything for GPT pseudo roots.
 func (r *Root) Close() error { return nil }
 
-// Stat returns the GPT pseudo roots itself as os.FileMode.
+// Stat returns the GPT pseudo roots itself as fs.FileMode.
 func (r *Root) Stat() (fs.FileInfo, error) { return r, nil }

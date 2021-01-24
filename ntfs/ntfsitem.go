@@ -83,7 +83,7 @@ func (i *Item) ReadDir(n int) (entries []fs.DirEntry, err error) {
 // Close does not do anything for NTFS items.
 func (i *Item) Close() error { return nil }
 
-// Stat returns the MBR pseudo roots itself as os.FileMode.
+// Stat returns the MBR pseudo roots itself as fs.FileMode.
 func (i *Item) Stat() (fs.FileInfo, error) { return i, nil }
 
 // IsDir returns if the item is a file.
@@ -92,8 +92,8 @@ func (i *Item) IsDir() bool { return i.entry.IsDir(i.ntfsCtx) }
 // ModTime returns the zero time (0001-01-01 00:00).
 func (i *Item) ModTime() time.Time { return time.Time{} }
 
-// Mode returns the os.FileMode.
-func (i *Item) Mode() os.FileMode {
+// Mode returns the fs.FileMode.
+func (i *Item) Mode() fs.FileMode {
 	if i.IsDir() {
 		return os.ModeDir
 	}

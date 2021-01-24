@@ -3,7 +3,6 @@ package mbr
 import (
 	"io"
 	"io/fs"
-	"os"
 	"strconv"
 	"time"
 
@@ -47,7 +46,7 @@ func (p *Partition) Stat() (fs.FileInfo, error) { return p, nil }
 func (p *Partition) IsDir() bool { return false }
 
 // Mode returns 0 for partitions.
-func (p *Partition) Mode() os.FileMode { return 0 }
+func (p *Partition) Mode() fs.FileMode { return 0 }
 
 // ModTime returns the zero time (0001-01-01 00:00) for partitions.
 func (p *Partition) ModTime() time.Time { return time.Time{} }

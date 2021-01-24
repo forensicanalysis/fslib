@@ -121,9 +121,9 @@ func (*Item) Close() error { return nil }
 // Stat return an fs.FileInfo object that describes a file.
 func (i *Item) Stat() (fs.FileInfo, error) { return i, nil }
 
-// Mode returns the os.FileMode.
-func (i *Item) Mode() os.FileMode {
-	var mode os.FileMode
+// Mode returns the fs.FileMode.
+func (i *Item) Mode() fs.FileMode {
+	var mode fs.FileMode
 	if i.directoryEntry.FileAttributes&0x10 != 0 {
 		mode |= os.ModeDir
 	}

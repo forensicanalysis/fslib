@@ -45,7 +45,7 @@ type PathTest struct {
 	Path             string
 	FileName         string
 	InfoSize         int64
-	InfoMode         os.FileMode
+	InfoMode         fs.FileMode
 	InfoModTime      time.Time
 	InfoIsDir        bool
 	InfoSys          interface{}

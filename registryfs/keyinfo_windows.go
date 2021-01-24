@@ -33,8 +33,8 @@ func (rk *KeyInfo) ModTime() time.Time { return rk.KeyInfo.ModTime().In(time.UTC
 // Sys returns underlying data source.
 func (rk *KeyInfo) Sys() interface{} { return rk.KeyInfo }
 
-// Mode returns the os.FileMode.
-func (rk *KeyInfo) Mode() os.FileMode {
+// Mode returns the fs.FileMode.
+func (rk *KeyInfo) Mode() fs.FileMode {
 	if rk.IsDir() {
 		return os.ModeDir
 	}

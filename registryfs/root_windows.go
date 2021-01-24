@@ -31,7 +31,7 @@ func (r *Root) Read([]byte) (int, error) { return 0, nil }
 func (r *Root) Size() int64 { return 0 }
 
 // Mode returns os.ModeDir for registry pseudo roots.
-func (r *Root) Mode() os.FileMode { return os.ModeDir }
+func (r *Root) Mode() fs.FileMode { return os.ModeDir }
 
 // ModTime returns the zero time (0001-01-01 00:00) for registry pseudo roots.
 func (r *Root) ModTime() time.Time { return time.Time{} }
@@ -45,5 +45,5 @@ func (r *Root) Sys() interface{} { return nil }
 // Close does not do anything for registry pseudo roots.
 func (r *Root) Close() error { return nil }
 
-// Stat returns the registry pseudo roots itself as os.FileMode.
+// Stat returns the registry pseudo roots itself as fs.FileMode.
 func (r *Root) Stat() (fs.FileInfo, error) { return r, nil }
