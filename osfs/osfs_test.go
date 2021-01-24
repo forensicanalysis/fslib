@@ -30,8 +30,6 @@ import (
 
 	"github.com/forensicanalysis/fslib/fstest"
 	"github.com/forensicanalysis/fslib/osfs"
-
-	"github.com/forensicanalysis/fslib"
 )
 
 func getOSFS(t *testing.T) (*osfs.FS, *osfs.Item, *osfs.Item) {
@@ -217,36 +215,6 @@ func TestOSFS_Open(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotItem, tt.wantItem) {
 				t.Errorf("Open() gotItem = %v, want %v", gotItem, tt.wantItem)
-			}
-		})
-	}
-}
-
-func TestToForensicPath(t *testing.T) {
-	type args struct {
-		systemPath string
-	}
-	tests := []struct {
-		name        string
-		windowsTest bool
-		args        args
-		wantName    string
-		wantErr     bool
-	}{
-		{"Windows Abs Path", true, args{"C:\\Windows"}, "/C/Windows", false},
-		// {"Windows Rel Path", true, args{"\\Windows"}, "/C/Windows", false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if (tt.windowsTest && runtime.GOOS == "windows") || !tt.windowsTest {
-				gotName, err := fslib.ToForensicPath(tt.args.systemPath)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("ToForensicPath() error = %v, wantErr %v", err, tt.wantErr)
-					return
-				}
-				if gotName != tt.wantName {
-					t.Errorf("ToForensicPath() gotName = %v, want %v", gotName, tt.wantName)
-				}
 			}
 		})
 	}

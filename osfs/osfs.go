@@ -55,6 +55,7 @@ func (fsys *FS) OpenSystemPath(syspath string) (item fs.File, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return fsys.Open(syspath)
 }
 
@@ -97,24 +98,25 @@ func (fsys *FS) Stat(name string) (os.FileInfo, error) {
 }
 
 func sysname(name string) (string, string, error) {
-	if runtime.GOOS == windows && len(name) > 1 && !isLetter(name[1]) {
-		return "", "", errors.New("partition must be a letter")
-	}
-	if runtime.GOOS == windows && len(name) > 2 && name[2] != '/' {
-		return "", "", errors.New("partition must be followed by a slash")
-	}
 	valid := fs.ValidPath(name)
 	if !valid {
 		return "", "", fmt.Errorf("path %s invalid", name)
 	}
-	if name == "/" {
-		return "/", "/", nil
+	if name == "." {
+		return ".", ".", nil
 	}
+	if runtime.GOOS == windows && len(name) > 0 && !isLetter(name[0]) {
+		return "", "", fmt.Errorf("partition must be a letter is %s", name)
+	}
+	if runtime.GOOS == windows && len(name) > 1 && name[1] != '/' {
+		return "", "", errors.New("partition must be followed by a slash")
+	}
+
 	sysname := "/" + name
 	if runtime.GOOS == windows {
-		sysname = string(name[1]) + ":"
-		if len(name) > 2 {
-			sysname += name[2:]
+		sysname = string(name[0]) + ":"
+		if len(name) > 1 {
+			sysname += name[1:]
 		} else {
 			sysname += "/"
 		}

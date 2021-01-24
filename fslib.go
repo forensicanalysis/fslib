@@ -50,7 +50,7 @@ func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
 }
 
 // ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
-// ('/C/Windows').
+// ('C/Windows').
 func ToForensicPath(systemPath string) (name string, err error) {
 	name, err = filepath.Abs(systemPath)
 	if err != nil {
@@ -59,6 +59,7 @@ func ToForensicPath(systemPath string) (name string, err error) {
 	if runtime.GOOS == windows {
 		name = strings.Replace(name, "\\", "/", -1)
 		name = name[:1] + name[2:]
+		return name, nil
 	}
-	return name[1:], err
+	return name[1:], nil
 }

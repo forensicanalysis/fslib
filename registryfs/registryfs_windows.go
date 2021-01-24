@@ -25,16 +25,11 @@ package registryfs
 
 import (
 	"fmt"
-	"io"
+	"golang.org/x/sys/windows/registry"
 	"io/fs"
-	"os"
 	"path"
 	"path/filepath"
-	"sort"
 	"strings"
-	"time"
-
-	"golang.org/x/sys/windows/registry"
 )
 
 var registryRoots = map[string]registry.Key{
@@ -56,14 +51,14 @@ type FS struct{}
 func (*FS) Name() (name string) { return "Registry FS" }
 
 // Open opens a file for reading.
-func (fs *FS) Open(name string) (item fs.File, err error) {
+func (fsys *FS) Open(name string) (item fs.File, err error) {
 	valid := fs.ValidPath(name)
 	if !valid {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
 	if name == "." {
-		return &Root{fs: fs}, nil
+		return &Root{fs: fsys}, nil
 	}
 
 	parts := strings.Split(name, "/")
@@ -73,121 +68,5 @@ func (fs *FS) Open(name string) (item fs.File, err error) {
 	}
 
 	k, err := registry.OpenKey(root, filepath.Join(parts[1:]...), registry.READ|registry.QUERY_VALUE|registry.ENUMERATE_SUB_KEYS)
-	return &Key{Key: &k, name: path.Base(name), path: name, fs: fs}, err
-}
-
-// Stat returns an os.FileInfo object that describes a file.
-func (fs *FS) Stat(name string) (os.FileInfo, error) {
-	f, err := fs.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	return f.Stat()
-}
-
-// Root is a pseudo root for the Windows registry.
-type Root struct {
-	fs *FS
-}
-
-// Name always returns / for registry pseudo roots.
-func (r Root) Name() string { return "/" }
-
-// Readdirnames lists all registry roots in the registry.
-func (r Root) Readdirnames(int) (items []string, err error) {
-	for name := range registryRoots {
-		_, err := r.fs.Open("/" + name)
-		if err == nil {
-			items = append(items, name)
-		}
-	}
-	sort.Strings(items)
-	return items, nil
-}
-
-// Size returns 0 for registry pseudo roots.
-func (r *Root) Size() int64 { return 0 }
-
-// Mode returns os.ModeDir for registry pseudo roots.
-func (r *Root) Mode() os.FileMode { return os.ModeDir }
-
-// ModTime returns the zero time (0001-01-01 00:00) for registry pseudo roots.
-func (r *Root) ModTime() time.Time { return time.Time{} }
-
-// IsDir returns true for registry pseudo roots.
-func (r *Root) IsDir() bool { return true }
-
-// Sys returns nil for registry pseudo roots.
-func (r *Root) Sys() interface{} { return nil }
-
-// Close does not do anything for registry pseudo roots.
-func (r *Root) Close() error { return nil }
-
-// Stat returns the registry pseudo roots itself as os.FileMode.
-func (r *Root) Stat() (os.FileInfo, error) { return r, nil }
-
-// Key is an entry in the registry.
-type Key struct {
-	Key  *registry.Key
-	name string
-	path string
-	fs   *FS
-}
-
-// Name returns the name of the file.
-func (rk *Key) Name() string {
-	return rk.name
-}
-
-// Readdirnames returns up to n sub keys of a key.
-func (rk *Key) Readdirnames(n int) (items []string, err error) {
-	items = []string{}
-	subKeyNames, err := rk.Key.ReadSubKeyNames(n)
-	if err != nil && err != io.EOF {
-		return items, fmt.Errorf("error ReadSubKeyNames: %w", err)
-	}
-	for _, subKeyName := range subKeyNames {
-		items = append(items, strings.Replace(subKeyName, `/`, `\`, -1))
-	}
-	sort.Strings(items)
-	return items, nil
-}
-
-// Close closes the key freeing the resource. Usually additional IO operations fail
-// after closing.
-func (rk *Key) Close() error { return rk.Key.Close() }
-
-// Stat return an os.FileInfo object that describes a key.
-func (rk *Key) Stat() (os.FileInfo, error) {
-	info, err := rk.Key.Stat()
-	return &KeyInfo{info, rk.name}, err
-}
-
-// KeyInfo describes a key.
-type KeyInfo struct {
-	*registry.KeyInfo
-	name string
-}
-
-// Name returns the name of the key.
-func (rk *KeyInfo) Name() string { return rk.name }
-
-// Size returns the file size.
-func (rk *KeyInfo) Size() int64 { return 0 }
-
-// IsDir returns if the key has subkeys.
-func (rk *KeyInfo) IsDir() bool { return rk.SubKeyCount > 0 }
-
-// ModTime returns the modification time.
-func (rk *KeyInfo) ModTime() time.Time { return rk.KeyInfo.ModTime().In(time.UTC) }
-
-// Sys returns underlying data source.
-func (rk *KeyInfo) Sys() interface{} { return rk.KeyInfo }
-
-// Mode returns the os.FileMode.
-func (rk *KeyInfo) Mode() os.FileMode {
-	if rk.IsDir() {
-		return os.ModeDir
-	}
-	return 0
+	return &Key{Key: &k, name: path.Base(name), path: name, fs: fsys}, err
 }

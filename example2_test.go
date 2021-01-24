@@ -23,34 +23,30 @@ package fslib_test
 
 import (
 	"fmt"
-	"io"
+	"io/fs"
 	"os"
-	"path"
 
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/recursivefs"
+	"github.com/forensicanalysis/fslib/ntfs"
 )
 
-func ExampleReadFile() {
-	// Read the pdf header from a zip file on an NTFS disk image.
+func ExampleNTFSReaddirnames() {
+	// Read the root directory on an NTFS disk image.
+
+	// open the disk image
+	image, _ := os.Open("testdata/data/filesystem/ntfs.dd")
 
 	// parse the file system
-	fsys := recursivefs.New()
+	fsys, _ := ntfs.New(image)
 
-	// create fslib path
-	wd, _ := os.Getwd()
-	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"))
+	// get filenames
+	entries, _ := fs.ReadDir(fsys, ".")
 
-	// get handle the README.md
-	file, err := fsys.Open(fpath)
-	if err != nil {
-		panic(err)
+	var filenames []string
+	for _, entry := range entries {
+		filenames = append(filenames, entry.Name())
 	}
 
-	// get content
-	content, _ := io.ReadAll(file)
-
-	// print content
-	fmt.Println(string(content[0:4]))
-	// Output: %PDF
+	// print filenames
+	fmt.Println(filenames)
+	// Output: [$AttrDef $BadClus $BadClus:$Bad $Bitmap $Boot $Extend $LogFile $MFT $MFTMirr $Secure $Secure:$SDS $UpCase $UpCase:$Info $Volume README.md container document evidence.json folder image]
 }

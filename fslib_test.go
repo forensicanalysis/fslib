@@ -1,8 +1,10 @@
 package fslib_test
 
 import (
+	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"os"
+	"runtime"
 	"testing"
 	"testing/fstest"
 
@@ -94,4 +96,34 @@ func newSystemFS(t *testing.T) fs.FS {
 		t.Fatal(err)
 	}
 	return fsys
+}
+
+func TestToForensicPath(t *testing.T) {
+	type args struct {
+		systemPath string
+	}
+	tests := []struct {
+		name        string
+		windowsTest bool
+		args        args
+		wantName    string
+		wantErr     bool
+	}{
+		{"Windows Abs Path", true, args{"C:\\Windows"}, "C/Windows", false},
+		// {"Windows Rel Path", true, args{"\\Windows"}, "/C/Windows", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if (tt.windowsTest && runtime.GOOS == "windows") || !tt.windowsTest {
+				gotName, err := fslib.ToForensicPath(tt.args.systemPath)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("ToForensicPath() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if gotName != tt.wantName {
+					t.Errorf("ToForensicPath() gotName = %v, want %v", gotName, tt.wantName)
+				}
+			}
+		})
+	}
 }

@@ -16,9 +16,9 @@ access disk images of with different partitioning and file systems.
 Additionally, file systems for live access to the currently mounted file system
 and registry (on Windows) are implemented.
 
-Some of the file systems supported:
+Some of the file systems supported:-
 
-- Native OS file system 
+- Native OS file system (directory listing for Windows root provides list of drives)
 - ZIP
 - NTFS
 - FAT16
@@ -28,7 +28,7 @@ Some of the file systems supported:
 
 Meta file systems:
 
-- ⭐ **Recursive FS**: Access container files on file systems recursivly, e.g. `"ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"`
+- ⭐ **Recursive FS**: Access container files on file systems recursively, e.g. `"ntfs.dd/forensic.zip/Computer forensics - Wikipedia.pdf"`
 - Buffer FS: Buffer accessed files of an underlying file system
 - System FS: Similar to the native OS file system, but falls back to NTFS on failing access on Windows
 
@@ -69,13 +69,15 @@ func main() {
 	image, _ := os.Open("testdata/data/filesystem/ntfs.dd")
 
 	// parse the file system
-	fs, _ := ntfs.New(image)
-
-	// get handle for root
-	root, _ := fs.Open(".")
+	fsys, _ := ntfs.New(image)
 
 	// get filenames
-	filenames, _ := fslib.Readdirnames(root, 0)
+	entries, _ := fs.ReadDir(fsys, ".")
+
+	var filenames []string
+	for _, entry := range entries {
+		filenames = append(filenames, entry.Name())
+	}
 
 	// print filenames
 	fmt.Println(filenames)
@@ -97,23 +99,26 @@ import (
 )
 
 func main() {
-	// Read the text file on an FAT16 disk image.
+	// Read the pdf header from a zip file on an NTFS disk image.
 
 	// parse the file system
-	fs := recursivefs.New()
+	fsys := recursivefs.New()
 
 	// create fslib path
 	wd, _ := os.Getwd()
-	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/fat16.dd/README.md"))
+	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"))
 
 	// get handle the README.md
-	file, _ := fs.Open(fpath)
+	file, err := fsys.Open(fpath)
+	if err != nil {
+		panic(err)
+	}
 
 	// get content
-	content, _ := ioutil.ReadAll(file)
+	content, _ := io.ReadAll(file)
 
 	// print content
-	fmt.Println(string(content[7:16]))
+	fmt.Println(string(content[0:4]))
 }
 
 ```
