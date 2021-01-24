@@ -24,7 +24,7 @@
 // https://github.com/bmatcuk/doublestar
 // for use with forensic filesystems.
 
-// Package glob provides a globing function for forensicfs.
+// Package glob provides a globing function for io/fs.
 package glob
 
 import (

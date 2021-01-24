@@ -22,7 +22,7 @@
 // Author(s): Jonas Plum
 
 // Package fstest provides functions for testing implementations of the
-// forensicfs.
+// io/fs.
 package fstest
 
 import (

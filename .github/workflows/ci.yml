@@ -35,7 +35,8 @@ jobs:
           mv repo path/src/github.com/forensicanalysis/fslib
           # cp -r path/src/github.com/forensicanalysis/fslib/replace/context path/src
           # echo "package afero" > path/src/github.com/spf13/afero/memmap.go
-          cp -r $(go env GOROOT)/src/io/fs path/src
+          mkdir -p path/src/io
+          cp -r $(go env GOROOT)/src/io/fs path/src/io
           cp -r $(go env GOROOT)/src/context path/src
         shell: bash
       - name: Build with go 1.9.7
