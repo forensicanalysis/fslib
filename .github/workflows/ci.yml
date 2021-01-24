@@ -33,8 +33,10 @@ jobs:
           mv repo/vendor path/src
           mkdir -p path/src/github.com/forensicanalysis
           mv repo path/src/github.com/forensicanalysis/fslib
-          cp -r path/src/github.com/forensicanalysis/fslib/replace/context path/src
-          echo "package afero" > path/src/github.com/spf13/afero/memmap.go
+          # cp -r path/src/github.com/forensicanalysis/fslib/replace/context path/src
+          # echo "package afero" > path/src/github.com/spf13/afero/memmap.go
+          cp -r $(go env GOROOT)/src/io/fs path/src
+          cp -r $(go env GOROOT)/src/context path/src
         shell: bash
       - name: Build with go 1.9.7
         run: |
@@ -89,10 +91,10 @@ jobs:
         shell: bash
 
       - name: Lint
-        run: golangci-lint run --verbose --config test/.golangci.yml
+        run: golangci-lint run --verbose --config testdata/.golangci.yml
         if: matrix.os != 'windows-latest'
       - name: Lint Windows
-        run: golangci-lint run --verbose --config test/.golangci.yml --disable gofmt --disable goimports
+        run: golangci-lint run --verbose --config testdata/.golangci.yml --disable gofmt --disable goimports
         if: matrix.os == 'windows-latest'
       - name: Test
         run: go-acc ./...
@@ -137,7 +139,7 @@ jobs:
         working-directory: ./cmd/fs
         shell: bash
       - name: Bats test
-        run: bats test/fs.bats
+        run: bats testdata/fs.bats
         shell: bash
       - name: Upload
         uses: actions/upload-artifact@master
@@ -158,5 +160,5 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v2
-      - run: godoc2readme --template docs/readme-template.md . > README2.md
+      - run: godoc2readme --template .github/readme-template.md . > README2.md
       - run: diff Readme.md README2.md

@@ -34,7 +34,6 @@ package fslib
 
 import (
 	"fmt"
-	"io"
 	"io/fs"
 	"path/filepath"
 	"runtime"
@@ -43,33 +42,6 @@ import (
 
 const windows = "windows"
 
-// Item is an interface for elements (e.g. files and directories) in read-only file
-// systems.
-type Item interface {
-	fs.File
-
-	io.ReaderAt
-	io.Seeker
-
-	// Name returns the name of the file.
-	Name() string
-}
-
-type Readdirnamer interface {
-	Readdirnames(n int) ([]string, error)
-}
-
-func Readdirnames(file fs.File, n int) (names []string, err error) {
-	if directory, ok := file.(Readdirnamer); ok {
-		return directory.Readdirnames(n)
-	}
-	infos, err := ReadDir(file, n)
-	if err != nil {
-		return nil, err
-	}
-	return InfosToNames(infos), nil
-}
-
 func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
 	if directory, ok := file.(fs.ReadDirFile); ok {
 		return directory.ReadDir(n)
@@ -77,14 +49,7 @@ func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
 	return nil, fmt.Errorf("%v does not implement ReadDir", file)
 }
 
-func InfosToNames(infos []fs.DirEntry) (names []string) {
-	for _, info := range infos {
-		names = append(names, info.Name())
-	}
-	return names
-}
-
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fslib path
+// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
 // ('/C/Windows').
 func ToForensicPath(systemPath string) (name string, err error) {
 	name, err = filepath.Abs(systemPath)

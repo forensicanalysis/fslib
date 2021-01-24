@@ -19,38 +19,44 @@
 //
 // Author(s): Jonas Plum
 
-package fslib_test
+// Package zip provides a forensicfs implementation to access zip files.
+package zipfs
 
 import (
+	"archive/zip"
 	"fmt"
-	"io"
-	"os"
-	"path"
+	"io/fs"
 
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/recursivefs"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
-func ExampleReadFile() {
-	// Read the pdf header from a zip file on an NTFS disk image.
+// FS implements a read-only file system for zip files.
+type FS struct {
+	internal *zip.Reader
+}
 
-	// parse the file system
-	fsys := recursivefs.New()
-
-	// create fslib path
-	wd, _ := os.Getwd()
-	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"))
-
-	// get handle the README.md
-	file, err := fsys.Open(fpath)
+// New creates a new zip FS.
+func New(base fsio.ReadSeekerAt) (*FS, error) {
+	size, err := fsio.GetSize(base)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	// get content
-	content, _ := io.ReadAll(file)
+	zr, err := zip.NewReader(base, size)
+	if err != nil {
+		return nil, err
+	}
 
-	// print content
-	fmt.Println(string(content[0:4]))
-	// Output: %PDF
+	return &FS{zr}, nil
+}
+
+// Open opens a file for reading.
+func (fsys *FS) Open(name string) (fs.File, error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
+	}
+
+	file, err := fsys.internal.Open(name)
+	return &File{name, file}, err
 }

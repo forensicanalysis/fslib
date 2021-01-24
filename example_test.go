@@ -23,26 +23,28 @@ package fslib_test
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib"
+	"io/fs"
 	"os"
 
-	"github.com/forensicanalysis/fslib/filesystem/ntfs"
+	"github.com/forensicanalysis/fslib/ntfs"
 )
 
 func ExampleNTFSReaddirnames() {
 	// Read the root directory on an NTFS disk image.
 
 	// open the disk image
-	image, _ := os.Open("test/data/filesystem/ntfs.dd")
+	image, _ := os.Open("testdata/data/filesystem/ntfs.dd")
 
 	// parse the file system
-	fs, _ := ntfs.New(image)
-
-	// get handle for root
-	root, _ := fs.Open(".")
+	fsys, _ := ntfs.New(image)
 
 	// get filenames
-	filenames, _ := fslib.Readdirnames(root, 0)
+	entries, _ := fs.ReadDir(fsys, ".")
+
+	var filenames []string
+	for _, entry := range entries {
+		filenames = append(filenames, entry.Name())
+	}
 
 	// print filenames
 	fmt.Println(filenames)

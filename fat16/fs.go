@@ -19,38 +19,53 @@
 //
 // Author(s): Jonas Plum
 
-package fslib_test
+// Package fat16 provides a forensicfs implementation of the FAT16 file systems.
+package fat16
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
-	"os"
-	"path"
+	"io/fs"
 
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/recursivefs"
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
-func ExampleReadFile() {
-	// Read the pdf header from a zip file on an NTFS disk image.
+// FS implements a read-only file system for the FAT16 file system.
+type FS struct {
+	vh      volumeHeader
+	decoder fsio.ReadSeekerAt
+}
 
-	// parse the file system
-	fsys := recursivefs.New()
+// New creates a new fat16 FS.
+func New(decoder fsio.ReadSeekerAt) (*FS, error) {
+	// parser volume header
+	vh := volumeHeader{}
+	err := binary.Read(decoder, binary.LittleEndian, &vh)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+	decoder.Seek(0, 0) // nolint: errcheck
 
-	// create fslib path
-	wd, _ := os.Getwd()
-	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"))
+	return &FS{vh: vh, decoder: decoder}, err
+}
 
-	// get handle the README.md
-	file, err := fsys.Open(fpath)
-	if err != nil {
-		panic(err)
+// Open opens a file for reading.
+func (m *FS) Open(name string) (f fs.File, err error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
-	// get content
-	content, _ := io.ReadAll(file)
+	if name == "." {
+		name = ""
+	}
 
-	// print content
-	fmt.Println(string(content[0:4]))
-	// Output: %PDF
+	name, de, err := m.getDirectoryEntry(2, m.vh.RootdirEntryCount, name)
+	if err != nil {
+		return nil, err
+	}
+	f = NewItem(name, m, &de.directoryEntry)
+
+	return f, nil
 }

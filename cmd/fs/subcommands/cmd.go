@@ -27,20 +27,19 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
-	"github.com/forensicanalysis/fslib"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
-	"sort"
 
 	"github.com/spf13/cobra"
 	"github.com/xlab/treeprint"
 
-	"github.com/forensicanalysis/fslib/content"
-	"github.com/forensicanalysis/fslib/filesystem/recursivefs"
+	"github.com/forensicanalysis/fslib"
 	"github.com/forensicanalysis/fslib/filetype"
+	"github.com/forensicanalysis/fslib/recursivefs"
 )
 
 const (
@@ -114,7 +113,6 @@ func executeCommands() error {
 	hashsum := &cobra.Command{Use: "hashsum", Short: "print hashsums", Run: hashsumCmd}
 	ls := &cobra.Command{Use: "ls", Short: "list directory contents", Run: lsCmd}
 	stat := &cobra.Command{Use: "stat", Short: "display file status", Run: statCmd}
-	strings := &cobra.Command{Use: "strings", Short: "find the printable strings in an object, or other binary, file", Run: stringsCmd}
 	tree := &cobra.Command{Use: "tree", Short: "list contents of directories in a tree-like format", Run: treeCmd}
 	complete := &cobra.Command{Use: "complete", Run: func(cmd *cobra.Command, args []string) {
 		if err := rootCmd.GenBashCompletionFile(".bash_completion.sh"); err == nil {
@@ -136,7 +134,7 @@ func executeCommands() error {
 		fs ls <tab>
 	*/
 
-	rootCmd.AddCommand(cat, file, hashsum, ls, stat, strings, tree, complete)
+	rootCmd.AddCommand(cat, file, hashsum, ls, stat, tree, complete)
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug output")
 	return rootCmd.Execute()
 }
@@ -208,31 +206,26 @@ func lsCmd(_ *cobra.Command, args []string) {
 		args = append(args, ".")
 	}
 
-	fs := recursivefs.New()
+	fsys := recursivefs.New()
 	for _, arg := range args {
 		name, err := fslib.ToForensicPath(arg)
 		exitOnError(err)
 		fi, err := recursivefs.New().Stat(name)
 		exitOnError(err)
 		if fi.IsDir() {
-			f, err := recursivefs.New().Open(name)
+			entries, err := fs.ReadDir(fsys, name)
 			exitOnError(err)
 
-			infos, err := fslib.ReadDir(f, 0)
-			exitOnError(err)
-			fileNames := fslib.InfosToNames(infos)
-
-			sort.Strings(fileNames)
-			for _, fileName := range fileNames {
-				child, err := fs.Stat(path.Join(name, fileName))
+			for _, entry := range entries {
+				child, err := fs.Stat(fsys, path.Join(name, entry.Name()))
 				if err != nil {
-					fmt.Println(fileName, err)
+					fmt.Println(entry, err)
 					continue
 				}
 				if child.IsDir() {
-					fmt.Println(fileName + "/")
+					fmt.Println(entry.Name() + "/")
 				} else {
-					fmt.Println(fileName)
+					fmt.Println(entry.Name())
 				}
 			}
 		} else {
@@ -255,20 +248,6 @@ func statCmd(_ *cobra.Command, args []string) {
 	}
 }
 
-func stringsCmd(_ *cobra.Command, args []string) {
-	for _, arg := range args {
-		name, err := fslib.ToForensicPath(arg)
-		exitOnError(err)
-		fsys := recursivefs.New()
-		r, err := fsys.Open(name)
-		exitOnError(err)
-
-		ascii, err := content.Content(r)
-		exitOnError(err)
-		fmt.Println(ascii)
-	}
-}
-
 func treeCmd(_ *cobra.Command, args []string) {
 	for _, arg := range args {
 		tree := treeprint.New()
@@ -288,20 +267,14 @@ func getChildren(tree treeprint.Tree, subpath string) {
 	}
 	exitOnError(err)
 	if fi.IsDir() {
-		f, err := recursivefs.New().Open(name)
-		if err != nil {
-			fmt.Println("tree", err)
-			return
-		}
+		fsys := recursivefs.New()
 
-		infos, err := fslib.ReadDir(f, 0)
+		entries, err := fs.ReadDir(fsys, name)
 		exitOnError(err)
-		files := fslib.InfosToNames(infos)
-		exitOnError(f.Close())
-		sort.Strings(files)
-		for _, item := range files {
-			child := tree.AddBranch(item)
-			getChildren(child, path.Join(subpath, item))
+
+		for _, entry := range entries {
+			child := tree.AddBranch(entry.Name())
+			getChildren(child, path.Join(subpath, entry.Name()))
 		}
 	}
 }

@@ -40,7 +40,7 @@ func TestGPT(t *testing.T) {
 		{"mbr", args{"filesystem/mbr_fat16.dd"}, false},
 	}
 	for _, tt := range tests {
-		file, err := os.Open("../test/data/" + tt.args.filename)
+		file, err := os.Open("../testdata/data/" + tt.args.filename)
 		if err != nil {
 			t.Fatalf("Could not open file %s", tt.args.filename)
 		}
@@ -71,7 +71,7 @@ func TestMBR(t *testing.T) {
 		{"mbr", args{"filesystem/mbr_fat16.dd"}, true},
 	}
 	for _, tt := range tests {
-		file, err := os.Open("../test/data/" + tt.args.filename)
+		file, err := os.Open("../testdata/data/" + tt.args.filename)
 		if err != nil {
 			t.Fatalf("Could not open file %s", tt.args.filename)
 		}
@@ -102,7 +102,7 @@ func TestNTFSMatch(t *testing.T) {
 		{"mbr", args{"filesystem/mbr_fat16.dd"}, false},
 	}
 	for _, tt := range tests {
-		file, err := os.Open("../test/data/" + tt.args.filename)
+		file, err := os.Open("../testdata/data/" + tt.args.filename)
 		if err != nil {
 			t.Fatalf("Could not open file %s", tt.args.filename)
 		}

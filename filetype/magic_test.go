@@ -64,7 +64,7 @@ func TestIdentify(t *testing.T) {
 	for _, tt := range tests {
 
 		t.Run(tt.name, func(t *testing.T) {
-			file, err := os.Open("../test/data/" + tt.args.filename)
+			file, err := os.Open("../testdata/data/" + tt.args.filename)
 			if err != nil {
 				t.Fatalf("Could not open file %s", tt.args.filename)
 			}
@@ -81,7 +81,7 @@ func TestIdentify(t *testing.T) {
 		})
 
 		t.Run(tt.name, func(t *testing.T) {
-			file, err := os.Open("../test/data/" + tt.args.filename)
+			file, err := os.Open("../testdata/data/" + tt.args.filename)
 			if err != nil {
 				t.Fatalf("Could not open file %s", tt.args.filename)
 			}
@@ -98,7 +98,7 @@ func TestIdentify(t *testing.T) {
 
 		t.Run(tt.name, func(t *testing.T) {
 
-			file, err := os.Open("../test/data/" + tt.args.filename)
+			file, err := os.Open("../testdata/data/" + tt.args.filename)
 			if err != nil {
 				t.Fatalf("Could not open file %s", tt.args.filename)
 			}

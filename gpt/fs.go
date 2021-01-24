@@ -19,38 +19,49 @@
 //
 // Author(s): Jonas Plum
 
-package fslib_test
+// Package gpt provides a forensicfs implementation of the GUID partition table
+// (GPT).
+package gpt
 
 import (
 	"fmt"
 	"io"
-	"os"
-	"path"
-
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/recursivefs"
+	"io/fs"
+	"strconv"
+	"strings"
 )
 
-func ExampleReadFile() {
-	// Read the pdf header from a zip file on an NTFS disk image.
+// FS implements a read-only file system for Master Boot Records (MBR).
+type FS struct {
+	gpt *GptPartitionTable
+}
 
-	// parse the file system
-	fsys := recursivefs.New()
+// New creates a new gpt FS.
+func New(decoder io.ReadSeeker) (*FS, error) {
+	gpt := GptPartitionTable{}
+	err := gpt.Decode(decoder)
+	return &FS{gpt: &gpt}, err
+}
 
-	// create fslib path
-	wd, _ := os.Getwd()
-	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"))
-
-	// get handle the README.md
-	file, err := fsys.Open(fpath)
-	if err != nil {
-		panic(err)
+// Open returns a File for the given location.
+func (fsys *FS) Open(name string) (fs.File, error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
-	// get content
-	content, _ := io.ReadAll(file)
-
-	// print content
-	fmt.Println(string(content[0:4]))
-	// Output: %PDF
+	if name == "." {
+		return &Root{gpt: fsys.gpt}, nil
+	}
+	if !strings.HasPrefix(name, "p") {
+		return nil, fmt.Errorf("needs to start with 'p' is %s", name)
+	}
+	name = name[1:]
+	index, err := strconv.Atoi(name)
+	if err != nil {
+		return nil, err
+	}
+	partitionEntry := fsys.gpt.Primary().Entries()[index]
+	f := NewPartition(index, &partitionEntry)
+	return f, nil
 }

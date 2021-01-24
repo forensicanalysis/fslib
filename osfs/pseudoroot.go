@@ -19,38 +19,43 @@
 //
 // Author(s): Jonas Plum
 
-package fslib_test
+package osfs
 
 import (
-	"fmt"
-	"io"
 	"os"
-	"path"
-
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/recursivefs"
+	"syscall"
+	"time"
 )
 
-func ExampleReadFile() {
-	// Read the pdf header from a zip file on an NTFS disk image.
+// Root is a pseudo root directory for windows partitions.
+type Root struct{}
 
-	// parse the file system
-	fsys := recursivefs.New()
+func (r *Root) Read([]byte) (int, error) {
+	return 0, syscall.EPERM
+}
 
-	// create fslib path
-	wd, _ := os.Getwd()
-	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"))
+// Name always returns . for window pseudo roots.
+func (*Root) Name() (name string) { return "." }
 
-	// get handle the README.md
-	file, err := fsys.Open(fpath)
-	if err != nil {
-		panic(err)
-	}
+// Close does not do anything for window pseudo roots.
+func (*Root) Close() error { return nil }
 
-	// get content
-	content, _ := io.ReadAll(file)
+// Size returns 0 for window pseudo roots.
+func (*Root) Size() int64 { return 0 }
 
-	// print content
-	fmt.Println(string(content[0:4]))
-	// Output: %PDF
+// Mode returns os.ModeDir for window pseudo roots.
+func (*Root) Mode() os.FileMode { return os.ModeDir }
+
+// ModTime returns the zero time (0001-01-01 00:00) for window pseudo roots.
+func (*Root) ModTime() time.Time { return time.Time{} }
+
+// IsDir returns true for window pseudo roots.
+func (*Root) IsDir() bool { return true }
+
+// Sys returns nil for window pseudo roots.
+func (*Root) Sys() interface{} { return nil }
+
+// Stat returns the windows pseudo roots itself as os.FileMode.
+func (r *Root) Stat() (os.FileInfo, error) {
+	return r, nil
 }

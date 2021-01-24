@@ -19,38 +19,53 @@
 //
 // Author(s): Jonas Plum
 
-package fslib_test
+// Package ntfs provides a forensicfs implementation of the New Technology File
+// System (NTFS).
+package ntfs
 
 import (
+	"errors"
 	"fmt"
 	"io"
-	"os"
+	"io/fs"
 	"path"
 
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/recursivefs"
+	"www.velocidex.com/golang/go-ntfs/parser"
 )
 
-func ExampleReadFile() {
-	// Read the pdf header from a zip file on an NTFS disk image.
-
-	// parse the file system
-	fsys := recursivefs.New()
-
-	// create fslib path
-	wd, _ := os.Getwd()
-	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"))
-
-	// get handle the README.md
-	file, err := fsys.Open(fpath)
+// New creates a new ntfs FS.
+func New(r io.ReaderAt) (fs *FS, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("error parsing file system as NTFS")
+		}
+	}()
+	reader, err := parser.NewPagedReader(r, 1024*1024, 100*1024*1024)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	ntfsCtx, err := parser.GetNTFSContext(reader, 0)
+	return &FS{ntfsCtx: ntfsCtx}, err
+}
 
-	// get content
-	content, _ := io.ReadAll(file)
+// FS implements a read-only file system for the NTFS.
+type FS struct {
+	ntfsCtx *parser.NTFSContext
+}
 
-	// print content
-	fmt.Println(string(content[0:4]))
-	// Output: %PDF
+// Open opens a file for reading.
+func (fsys *FS) Open(name string) (item fs.File, err error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
+	}
+	name = "/" + name
+
+	dir, err := fsys.ntfsCtx.GetMFT(5)
+	if err != nil {
+		return nil, err
+	}
+	entry, err := dir.Open(fsys.ntfsCtx, name)
+
+	return &Item{entry: entry, name: path.Base(name), path: name, ntfsCtx: fsys.ntfsCtx}, err
 }
