@@ -67,7 +67,7 @@ linters:
     - stylecheck # Stylecheck is a replacement for golint
     - testpackage # linter that makes you use a separate _test package
     - typecheck # Like the front-end of a Go compiler, parses and type-checks Go code
-    - unconvert # Remove unnecessary type conversions
+    # - unconvert # Remove unnecessary type conversions
     - unparam # Reports unused function parameters
     - unused # Checks Go code for unused constants, variables, functions and types
     - varcheck # Finds unused global variables and constants
