@@ -25,8 +25,6 @@
 package fsio
 
 import (
-	"bytes"
-	"fmt"
 	"io"
 	"os"
 )
@@ -74,18 +72,4 @@ func GetSize(seeker io.Seeker) (int64, error) {
 	}
 	_, err = seeker.Seek(pos, os.SEEK_SET)
 	return end, err
-}
-
-func MaybeBufferedReader(r io.Reader) (ReadSeekerAt, error) {
-	if rsa, ok := r.(ReadSeekerAt); ok {
-		return rsa, nil
-	}
-
-	fmt.Println("readall")
-	b, err := io.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-	br := bytes.NewReader(b)
-	return br, nil
 }
