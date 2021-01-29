@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           stable: false
-          go-version: 1.16.0-beta1
+          go-version: 1.16.0-rc1
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -81,7 +81,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           stable: false
-          go-version: 1.16.0-beta1
+          go-version: 1.16.0-rc1
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Download dependencies
@@ -121,7 +121,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           stable: false
-          go-version: 1.16.0-beta1
+          go-version: 1.16.0-rc1
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Download dependencies
@@ -158,7 +158,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           stable: false
-          go-version: 1.16.0-beta1
+          go-version: 1.16.0-rc1
       - run: go get -u github.com/cugu/godoc2readme
 
       - name: Checkout code
