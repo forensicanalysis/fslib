@@ -5,7 +5,7 @@
  <a href="https://github.com/forensicanalysis/fslib/actions"><img src="https://github.com/forensicanalysis/fslib/workflows/CI/badge.svg" alt="build" /></a>
  <a href="https://codecov.io/gh/forensicanalysis/fslib"><img src="https://codecov.io/gh/forensicanalysis/fslib/branch/master/graph/badge.svg" alt="coverage" /></a>
  <a href="https://goreportcard.com/report/github.com/forensicanalysis/fslib"><img src="https://goreportcard.com/badge/github.com/forensicanalysis/fslib" alt="report" /></a>
- <a href="https://godoc.org/github.com/forensicanalysis/fslib"><img src="https://godoc.org/github.com/forensicanalysis/fslib?status.svg" alt="doc" /></a>
+ <a href="https://godocs.io/github.com/forensicanalysis/fslib"><img src="https://godocs.io/github.com/forensicanalysis/fslib?status.svg" alt="doc" /></a>
  <a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fforensicanalysis%2Ffslib?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fforensicanalysis%2Ffslib.svg?type=shield"/></a>
 </p>
 
