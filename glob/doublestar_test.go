@@ -205,8 +205,8 @@ func testGlobWith(t *testing.T, idx int, tt MatchTest) {
 	}()
 
 	tfs := getTestFS()
-	pattern := path.Join("testdata", tt.pattern)
-	testPath := path.Join("testdata", tt.testPath)
+	pattern := path.Join(tt.pattern)
+	testPath := path.Join(tt.testPath)
 	matches, err := Glob(tfs, pattern)
 	if inSlice(testPath, matches) != tt.shouldMatch {
 		if tt.shouldMatch {

@@ -37,7 +37,7 @@ import (
 )
 
 func Test_FAT16Parser(t *testing.T) {
-	file, err := os.Open("../filesystem/fat16.dd")
+	file, err := os.Open("../testdata/filesystem/fat16.dd")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,5 +75,5 @@ func Test_FAT16(t *testing.T) {
 	delete(tests, "file3Test") // TODO: fix test
 	delete(tests, "file4Test") // TODO: fix test
 
-	fstest.RunTest(t, "FAT16", "filesystem/fat16.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
+	fstest.RunTest(t, "FAT16", "testdata/filesystem/fat16.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
 }

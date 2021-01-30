@@ -35,11 +35,11 @@ import (
 
 func getOSFS(t *testing.T) (*osfs.FS, *osfs.Item, *osfs.Item) {
 	fsys := osfs.New()
-	f, err := fsys.OpenSystemPath("../document/Digital forensics.txt")
+	f, err := fsys.OpenSystemPath("../testdata/document/Digital forensics.txt")
 	if err != nil {
 		t.Fatal("Error opening file: ", err)
 	}
-	dir, err := fsys.OpenSystemPath("../")
+	dir, err := fsys.OpenSystemPath("../testdata")
 	if err != nil {
 		t.Fatal("Error opening file: ", err)
 	}

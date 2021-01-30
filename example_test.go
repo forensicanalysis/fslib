@@ -34,7 +34,7 @@ func ExampleNTFSReaddirnames() {
 	// Read the root directory on an NTFS disk image.
 
 	// open the disk image
-	image, _ := os.Open("filesystem/ntfs.dd")
+	image, _ := os.Open("testdata/filesystem/ntfs.dd")
 
 	// parse the file system
 	fsys, _ := ntfs.New(image)
