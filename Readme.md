@@ -10,27 +10,30 @@
 </p>
 
 
-The fslib project contains a collection of tools and libraries to parse file
-systems, archives and other data types. The included libraries can be used to
+The fslib project contains a collection of packages to parse file
+systems, archives and other data types. The included packages can be used to
 access disk images of with different partitioning and file systems.
 Additionally, file systems for live access to the currently mounted file system
 and registry (on Windows) are implemented.
 
 ## File systems supported
 
-- Native OS file system (directory listing for Windows root provides list of drives)
-- ZIP
-- NTFS
-- FAT16
-- MBR
-- GPT
-- Windows Registry (live not from files)
+- **Native OS file system** (directory listing for Windows root provides list of drives)
+- **Windows Registry** (live not from files)
+- **NTFS**
+- **FAT16**
+- **MBR**
+- **GPT**
 
 ## Meta file systems
 
-- ⭐ **Recursive FS**: Access container files on file systems recursively, e.g. `"ntfs.dd/forensic.zip/Computer forensics - Wikipedia.pdf"`
-- Buffer FS: Buffer accessed files of an underlying file system
-- System FS: Similar to the native OS file system, but falls back to NTFS on failing access on Windows
+- **Buffer FS**: Buffer accessed files of an underlying file system
+- **System FS**: Similar to the native OS file system, but falls back to NTFS on failing access on Windows
+
+## More file systems
+
+- [zipfs](http://github.com/forensicanalysis/zipfs)
+- ⭐ **[Recursive FS](http://github.com/forensicanalysis/recursivefs)**: Access container files on file systems recursively, e.g. `"ntfs.dd/forensic.zip/Computer forensics - Wikipedia.pdf"`
 
 ## Paths
 
@@ -66,7 +69,7 @@ func main() {
 	// Read the root directory on an NTFS disk image.
 
 	// open the disk image
-	image, _ := os.Open("testdata/data/filesystem/ntfs.dd")
+	image, _ := os.Open("filesystem/ntfs.dd")
 
 	// parse the file system
 	fsys, _ := ntfs.New(image)
@@ -85,85 +88,6 @@ func main() {
 
 ```
 
-### ReadFile
-``` go
-package main
-
-import (
-	"fmt"
-	"github.com/forensicanalysis/fslib"
-	"github.com/forensicanalysis/fslib/recursivefs"
-	"io"
-	"os"
-	"path"
-)
-
-func main() {
-	// Read the pdf header from a zip file on an NTFS disk image.
-
-	// parse the file system
-	fsys := recursivefs.New()
-
-	// create fslib path
-	wd, _ := os.Getwd()
-	fpath, _ := fslib.ToForensicPath(path.Join(wd, "testdata/data/filesystem/ntfs.dd/container/Computer forensics - Wikipedia.zip/Computer forensics - Wikipedia.pdf"))
-
-	// get handle the README.md
-	file, err := fsys.Open(fpath)
-	if err != nil {
-		panic(err)
-	}
-
-	// get content
-	content, _ := io.ReadAll(file)
-
-	// print content
-	fmt.Println(string(content[0:4]))
-}
-
-```
-
-
-
-
-
-
-## fs command
-
-The fs command line tool that has various subcommands which imitate unix commands
-but for nested file system structures.
-
- - **fs cat**: Print files
- - **fs file**: Determine files types
- - **fs hashsum**: Print hashsums
- - **fs ls**: List directory contents
- - **fs stat**: Display file status
- - **fs tree**: List contents of directories in a tree-like format
-
-
-#### Download
-
-https://github.com/forensicanalysis/fslib/releases
-
-#### Usage Examples
-
-List all files in a zip file:
-```
-fs ls test.zip
-```
-
-Extract the Amcache.hve file from a NTFS image in a zip file:
-
-```
-fs cat case/evidence.zip/ntfs.dd/Windows/AppCompat/Programs/Amcache.hve > Amcache.hve
-```
-
-Hash all files in a zip file:
-```
-fs hashsum case/evidence.zip/*
-```
-
-
 
 ## Subpackages
 
@@ -172,7 +96,6 @@ fs hashsum case/evidence.zip/*
 | **fallbackfs** | The fallbackfs project implements a meta filesystem that wraps a sequence of file systems. |
 | **fat16** | The fat16 project provides an io/fs implementation of the FAT16 file systems. |
 | **filetype** | The filetype project provides functions to identify file types of binary data. |
-| **fs** | The fs project implements the fs command line tool that has various subcommands which imitate unix commands but for nested file system structures. |
 | **fsio** | The fsio project provides IO interfaces and functions similar for file system operations. |
 | **fstest** | The fstest project provides functions for testing implementations of the io/fs. |
 | **glob** | The glob project provides a globing function for io/fs. |
@@ -180,10 +103,8 @@ fs hashsum case/evidence.zip/*
 | **mbr** | The mbr project provides an io/fs implementation of the Master Boot Record (MBR) partition table. |
 | **ntfs** | The ntfs project provides an io/fs implementation of the New Technology File System (NTFS). |
 | **osfs** | The osfs project provides an io/fs implementation of the native OS file system. |
-| **recursivefs** | The recursivefs project provides an io/fs implementation that can open paths in nested file systems recursively. |
 | **registryfs** | The registryfs project provides an io/fs implementation to access the Windows Registry. |
 | **systemfs** | The systemfs project provides an io/fs implementation that uses the osfs as default, while a ntfs for every partition as a fallback on Windows, on UNIX the behavior is the same as osfs. |
-| **zipfs** | The zipfs project provides an io/fs implementation to access zip files. |
 
 
 ## Contact

@@ -39,7 +39,7 @@ func TestFSs(t *testing.T) {
 }
 
 func newFAT(t *testing.T) fs.FS {
-	f, err := os.Open("testdata/data/filesystem/fat16.dd")
+	f, err := os.Open("filesystem/fat16.dd")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func newFAT(t *testing.T) fs.FS {
 }
 
 func newMBR(t *testing.T) fs.FS {
-	f, err := os.Open("testdata/data/filesystem/mbr_fat16.dd")
+	f, err := os.Open("filesystem/mbr_fat16.dd")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func newMBR(t *testing.T) fs.FS {
 }
 
 func newGPT(t *testing.T) fs.FS {
-	f, err := os.Open("testdata/data/filesystem/gpt_apfs.dd")
+	f, err := os.Open("filesystem/gpt_apfs.dd")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func newGPT(t *testing.T) fs.FS {
 }
 
 func newNTFS(t *testing.T) fs.FS {
-	f, err := os.Open("testdata/data/filesystem/ntfs.dd")
+	f, err := os.Open("filesystem/ntfs.dd")
 	if err != nil {
 		t.Fatal(err)
 	}

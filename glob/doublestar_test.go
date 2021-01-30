@@ -245,10 +245,10 @@ func getTestFS() *fstest.MapFS {
 
 	// create test files
 	files := []string{
-		"testdata/a/abc", "testdata/a/b/c/d", "testdata/a/c/b", "testdata/abc/b", "testdata/abcd", "testdata/abcde", "testdata/abxbbxdbxebxczzx",
-		"testdata/abxbbxdbxebxczzy", "testdata/axbxcxdxe/f", "testdata/axbxcxdxe/xxx/f", "testdata/axbxcxdxexxx/f",
-		"testdata/axbxcxdxexxx/fff", "testdata/a☺b", "testdata/b/c", "testdata/c", "testdata/x", "testdata/xxx", "testdata/z",
-		"testdata/α", "testdata/f/g/h/i/j/k/l", "testdata/f/g/h/i/j/k/d", "testdata/f/g/h/i/j/k/u.bin", "testdata/f/g/h/i/j/k/v.bin",
+		"a/abc", "a/b/c/d", "a/c/b", "abc/b", "abcd", "abcde", "abxbbxdbxebxczzx",
+		"abxbbxdbxebxczzy", "axbxcxdxe/f", "axbxcxdxe/xxx/f", "axbxcxdxexxx/f",
+		"axbxcxdxexxx/fff", "a☺b", "b/c", "c", "x", "xxx", "z",
+		"α", "f/g/h/i/j/k/l", "f/g/h/i/j/k/d", "f/g/h/i/j/k/u.bin", "f/g/h/i/j/k/v.bin",
 	}
 
 	for _, file := range files {

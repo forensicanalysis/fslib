@@ -39,7 +39,7 @@ import (
 func TestMBREvidence(t *testing.T) {
 	var err error
 
-	file, err := os.Open("../testdata/data/filesystem/mbr_fat16.dd")
+	file, err := os.Open("../filesystem/mbr_fat16.dd")
 	assert.NoError(t, err)
 	defer file.Close()
 
@@ -88,7 +88,7 @@ func Test_MBR(t *testing.T) {
 
 func BenchmarkMBR(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		file, _ := os.Open("../testdata/data/filesystem/mbr_fat16.dd")
+		file, _ := os.Open("../filesystem/mbr_fat16.dd")
 		mbr := MbrPartitionTable{}
 		err := mbr.Decode(file)
 		if err != nil {

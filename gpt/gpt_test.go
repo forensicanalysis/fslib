@@ -40,7 +40,7 @@ import (
 )
 
 func TestGPT(t *testing.T) {
-	file, err := os.Open("../testdata/data/filesystem/gpt_apfs.dd")
+	file, err := os.Open("../filesystem/gpt_apfs.dd")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +99,7 @@ func Test_GPT(t *testing.T) {
 
 func BenchmarkGPT(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		file, _ := os.Open("../testdata/data/filesystem/gpt_apfs.dd")
+		file, _ := os.Open("../filesystem/gpt_apfs.dd")
 		gpt := GptPartitionTable{}
 		err := gpt.Decode(file)
 		if err != nil {

@@ -95,7 +95,7 @@ func GetDefaultContainerTests() map[string]*PathTest {
 func RunTest(t *testing.T, name, file string, new func(fsio.ReadSeekerAt) (fs.FS, error), tests map[string]*PathTest) {
 	t.Run(name, func(t *testing.T) {
 		fsys := osfs.New()
-		base, err := fsys.OpenSystemPath("../testdata/data/" + file)
+		base, err := fsys.OpenSystemPath("../" + file)
 		assert.NoError(t, err)
 		assert.NotNil(t, base)
 		if readSeekerAtBase, ok := base.(fsio.ReadSeekerAt); ok {

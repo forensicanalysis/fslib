@@ -37,7 +37,7 @@ import (
 )
 
 func Test_FAT16Parser(t *testing.T) {
-	file, err := os.Open("../testdata/data/filesystem/fat16.dd")
+	file, err := os.Open("../filesystem/fat16.dd")
 	if err != nil {
 		t.Fatal(err)
 	}
