@@ -20,41 +20,53 @@
 //
 // Author(s): Jonas Plum
 
-// Package fslib project contains a collection of packages to parse file
-// systems, archives and similar data. The included packages can be used to
-// access disk images of with different partitioning and file systems.
-// Additionally, file systems for live access to the currently mounted file system
-// and registry (on Windows) are implemented.
-package fslib
+// Package ntfs provides an io/fs implementation of the New Technology File
+// System (NTFS).
+package ntfs
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
-	"path/filepath"
-	"runtime"
-	"strings"
+	"path"
+
+	"www.velocidex.com/golang/go-ntfs/parser"
 )
 
-const windows = "windows"
-
-func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
-	if directory, ok := file.(fs.ReadDirFile); ok {
-		return directory.ReadDir(n)
+// New creates a new ntfs FS.
+func New(r io.ReaderAt) (fs *FS, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("error parsing file system as NTFS")
+		}
+	}()
+	reader, err := parser.NewPagedReader(r, 1024*1024, 100*1024*1024)
+	if err != nil {
+		return nil, err
 	}
-	return nil, fmt.Errorf("%v does not implement ReadDir", file)
+	ntfsCtx, err := parser.GetNTFSContext(reader, 0)
+	return &FS{ntfsCtx: ntfsCtx}, err
 }
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
-// ('C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
-	name, err = filepath.Abs(systemPath)
+// FS implements a read-only file system for the NTFS.
+type FS struct {
+	ntfsCtx *parser.NTFSContext
+}
+
+// Open opens a file for reading.
+func (fsys *FS) Open(name string) (item fs.File, err error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
+	}
+	name = "/" + name
+
+	dir, err := fsys.ntfsCtx.GetMFT(5)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
-		name = name[:1] + name[2:]
-		return name, nil
-	}
-	return name[1:], nil
+	entry, err := dir.Open(fsys.ntfsCtx, name)
+
+	return &Item{entry: entry, name: path.Base(name), path: name, ntfsCtx: fsys.ntfsCtx}, err
 }

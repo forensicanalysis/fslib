@@ -20,41 +20,30 @@
 //
 // Author(s): Jonas Plum
 
-// Package fslib project contains a collection of packages to parse file
-// systems, archives and similar data. The included packages can be used to
-// access disk images of with different partitioning and file systems.
-// Additionally, file systems for live access to the currently mounted file system
-// and registry (on Windows) are implemented.
-package fslib
+// +build !windows !go1.8
+
+package registryfs
 
 import (
-	"fmt"
+	"errors"
 	"io/fs"
-	"path/filepath"
-	"runtime"
-	"strings"
 )
 
-const windows = "windows"
+// New creates a new dummy registry FS.
+func New() *FS { return &FS{} }
 
-func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
-	if directory, ok := file.(fs.ReadDirFile); ok {
-		return directory.ReadDir(n)
-	}
-	return nil, fmt.Errorf("%v does not implement ReadDir", file)
+// FS implements a dummy file system for Windows Registries.
+type FS struct{}
+
+// Name returns the name of the file system.
+func (*FS) Name() (name string) { return "Registry FS" }
+
+// Open fails for non Windows operating systems.
+func (m *FS) Open(name string) (item fs.File, err error) {
+	return nil, errors.New("registry only supported on Windows")
 }
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
-// ('C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
-	name, err = filepath.Abs(systemPath)
-	if err != nil {
-		return "", err
-	}
-	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
-		name = name[:1] + name[2:]
-		return name, nil
-	}
-	return name[1:], nil
+// Stat fails for non Windows operating systems.
+func (m *FS) Stat(name string) (fs.FileInfo, error) {
+	return nil, errors.New("registry only supported on Windows")
 }

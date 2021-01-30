@@ -1,4 +1,5 @@
-// Copyright (c) 2019 Siemens AG
+// Copyright (c) 2019-2020 Siemens AG
+// Copyright (c) 2019-2021 Jonas Plum
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
@@ -23,25 +24,28 @@ package fslib_test
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 
-	"github.com/forensicanalysis/fslib/filesystem/ntfs"
+	"github.com/forensicanalysis/fslib/ntfs"
 )
 
 func ExampleNTFSReaddirnames() {
 	// Read the root directory on an NTFS disk image.
 
 	// open the disk image
-	image, _ := os.Open("test/data/filesystem/ntfs.dd")
+	image, _ := os.Open("testdata/filesystem/ntfs.dd")
 
 	// parse the file system
-	fs, _ := ntfs.New(image)
-
-	// get handle for root
-	root, _ := fs.Open("/")
+	fsys, _ := ntfs.New(image)
 
 	// get filenames
-	filenames, _ := root.Readdirnames(0)
+	entries, _ := fs.ReadDir(fsys, ".")
+
+	var filenames []string
+	for _, entry := range entries {
+		filenames = append(filenames, entry.Name())
+	}
 
 	// print filenames
 	fmt.Println(filenames)

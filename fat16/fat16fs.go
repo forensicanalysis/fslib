@@ -20,41 +20,53 @@
 //
 // Author(s): Jonas Plum
 
-// Package fslib project contains a collection of packages to parse file
-// systems, archives and similar data. The included packages can be used to
-// access disk images of with different partitioning and file systems.
-// Additionally, file systems for live access to the currently mounted file system
-// and registry (on Windows) are implemented.
-package fslib
+// Package fat16 provides an io/fs implementation of the FAT16 file systems.
+package fat16
 
 import (
+	"encoding/binary"
 	"fmt"
+	"io"
 	"io/fs"
-	"path/filepath"
-	"runtime"
-	"strings"
+
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
-const windows = "windows"
-
-func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
-	if directory, ok := file.(fs.ReadDirFile); ok {
-		return directory.ReadDir(n)
-	}
-	return nil, fmt.Errorf("%v does not implement ReadDir", file)
+// FS implements a read-only file system for the FAT16 file system.
+type FS struct {
+	vh      volumeHeader
+	decoder fsio.ReadSeekerAt
 }
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
-// ('C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
-	name, err = filepath.Abs(systemPath)
+// New creates a new fat16 FS.
+func New(decoder fsio.ReadSeekerAt) (*FS, error) {
+	// parser volume header
+	vh := volumeHeader{}
+	err := binary.Read(decoder, binary.LittleEndian, &vh)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+	decoder.Seek(0, 0) // nolint: errcheck
+
+	return &FS{vh: vh, decoder: decoder}, err
+}
+
+// Open opens a file for reading.
+func (m *FS) Open(name string) (f fs.File, err error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
+	}
+
+	if name == "." {
+		name = ""
+	}
+
+	name, de, err := m.getDirectoryEntry(2, m.vh.RootdirEntryCount, name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
-		name = name[:1] + name[2:]
-		return name, nil
-	}
-	return name[1:], nil
+	f = NewItem(name, m, &de.directoryEntry)
+
+	return f, nil
 }

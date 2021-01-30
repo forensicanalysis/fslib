@@ -12,9 +12,11 @@ jobs:
     name: legacy
     runs-on: windows-latest
     steps:
-      - name: Setup go 1.14
+      - name: Setup go 1.16
         uses: actions/setup-go@v2
-        with: {go-version: 1.14}
+        with:
+          stable: false
+          go-version: 1.16.0-rc1
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -32,7 +34,16 @@ jobs:
           mkdir -p path/src/github.com/forensicanalysis
           mv repo path/src/github.com/forensicanalysis/fslib
           cp -r path/src/github.com/forensicanalysis/fslib/replace/context path/src
-          echo "package afero" > path/src/github.com/spf13/afero/memmap.go
+          # echo "package afero" > path/src/github.com/spf13/afero/memmap.go
+
+          mkdir -p path/src/io path/src/internal
+          cp -r $(go env GOROOT)/src/io/fs path/src/io
+          cp -r $(go env GOROOT)/src/internal/oserror path/src/internal
+          sed -i 's#sort\.Slice(list, func(i, j int) bool { return list\[i]\.Name() < list\[j]\.Name() })#sort.Sort(SortedDir(list))#g' path/src/io/fs/readdir.go
+          echo "type SortedDir []DirEntry" >> path/src/io/fs/readdir.go
+          echo "func (a SortedDir) Len() int           { return len(a) }" >> path/src/io/fs/readdir.go
+          echo "func (a SortedDir) Less(i, j int) bool { return a[i].Name() < a[j].Name() }" >> path/src/io/fs/readdir.go
+          echo "func (a SortedDir) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }" >> path/src/io/fs/readdir.go
         shell: bash
       - name: Build with go 1.9.7
         run: |
@@ -70,9 +81,11 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
-      - name: Setup go 1.14
+      - name: Setup go 1.16
         uses: actions/setup-go@v2
-        with: {go-version: 1.14}
+        with:
+          stable: false
+          go-version: 1.16.0-rc1
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Download dependencies
@@ -85,10 +98,10 @@ jobs:
         shell: bash
 
       - name: Lint
-        run: golangci-lint run --verbose --config test/.golangci.yml
+        run: golangci-lint run --verbose --config .github/.golangci.yml
         if: matrix.os != 'windows-latest'
       - name: Lint Windows
-        run: golangci-lint run --verbose --config test/.golangci.yml --disable gofmt --disable goimports
+        run: golangci-lint run --verbose --config .github/.golangci.yml --disable gofmt --disable goimports
         if: matrix.os == 'windows-latest'
       - name: Test
         run: go-acc ./...
@@ -100,55 +113,3 @@ jobs:
         run: bash <(curl -s https://codecov.io/bash)
         if: matrix.os == 'windows-latest'
         shell: bash
-
-  fs:
-    name: fs
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-    steps:
-      - name: Setup go 1.14
-        uses: actions/setup-go@v2
-        with: {go-version: '1.14'}
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Download dependencies
-        run: go mod download
-
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with: {node-version: '10.x'}
-      - name: Install bats
-        run: npm install -g bats@1.1.0
-
-      - name: Build
-        run: |
-          go build .
-          go install .
-          mkdir bin
-          mv fs* bin
-        working-directory: ./cmd/fs
-        shell: bash
-      - name: Bats test
-        run: bats test/fs.bats
-        shell: bash
-      - name: Upload
-        uses: actions/upload-artifact@master
-        with:
-          name: fs ${{ matrix.os }}
-          path: cmd/fs/bin
-
-  docs:
-    name: Documentation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup go 1.14
-        uses: actions/setup-go@v2
-        with: {go-version: '1.14'}
-      - run: go get -u github.com/cugu/godoc2readme
-
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - run: godoc2readme --template docs/readme-template.md . > README2.md
-      - run: diff Readme.md README2.md

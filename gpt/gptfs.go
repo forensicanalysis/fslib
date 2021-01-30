@@ -20,41 +20,49 @@
 //
 // Author(s): Jonas Plum
 
-// Package fslib project contains a collection of packages to parse file
-// systems, archives and similar data. The included packages can be used to
-// access disk images of with different partitioning and file systems.
-// Additionally, file systems for live access to the currently mounted file system
-// and registry (on Windows) are implemented.
-package fslib
+// Package gpt provides an io/fs implementation of the GUID partition table
+// (GPT).
+package gpt
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
-	"path/filepath"
-	"runtime"
+	"strconv"
 	"strings"
 )
 
-const windows = "windows"
-
-func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
-	if directory, ok := file.(fs.ReadDirFile); ok {
-		return directory.ReadDir(n)
-	}
-	return nil, fmt.Errorf("%v does not implement ReadDir", file)
+// FS implements a read-only file system for Master Boot Records (MBR).
+type FS struct {
+	gpt *GptPartitionTable
 }
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
-// ('C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
-	name, err = filepath.Abs(systemPath)
+// New creates a new gpt FS.
+func New(decoder io.ReadSeeker) (*FS, error) {
+	gpt := GptPartitionTable{}
+	err := gpt.Decode(decoder)
+	return &FS{gpt: &gpt}, err
+}
+
+// Open returns a File for the given location.
+func (fsys *FS) Open(name string) (fs.File, error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
+	}
+
+	if name == "." {
+		return &Root{gpt: fsys.gpt}, nil
+	}
+	if !strings.HasPrefix(name, "p") {
+		return nil, fmt.Errorf("needs to start with 'p' is %s", name)
+	}
+	name = name[1:]
+	index, err := strconv.Atoi(name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
-		name = name[:1] + name[2:]
-		return name, nil
-	}
-	return name[1:], nil
+	partitionEntry := fsys.gpt.Primary().Entries()[index]
+	f := NewPartition(index, &partitionEntry)
+	return f, nil
 }

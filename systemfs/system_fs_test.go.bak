@@ -20,41 +20,38 @@
 //
 // Author(s): Jonas Plum
 
-// Package fslib project contains a collection of packages to parse file
-// systems, archives and similar data. The included packages can be used to
-// access disk images of with different partitioning and file systems.
-// Additionally, file systems for live access to the currently mounted file system
-// and registry (on Windows) are implemented.
-package fslib
+package systemfs
 
 import (
-	"fmt"
-	"io/fs"
-	"path/filepath"
+	"os"
 	"runtime"
-	"strings"
+	"testing"
 )
 
-const windows = "windows"
+func Test_LocalNTFS(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		_, err := os.OpenFile(`\\.\C:`, os.O_RDONLY, fs.FileMode(0666))
+		if err != nil {
+			panic(err)
+		}
 
-func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
-	if directory, ok := file.(fs.ReadDirFile); ok {
-		return directory.ReadDir(n)
-	}
-	return nil, fmt.Errorf("%v does not implement ReadDir", file)
-}
+		fs, err := New()
+		if err != nil {
+			t.Errorf("Error %s", err)
+		}
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
-// ('C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
-	name, err = filepath.Abs(systemPath)
-	if err != nil {
-		return "", err
+		// mft, err := fs.Open(`C:\$MFT`)
+		mft, err := fs.Open(`/C/$MFT`)
+		if err != nil {
+			t.Errorf("Error %s", err)
+		}
+
+		mftInfo, err := mft.Stat()
+		if err != nil {
+			t.Errorf("Error %s", err)
+		}
+		if mftInfo.Size() == 0 {
+			t.Errorf("MFT is 0 byte")
+		}
 	}
-	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
-		name = name[:1] + name[2:]
-		return name, nil
-	}
-	return name[1:], nil
 }

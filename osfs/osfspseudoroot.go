@@ -20,41 +20,43 @@
 //
 // Author(s): Jonas Plum
 
-// Package fslib project contains a collection of packages to parse file
-// systems, archives and similar data. The included packages can be used to
-// access disk images of with different partitioning and file systems.
-// Additionally, file systems for live access to the currently mounted file system
-// and registry (on Windows) are implemented.
-package fslib
+package osfs
 
 import (
-	"fmt"
 	"io/fs"
-	"path/filepath"
-	"runtime"
-	"strings"
+	"syscall"
+	"time"
 )
 
-const windows = "windows"
+// Root is a pseudo root directory for windows partitions.
+type Root struct{}
 
-func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
-	if directory, ok := file.(fs.ReadDirFile); ok {
-		return directory.ReadDir(n)
-	}
-	return nil, fmt.Errorf("%v does not implement ReadDir", file)
+func (r *Root) Read([]byte) (int, error) {
+	return 0, syscall.EPERM
 }
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
-// ('C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
-	name, err = filepath.Abs(systemPath)
-	if err != nil {
-		return "", err
-	}
-	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
-		name = name[:1] + name[2:]
-		return name, nil
-	}
-	return name[1:], nil
+// Name always returns . for window pseudo roots.
+func (*Root) Name() (name string) { return "." }
+
+// Close does not do anything for window pseudo roots.
+func (*Root) Close() error { return nil }
+
+// Size returns 0 for window pseudo roots.
+func (*Root) Size() int64 { return 0 }
+
+// Mode returns fs.ModeDir for window pseudo roots.
+func (*Root) Mode() fs.FileMode { return fs.ModeDir }
+
+// ModTime returns the zero time (0001-01-01 00:00) for window pseudo roots.
+func (*Root) ModTime() time.Time { return time.Time{} }
+
+// IsDir returns true for window pseudo roots.
+func (*Root) IsDir() bool { return true }
+
+// Sys returns nil for window pseudo roots.
+func (*Root) Sys() interface{} { return nil }
+
+// Stat returns the windows pseudo roots itself as fs.FileMode.
+func (r *Root) Stat() (fs.FileInfo, error) {
+	return r, nil
 }

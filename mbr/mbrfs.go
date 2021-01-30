@@ -20,41 +20,49 @@
 //
 // Author(s): Jonas Plum
 
-// Package fslib project contains a collection of packages to parse file
-// systems, archives and similar data. The included packages can be used to
-// access disk images of with different partitioning and file systems.
-// Additionally, file systems for live access to the currently mounted file system
-// and registry (on Windows) are implemented.
-package fslib
+// Package mbr provides an io/fs implementation of the Master Boot Record (MBR)
+// partition table.
+package mbr
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
-	"path/filepath"
-	"runtime"
+	"strconv"
 	"strings"
 )
 
-const windows = "windows"
-
-func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
-	if directory, ok := file.(fs.ReadDirFile); ok {
-		return directory.ReadDir(n)
-	}
-	return nil, fmt.Errorf("%v does not implement ReadDir", file)
+// FS implements a read-only file system for Master Boot Records (MBR).
+type FS struct {
+	mbr *MbrPartitionTable
 }
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
-// ('C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
-	name, err = filepath.Abs(systemPath)
+// New creates a new mbr FS.
+func New(decoder io.ReadSeeker) (*FS, error) {
+	mbr := MbrPartitionTable{}
+	err := mbr.Decode(decoder)
+	return &FS{mbr: &mbr}, err
+}
+
+// Open opens a file for reading.
+func (fsys *FS) Open(name string) (fs.File, error) {
+	valid := fs.ValidPath(name)
+	if !valid {
+		return nil, fmt.Errorf("path %s invalid", name)
+	}
+
+	if name == "." {
+		return &Root{mbr: fsys.mbr}, nil
+	}
+	if !strings.HasPrefix(name, "p") {
+		return nil, fmt.Errorf("needs to start with 'p' is %s", name)
+	}
+	name = name[1:]
+	index, err := strconv.Atoi(name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
-		name = name[:1] + name[2:]
-		return name, nil
-	}
-	return name[1:], nil
+	partition := fsys.mbr.Partitions()[index]
+	f := NewPartition(index, &partition)
+	return f, nil
 }
