@@ -3,7 +3,6 @@ package ntfs
 import (
 	"io/fs"
 	"os"
-	"sort"
 	"time"
 
 	"www.velocidex.com/golang/go-ntfs/parser"
@@ -74,9 +73,6 @@ func (i *Item) ReadDir(n int) (entries []fs.DirEntry, err error) {
 		entries = append(entries, &DirEntry{info})
 		// TODO: some paths like $BadClus:$Bad are not listed
 	}
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Name() < entries[j].Name()
-	})
 	return
 }
 
