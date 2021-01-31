@@ -94,7 +94,7 @@ func (systemfs *FS) Open(name string) (item fs.File, err error) {
 	}
 
 	if !contains(systemfs.ntfsPartitions, string(name[0])) {
-		return nil, fmt.Errorf("not an NTFS parition: %w", err)
+		return nil, fmt.Errorf("not an NTFS parition (%s %s): %w", string(name[0]), systemfs.ntfsPartitions, err)
 	}
 
 	item, _, err = systemfs.NTFSOpen(name)
