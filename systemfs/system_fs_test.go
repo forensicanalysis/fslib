@@ -42,7 +42,7 @@ func Test_LocalNTFS(t *testing.T) {
 		header string
 	}{
 		{"C/$MFT", "FILE"},
-		{"Windows/System32/config/RegBack/SOFTWARE", "regf"},
+		{"C/Windows/System32/config/RegBack/SOFTWARE", "regf"},
 	}
 	for _, test := range tests {
 		t.Run(test.path, func(t *testing.T) {

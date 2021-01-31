@@ -93,12 +93,12 @@ func (systemfs *FS) Open(name string) (item fs.File, err error) {
 		return nil, err
 	}
 
-	if !contains(systemfs.ntfsPartitions, string(name[1])) {
-		return nil, err
+	if !contains(systemfs.ntfsPartitions, string(name[0])) {
+		return nil, fmt.Errorf("not an NTFS parition: %w", err)
 	}
 
 	item, _, err = systemfs.NTFSOpen(name)
-	return item, err
+	return item, fmt.Errorf("ntfs open failed: %w", err)
 }
 
 func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
@@ -145,8 +145,8 @@ func (systemfs *FS) Stat(name string) (info fs.FileInfo, err error) {
 		return info, err
 	}
 
-	if !contains(systemfs.ntfsPartitions, string(name[1])) {
-		return info, err
+	if !contains(systemfs.ntfsPartitions, string(name[0])) {
+		return info, fmt.Errorf("not an NTFS parition: %w", err)
 	}
 
 	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
@@ -163,7 +163,7 @@ func (systemfs *FS) Stat(name string) (info fs.FileInfo, err error) {
 	log.Printf("low level open %s", name[2:])
 
 	info, err = fs.Stat(lowLevelFS, name[2:])
-	return info, err
+	return info, fmt.Errorf("ntfs stat failed: %w", err)
 }
 
 // Item describes files and directories in the file system.
