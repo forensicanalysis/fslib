@@ -30,6 +30,7 @@ package fallbackfs
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 )
 
@@ -54,7 +55,7 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 	for _, fallbackFilesystem := range fsys.fallbackFilesystems {
 		item, err = fallbackFilesystem.Open(name)
 		if err == nil {
-			return &Item{name, item, fsys.fallbackFilesystems}, nil
+			return &Item{name, item, fsys.fallbackFilesystems[1:]}, nil
 		}
 	}
 
@@ -98,20 +99,26 @@ func (i *Item) Stat() (fs.FileInfo, error) {
 }
 
 func (i *Item) Read(bytes []byte) (int, error) {
-	n, err := i.first.Read(bytes)
-	if err != nil {
+	buf := make([]byte, len(bytes))
+	n, err := i.first.Read(buf)
+	if err != nil && err != io.EOF {
 		for _, fsys := range i.fallbackFilesystems {
 			file, err := fsys.Open(i.path)
 			if err != nil {
 				continue
 			}
-			n, err = file.Read(bytes)
-			if err == nil {
+			buf = make([]byte, len(bytes))
+			n, err = file.Read(buf)
+			if err == nil || err == io.EOF {
 				break
 			}
 		}
 	}
-	return n, nil
+	m := len(bytes)
+	if m > n {
+		m = n
+	}
+	return copy(bytes, buf[:n]), err
 }
 
 func (i *Item) Close() error {

@@ -30,7 +30,7 @@ import (
 	"github.com/forensicanalysis/fslib/ntfs"
 )
 
-func ExampleNTFSReaddirnames() {
+func Example() {
 	// Read the root directory on an NTFS disk image.
 
 	// open the disk image
@@ -49,5 +49,5 @@ func ExampleNTFSReaddirnames() {
 
 	// print filenames
 	fmt.Println(filenames)
-	// Output: [$AttrDef $BadClus $BadClus:$Bad $Bitmap $Boot $Extend $LogFile $MFT $MFTMirr $Secure $Secure:$SDS $UpCase $UpCase:$Info $Volume README.md container document evidence.json folder image]
+	// Output: [$AttrDef $BadClus $Bitmap $Boot $Extend $LogFile $MFT $MFTMirr $Secure $UpCase $Volume README.md container document evidence.json folder image]
 }

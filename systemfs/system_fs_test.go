@@ -30,9 +30,11 @@ import (
 )
 
 func Test_LocalNTFS(t *testing.T) {
-	_, err := os.OpenFile(`\\.\C:`, os.O_RDONLY, fs.FileMode(0666))
-	if err != nil {
-		t.Fatal(err)
+	if runtime.GOOS == "windows" {
+		_, err := os.OpenFile(`\\.\C:`, os.O_RDONLY, fs.FileMode(0666))
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	tests := []struct{
