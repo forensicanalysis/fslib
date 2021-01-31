@@ -55,7 +55,7 @@ func newFS() (fs.FS, error) {
 
 	var ntfsPartitions []string
 	for _, partition := range partitions {
-		_, close, err := fsys.NTFSOpen("/" + partition.Name() + "/$MFT")
+		_, close, err := fsys.NTFSOpen(partition.Name() + "/$MFT")
 
 		if err == nil {
 			ntfsPartitions = append(ntfsPartitions, partition.Name())
@@ -102,7 +102,7 @@ func (systemfs *FS) Open(name string) (item fs.File, err error) {
 }
 
 func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
-	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
+	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[0]))
 	if err != nil {
 		return nil, nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
@@ -113,9 +113,9 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 		return nil, nil, fmt.Errorf("ntfs creation failed: %w", err)
 	}
 
-	log.Printf("low level open %s", name[2:])
+	log.Printf("low level open %s", name[1:])
 
-	item, err := lowLevelFS.Open(name[2:])
+	item, err := lowLevelFS.Open(name[1:])
 	if err != nil {
 		return nil, nil, err
 	}

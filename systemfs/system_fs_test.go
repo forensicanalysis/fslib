@@ -23,35 +23,58 @@
 package systemfs
 
 import (
+	"io/fs"
 	"os"
 	"runtime"
 	"testing"
 )
 
 func Test_LocalNTFS(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		_, err := os.OpenFile(`\\.\C:`, os.O_RDONLY, fs.FileMode(0666))
-		if err != nil {
-			panic(err)
-		}
+	_, err := os.OpenFile(`\\.\C:`, os.O_RDONLY, fs.FileMode(0666))
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		fs, err := New()
-		if err != nil {
-			t.Errorf("Error %s", err)
-		}
+	tests := []struct{
+		path string
+		header string
+	}{
+		{"C/MFT", "FILE"},
+		{"Windows/System32/config/RegBack/SOFTWARE", "regf"},
+	}
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			if runtime.GOOS == "windows" {
+				fsys, err := New()
+				if err != nil {
+					t.Errorf("Error %s", err)
+				}
 
-		// mft, err := fs.Open(`C:\$MFT`)
-		mft, err := fs.Open(`/C/$MFT`)
-		if err != nil {
-			t.Errorf("Error %s", err)
-		}
+				file, err := fsys.Open(test.path)
+				if err != nil {
+					t.Errorf("Error %s", err)
+				}
 
-		mftInfo, err := mft.Stat()
-		if err != nil {
-			t.Errorf("Error %s", err)
-		}
-		if mftInfo.Size() == 0 {
-			t.Errorf("MFT is 0 byte")
-		}
+				info, err := file.Stat()
+				if err != nil {
+					t.Errorf("Error %s", err)
+				}
+				if info.Size() == 0 {
+					t.Errorf("file is 0 byte")
+				}
+
+				header := make([]byte, len(test.header))
+				n, err := file.Read(header)
+				if err != nil {
+					t.Errorf("Error %s", err)
+				}
+				if n != len(test.header) {
+					t.Errorf("Wrong read count")
+				}
+				if string(header) != test.header {
+					t.Errorf("Wrong header")
+				}
+			}
+		})
 	}
 }

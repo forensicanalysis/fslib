@@ -54,7 +54,7 @@ func (fsys *FS) Open(name string) (item fs.File, err error) {
 	for _, fallbackFilesystem := range fsys.fallbackFilesystems {
 		item, err = fallbackFilesystem.Open(name)
 		if err == nil {
-			return
+			return &Item{name, item, fsys.fallbackFilesystems}, nil
 		}
 	}
 
@@ -76,4 +76,51 @@ func (fsys *FS) Stat(name string) (info fs.FileInfo, err error) {
 	}
 
 	return
+}
+
+type Item struct {
+	path                string
+	first               fs.File
+	fallbackFilesystems []fs.FS
+}
+
+func (i *Item) Stat() (fs.FileInfo, error) {
+	info, err := i.first.Stat()
+	if err != nil {
+		for _, fsys := range i.fallbackFilesystems {
+			info, err = fs.Stat(fsys, i.path)
+			if err == nil {
+				break
+			}
+		}
+	}
+	return info, nil
+}
+
+func (i *Item) Read(bytes []byte) (int, error) {
+	n, err := i.first.Read(bytes)
+	if err != nil {
+		for _, fsys := range i.fallbackFilesystems {
+			file, err := fsys.Open(i.path)
+			if err != nil {
+				continue
+			}
+			n, err = file.Read(bytes)
+			if err == nil {
+				break
+			}
+		}
+	}
+	return n, nil
+}
+
+func (i *Item) Close() error {
+	return i.first.Close()
+}
+
+func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
+	if directory, ok := i.first.(fs.ReadDirFile); ok {
+		return directory.ReadDir(n)
+	}
+	return nil, fmt.Errorf("%v does not implement ReadDir", i)
 }
