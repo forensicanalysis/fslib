@@ -23,6 +23,7 @@
 package systemfs
 
 import (
+	"io"
 	"io/fs"
 	"os"
 	"runtime"
@@ -67,14 +68,14 @@ func Test_LocalNTFS(t *testing.T) {
 
 				header := make([]byte, len(test.header))
 				n, err := file.Read(header)
-				if err != nil {
-					t.Errorf("Error %s", err)
+				if err != nil && err != io.EOF{
+					t.Errorf("read error %s", err)
 				}
 				if n != len(test.header) {
-					t.Errorf("Wrong read count")
+					t.Errorf("Wrong read count got: %d, want: %d", n, len(test.header))
 				}
 				if string(header) != test.header {
-					t.Errorf("Wrong header")
+					t.Errorf("Wrong header got: %s, want: %s", header, test.header)
 				}
 			}
 		})

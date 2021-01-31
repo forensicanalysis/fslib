@@ -53,7 +53,6 @@ func newFS() (fs.FS, error) {
 		return fsys, err
 	}
 
-	fmt.Println("partitions", partitions)
 	var ntfsPartitions []string
 	for _, partition := range partitions {
 		_, close, err := fsys.NTFSOpen(partition.Name() + "/$MFT")
