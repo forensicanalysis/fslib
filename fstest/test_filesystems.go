@@ -106,10 +106,6 @@ func RunTest(t *testing.T, name, file string, new func(fsio.ReadSeekerAt) (fs.FS
 	})
 }
 
-type Named interface {
-	Name() string
-}
-
 func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (fs.FS, error), name string, tests map[string]*PathTest) {
 	// test creation
 	fsys, err := new(base)
@@ -118,10 +114,6 @@ func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (
 	log.Print("check FS ", name)
 	log.Print("-------------------")
 	assert.NotNil(t, fsys)
-
-	if namedFS, ok := fsys.(Named); ok {
-		assert.EqualValues(t, name, namedFS.Name())
-	}
 
 	// test no leading slash
 	// _, err = fsys.Open("no_slash")
@@ -132,40 +124,24 @@ func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (
 	assert.Error(t, err)
 
 	for _, tt := range tests {
-		t.Run(tt.TestName, checkPath(name, tt, fsys))
+		t.Run(tt.TestName, checkPath(tt, fsys))
 	}
 }
 
-func checkPath(name string, tt *PathTest, fsys fs.FS) func(t *testing.T) {
+func checkPath(tt *PathTest, fsys fs.FS) func(t *testing.T) {
 	return func(t *testing.T) {
-		log.Print("------------------------------")
-		log.Print(name, " ", tt.TestName)
-		log.Print("------------------------------")
-		log.Print("test fsys.Stat")
 		stat, err := fs.Stat(fsys, tt.Path)
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, tt.InfoSize, stat.Size())
 			assert.EqualValues(t, tt.InfoIsDir, stat.IsDir())
 		}
 
-		log.Print("-------------------")
-		log.Print("test fsys.Open")
 		file, err := fsys.Open(tt.Path)
 		if assert.NoError(t, err) {
-			log.Print("-------------------")
-			log.Print("test item.Name")
-			if namedFile, ok := file.(Named); ok {
-				assert.EqualValues(t, tt.FileName, namedFile.Name())
-			} else {
-				assert.Fail(t, "File must have a name")
-			}
-
 			// fileInfos, err := file.Readdir(0)
 			// assert.NoError(t, err)
 			// assert.EqualValues(t, test.FileReaddir, fileInfos)
 			if tt.InfoIsDir {
-				log.Print("-------------------")
-				log.Print("test dir.Readdirnames(0)")
 				filenames, err := Readdirnames(file, 0)
 				if assert.NoError(t, err) {
 					assert.ElementsMatch(t, tt.FileReaddirnames, filenames, "dirnames do not match %s %s", tt.FileReaddirnames, filenames)
@@ -173,8 +149,6 @@ func checkPath(name string, tt *PathTest, fsys fs.FS) func(t *testing.T) {
 			}
 
 			if !tt.InfoIsDir {
-				log.Print("-------------------")
-				log.Print("test file.Read")
 				head := make([]byte, len(tt.Head))
 				c, err := file.Read(head)
 				assert.NoError(t, err)

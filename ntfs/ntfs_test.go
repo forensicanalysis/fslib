@@ -26,21 +26,52 @@ import (
 	"bytes"
 	"io"
 	"io/fs"
+	"os"
 	"reflect"
 	"sort"
 	"testing"
+	"testing/fstest"
+	"testing/iotest"
 	"time"
 
 	"github.com/forensicanalysis/fslib/fsio"
-	"github.com/forensicanalysis/fslib/fstest"
+	fslibtest "github.com/forensicanalysis/fslib/fstest"
 )
 
+func TestFS(t *testing.T) {
+	b , err := os.ReadFile("../testdata/filesystem/ntfs.dd")
+	if err != nil {
+		t.Error(err)
+	}
+	r := bytes.NewReader(b)
+
+	fsys, err := New(r)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := fstest.TestFS(fsys, "image/alps.jpg"); err != nil {
+		t.Fatal(err)
+	}
+
+	f, err := fsys.Open("README.md")
+	if err != nil {
+		t.Error(err)
+	}
+	defer f.Close()
+	content := []byte("# :mag: evidence\nSample data for forensics processing\n\nForensics software need to be able to parse and process many different file formats. This repository contains samples of different file formats that can be used to test forensics software. Each file is accompanied by an entry in the [evidence.json](evidence.json) file with some metadata. \n\nExample entry for this README.md:\n```\n[\n  …\n  {\n    \"name\": \"README.md\", \n    \"mime\": \"text/plain\", \n    \"generator\": \"github.com\"\n  },\n  …\n]\n```\n")
+	err = iotest.TestReader(f, content)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func Test_NTFSImage(t *testing.T) {
-	tests := fstest.GetDefaultContainerTests()
+	tests := fslibtest.GetDefaultContainerTests()
 
 	extra := []string{
-		"$AttrDef", "$BadClus", "$BadClus:$Bad", "$Bitmap", "$Boot", "$Extend", "$LogFile", "$MFT", "$MFTMirr",
-		"$Secure", "$Secure:$SDS", "$UpCase", "$UpCase:$Info", "$Volume",
+		"$AttrDef", "$BadClus", "$Bitmap", "$Boot", "$Extend", "$LogFile", "$MFT", "$MFTMirr",
+		"$Secure", "$UpCase", "$Volume",
 	}
 
 	tests["rootTest"].InfoModTime = time.Date(2019, time.August, 21, 17, 40, 04, 0, time.UTC)
@@ -60,7 +91,7 @@ func Test_NTFSImage(t *testing.T) {
 	tests["file2Test"].InfoModTime = time.Date(2019, time.August, 21, 17, 40, 04, 0, time.UTC)
 	tests["file2Test"].InfoMode = 0
 
-	fstest.RunTest(t, "NTFS", "testdata/filesystem/ntfs.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
+	fslibtest.RunTest(t, "NTFS", "testdata/filesystem/ntfs.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
 }
 
 func TestNew(t *testing.T) {

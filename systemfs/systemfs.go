@@ -55,7 +55,7 @@ func newFS() (fs.FS, error) {
 
 	var ntfsPartitions []string
 	for _, partition := range partitions {
-		_, close, err := fsys.NTFSOpen("/" + partition.Name() + "/$MFT")
+		_, close, err := fsys.NTFSOpen(partition.Name() + "/$MFT")
 
 		if err == nil {
 			ntfsPartitions = append(ntfsPartitions, partition.Name())
@@ -93,16 +93,19 @@ func (systemfs *FS) Open(name string) (item fs.File, err error) {
 		return nil, err
 	}
 
-	if !contains(systemfs.ntfsPartitions, string(name[1])) {
-		return nil, err
+	if !contains(systemfs.ntfsPartitions, string(name[0])) {
+		return nil, fmt.Errorf("not an NTFS parition (%s %s): %w", string(name[0]), systemfs.ntfsPartitions, err)
 	}
 
 	item, _, err = systemfs.NTFSOpen(name)
+	if err != nil {
+		err = fmt.Errorf("ntfs open failed: %w", err)
+	}
 	return item, err
 }
 
 func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
-	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
+	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[0]))
 	if err != nil {
 		return nil, nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
@@ -145,8 +148,8 @@ func (systemfs *FS) Stat(name string) (info fs.FileInfo, err error) {
 		return info, err
 	}
 
-	if !contains(systemfs.ntfsPartitions, string(name[1])) {
-		return info, err
+	if !contains(systemfs.ntfsPartitions, string(name[0])) {
+		return info, fmt.Errorf("not an NTFS parition: %w", err)
 	}
 
 	base, err := os.Open(fmt.Sprintf("\\\\.\\%c:", name[1]))
@@ -163,7 +166,7 @@ func (systemfs *FS) Stat(name string) (info fs.FileInfo, err error) {
 	log.Printf("low level open %s", name[2:])
 
 	info, err = fs.Stat(lowLevelFS, name[2:])
-	return info, err
+	return info, fmt.Errorf("ntfs stat failed: %w", err)
 }
 
 // Item describes files and directories in the file system.

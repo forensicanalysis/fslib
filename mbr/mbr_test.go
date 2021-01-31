@@ -40,12 +40,16 @@ func TestMBREvidence(t *testing.T) {
 	var err error
 
 	file, err := os.Open("../testdata/filesystem/mbr_fat16.dd")
-	assert.NoError(t, err)
+	if err != nil {
+		t.Error(err)
+	}
 	defer file.Close()
 
 	mbr := MbrPartitionTable{}
 	err = mbr.Decode(file)
-	assert.NoError(t, err)
+	if err != nil {
+		t.Error(err)
+	}
 
 	p0 := mbr.Partitions()[0]
 	assert.EqualValues(t, 128, p0.LbaStart())

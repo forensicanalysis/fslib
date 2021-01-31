@@ -8,3 +8,4 @@ vendor
 path
 path.zip
 go1.*
+*.prof

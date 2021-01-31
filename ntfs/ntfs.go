@@ -22,6 +22,8 @@
 
 // Package ntfs provides an io/fs implementation of the New Technology File
 // System (NTFS).
+//
+// Currently alternate data streams are not supported.
 package ntfs
 
 import (
