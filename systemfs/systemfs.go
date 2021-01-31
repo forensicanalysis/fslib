@@ -99,7 +99,10 @@ func (systemfs *FS) Open(name string) (item fs.File, err error) {
 	}
 
 	item, _, err = systemfs.NTFSOpen(name)
-	return item, fmt.Errorf("ntfs open failed: %w", err)
+	if err != nil {
+		err = fmt.Errorf("ntfs open failed: %w", err)
+	}
+	return item, err
 }
 
 func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
