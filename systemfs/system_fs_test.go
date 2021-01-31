@@ -41,7 +41,7 @@ func Test_LocalNTFS(t *testing.T) {
 		path string
 		header string
 	}{
-		{"C/MFT", "FILE"},
+		{"C/$MFT", "FILE"},
 		{"Windows/System32/config/RegBack/SOFTWARE", "regf"},
 	}
 	for _, test := range tests {
@@ -49,17 +49,17 @@ func Test_LocalNTFS(t *testing.T) {
 			if runtime.GOOS == "windows" {
 				fsys, err := New()
 				if err != nil {
-					t.Errorf("Error %s", err)
+					t.Fatalf("Error %s", err)
 				}
 
 				file, err := fsys.Open(test.path)
 				if err != nil {
-					t.Errorf("Error %s", err)
+					t.Fatalf("Error %s", err)
 				}
 
 				info, err := file.Stat()
 				if err != nil {
-					t.Errorf("Error %s", err)
+					t.Fatalf("Error %s", err)
 				}
 				if info.Size() == 0 {
 					t.Errorf("file is 0 byte")
