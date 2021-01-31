@@ -114,10 +114,6 @@ func (i *Item) Read(bytes []byte) (int, error) {
 			}
 		}
 	}
-	m := len(bytes)
-	if m > n {
-		m = n
-	}
 	return copy(bytes, buf[:n]), err
 }
 
