@@ -124,11 +124,11 @@ func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (
 	assert.Error(t, err)
 
 	for _, tt := range tests {
-		t.Run(tt.TestName, checkPath(name, tt, fsys))
+		t.Run(tt.TestName, checkPath(tt, fsys))
 	}
 }
 
-func checkPath(name string, tt *PathTest, fsys fs.FS) func(t *testing.T) {
+func checkPath(tt *PathTest, fsys fs.FS) func(t *testing.T) {
 	return func(t *testing.T) {
 		stat, err := fs.Stat(fsys, tt.Path)
 		if assert.NoError(t, err) {
