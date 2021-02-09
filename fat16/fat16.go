@@ -27,7 +27,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"log"
 	"os"
 	"strings"
 	"unicode/utf16"
@@ -71,7 +70,7 @@ type lfnEntry struct {
 }
 
 func (m *FS) getDirectoryEntry(cluster int64, count uint16, name string) (filename string, de *namedEntry, err error) {
-	log.Println("getDirectoryEntry", name, cluster, count)
+	// log.Println("getDirectoryEntry", name, cluster, count)
 	if name == "" {
 		var root [8]byte
 		copy(root[:], ".")
@@ -89,13 +88,18 @@ func (m *FS) getDirectoryEntry(cluster int64, count uint16, name string) (filena
 		}, nil
 	}
 
+	if count == 0 {
+		count = m.vh.SectorSize * uint16(m.vh.SectorsPerCluster)
+	}
 	entries, err := m.getDirectoryEntries(cluster, count)
 
 	pathParts := strings.SplitN(name, "/", 2)
 	currentName := pathParts[0]
+	// log.Println("entries", entries, currentName)
 	if de, ok := entries[currentName]; ok {
 		if len(pathParts) > 1 {
-			return m.getDirectoryEntry(int64(de.Startingcluster), uint16(de.FileSize/32), pathParts[1])
+			// log.Println("filesize", de.FileSize) // uint16(de.FileSize/32)
+			return m.getDirectoryEntry(int64(de.Startingcluster), count, pathParts[1])
 		}
 		return currentName, de, err
 	}
@@ -154,9 +158,10 @@ func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*named
 				currentFilename = []byte{}
 			}
 
-			log.Print("filename ", filename, " ", de.FileAttributes&0x10 != 0, de.Startingcluster)
+			// log.Print("filename ", filename, " ", de.FileAttributes&0x10 != 0, de.Startingcluster, de.FileSize)
 			files[filename] = &namedEntry{name: filename, directoryEntry: de}
 		} else {
+			// break
 			_, err = m.decoder.Seek(32, os.SEEK_CUR)
 			if err != nil {
 				return nil, err
@@ -209,17 +214,17 @@ func handleLongFilname(data []byte, currentFilename []byte) ([]byte, error) {
 
 func getOffset(cluster int64, vh volumeHeader) int64 {
 	rootDirStartSector := int64(vh.SectorsPerFat)*int64(vh.FatCount) + int64(vh.ReservedSectorCount)
-	log.Println("rootDirStartSector: ", rootDirStartSector)
+	// log.Println("rootDirStartSector: ", rootDirStartSector)
 	rootDirStart := rootDirStartSector * int64(vh.SectorSize)
 	pos := rootDirStart
 	if cluster != 2 {
 		// pos += int64(vh.SectorsPerCluster) * (cluster - 4) * int64(vh.SectorSize)
 		rootDirSectors := (vh.RootdirEntryCount*32 + (vh.SectorSize - 1)) / vh.SectorSize
-		log.Println("rootDirSectors: ", rootDirSectors, "vh.SectorSize: ", vh.SectorSize, "vh.RootdirEntryCount ", vh.RootdirEntryCount)
+		// log.Println("rootDirSectors: ", rootDirSectors, "vh.SectorSize: ", vh.SectorSize, "vh.RootdirEntryCount ", vh.RootdirEntryCount)
 		firstDataSector := rootDirStartSector + int64(rootDirSectors)
 		firstSectorofCluster := ((cluster - 2) * int64(vh.SectorsPerCluster)) + firstDataSector
 		pos = firstSectorofCluster * int64(vh.SectorSize)
-		log.Println("firstSectorofCluster ", firstSectorofCluster, "pos ", pos)
+		// log.Println("firstSectorofCluster ", firstSectorofCluster, "pos ", pos)
 	}
 	return pos
 }

@@ -25,7 +25,7 @@ import (
 	"errors"
 	"io"
 	"io/fs"
-	"log"
+	"sort"
 	"syscall"
 	"time"
 )
@@ -36,11 +36,13 @@ type Item struct {
 	name           string
 	fs             *FS
 	directoryEntry *directoryEntry
+
+	dirOffset int
 }
 
 // NewItem creates a new fat16 Item.
 func NewItem(name string, fs *FS, directoryEntry *directoryEntry) *Item {
-	log.Println("NewItem directoryEntry.Startingcluster: ", directoryEntry.Startingcluster)
+	// log.Println("NewItem directoryEntry.Startingcluster: ", directoryEntry.Startingcluster)
 	cluster := int64(directoryEntry.Startingcluster)
 
 	pos := getOffset(cluster, fs.vh)
@@ -49,7 +51,7 @@ func NewItem(name string, fs *FS, directoryEntry *directoryEntry) *Item {
 	if size == 0 {
 		size = int64(fs.vh.SectorSize) * int64(fs.vh.SectorsPerCluster)
 	}
-	log.Println("directoryEntry.FileSize", directoryEntry.FileSize, "size ", size)
+	// log.Println("directoryEntry.FileSize", directoryEntry.FileSize, "size ", size)
 
 	return &Item{
 		name:           name,
@@ -68,25 +70,45 @@ func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
 	if !i.IsDir() {
 		return nil, errors.New("cannot call Readdirnames on a file")
 	}
-	de := i.directoryEntry
 
-	size := int64(de.FileSize)
+	size := int64(i.directoryEntry.FileSize)
 	if size == 0 {
 		size = int64(i.fs.vh.SectorSize) * int64(i.fs.vh.SectorsPerCluster)
 	}
 
-	log.Printf("Readdirnames startingcluster: %d size: %d", de.Startingcluster, size)
-	entries, err := i.fs.getDirectoryEntries(int64(de.Startingcluster), uint16(size/32))
+	// log.Printf("Readdirnames startingcluster: %d size: %d", de.Startingcluster, size)
+	entries, err := i.fs.getDirectoryEntries(int64(i.directoryEntry.Startingcluster), uint16(size/32))
 	var infos []fs.DirEntry
 	for name, entry := range entries {
 		if name != "." && name != ".." {
 			infos = append(infos, entry)
-			n--
-			if n == 0 {
-				break
-			}
+			// fmt.Println(entry.name)
 		}
 	}
+
+	sort.Slice(infos, func(i, j int) bool { return infos[i].Name() < infos[j].Name() })
+
+	// directory already exhausted
+	if n <= 0 && i.dirOffset >= len(infos) {
+		return nil, nil
+	}
+
+	// read till end
+	if n > 0 && i.dirOffset+n > len(infos) {
+		err = io.EOF
+		if i.dirOffset > len(infos) {
+			return nil, err
+		}
+	}
+
+	if n > 0 && i.dirOffset+n <= len(infos) {
+		infos = infos[i.dirOffset : i.dirOffset+n]
+		i.dirOffset += n
+	} else {
+		infos = infos[i.dirOffset:]
+		i.dirOffset += len(infos)
+	}
+
 	return infos, err
 }
 
