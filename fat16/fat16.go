@@ -161,7 +161,6 @@ func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*named
 			// log.Print("filename ", filename, " ", de.FileAttributes&0x10 != 0, de.Startingcluster, de.FileSize)
 			files[filename] = &namedEntry{name: filename, directoryEntry: de}
 		} else {
-			// break
 			_, err = m.decoder.Seek(32, os.SEEK_CUR)
 			if err != nil {
 				return nil, err
