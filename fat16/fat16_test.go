@@ -29,7 +29,6 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
-	"testing/iotest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -50,21 +49,6 @@ func Test_FS(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = fstest.TestFS(fsys, "image/alps.jpg")
-	if err != nil {
-		t.Fatal(err)
-	}
-	b, err := os.ReadFile("../testdata/image/alps.jpg")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fsys.Open("README.md")
-
-	f, err := fsys.Open("image/alps.jpg")
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = iotest.TestReader(f, b)
 	if err != nil {
 		t.Fatal(err)
 	}
