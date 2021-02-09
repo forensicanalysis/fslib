@@ -28,13 +28,32 @@ import (
 	"io/fs"
 	"os"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/forensicanalysis/fslib/fsio"
-	"github.com/forensicanalysis/fslib/fstest"
+	fslibtest "github.com/forensicanalysis/fslib/fstest"
 )
+
+func Test_FS(t *testing.T) {
+	file, err := os.Open("../testdata/filesystem/mbr_fat16.dd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	fsys, err := New(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = fstest.TestFS(fsys, "p0")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 
 func TestMBREvidence(t *testing.T) {
 	var err error
@@ -58,7 +77,7 @@ func TestMBREvidence(t *testing.T) {
 }
 
 func Test_MBR(t *testing.T) {
-	mbrPathTests := map[string]*fstest.PathTest{
+	mbrPathTests := map[string]*fslibtest.PathTest{
 		// Root
 		"Root": {
 			TestName:    "Root",
@@ -87,7 +106,7 @@ func Test_MBR(t *testing.T) {
 		},
 	}
 
-	fstest.RunTest(t, "MBR", "testdata/filesystem/mbr_fat16.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, mbrPathTests)
+	fslibtest.RunTest(t, "MBR", "testdata/filesystem/mbr_fat16.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, mbrPathTests)
 }
 
 func BenchmarkMBR(b *testing.B) {
