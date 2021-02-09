@@ -26,10 +26,9 @@ package fat16
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/forensicanalysis/fslib/fsio"
 	"io"
 	"io/fs"
-
-	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // FS implements a read-only file system for the FAT16 file system.
@@ -57,6 +56,7 @@ func (m *FS) Open(name string) (f fs.File, err error) {
 	if !valid {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
+	// log.Println(">>", name)
 
 	if name == "." {
 		name = ""

@@ -28,13 +28,31 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/forensicanalysis/fslib/fsio"
-	"github.com/forensicanalysis/fslib/fstest"
+	fslibtest "github.com/forensicanalysis/fslib/fstest"
 )
+
+func Test_FS(t *testing.T) {
+	file, err := os.Open("../testdata/filesystem/fat16.dd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	fsys, err := New(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = fstest.TestFS(fsys, "image/alps.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
 func Test_FAT16Parser(t *testing.T) {
 	file, err := os.Open("../testdata/filesystem/fat16.dd")
@@ -52,7 +70,7 @@ func Test_FAT16Parser(t *testing.T) {
 }
 
 func Test_FAT16(t *testing.T) {
-	tests := fstest.GetDefaultContainerTests()
+	tests := fslibtest.GetDefaultContainerTests()
 
 	anyTime := time.Time{}
 	tests["rootTest"].InfoModTime = anyTime
@@ -71,9 +89,5 @@ func Test_FAT16(t *testing.T) {
 	tests["file2Test"].InfoModTime = anyTime
 	tests["file2Test"].InfoMode = 0
 
-	delete(tests, "file2Test") // TODO: fix test
-	delete(tests, "file3Test") // TODO: fix test
-	delete(tests, "file4Test") // TODO: fix test
-
-	fstest.RunTest(t, "FAT16", "testdata/filesystem/fat16.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
+	fslibtest.RunTest(t, "FAT16", "testdata/filesystem/fat16.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
 }

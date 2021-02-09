@@ -30,14 +30,32 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"testing/fstest"
 	"time"
 	"unicode/utf16"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/forensicanalysis/fslib/fsio"
-	"github.com/forensicanalysis/fslib/fstest"
+	fslibtest "github.com/forensicanalysis/fslib/fstest"
 )
+
+func Test_FS(t *testing.T) {
+	file, err := os.Open("../testdata/filesystem/gpt_apfs.dd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	fsys, err := New(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = fstest.TestFS(fsys, "p0")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestGPT(t *testing.T) {
 	file, err := os.Open("../testdata/filesystem/gpt_apfs.dd")
@@ -65,7 +83,7 @@ func TestGPT(t *testing.T) {
 }
 
 func Test_GPT(t *testing.T) {
-	pptPathTests := map[string]*fstest.PathTest{
+	pptPathTests := map[string]*fslibtest.PathTest{
 		// Root
 		"Root": {
 			TestName:    "Root",
@@ -94,7 +112,7 @@ func Test_GPT(t *testing.T) {
 		},
 	}
 
-	fstest.RunTest(t, "GPT", "testdata/filesystem/gpt_apfs.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, pptPathTests)
+	fslibtest.RunTest(t, "GPT", "testdata/filesystem/gpt_apfs.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, pptPathTests)
 }
 
 func BenchmarkGPT(b *testing.B) {

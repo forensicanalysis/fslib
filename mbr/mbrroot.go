@@ -1,6 +1,7 @@
 package mbr
 
 import (
+	"io"
 	"io/fs"
 	"syscall"
 	"time"
@@ -8,7 +9,8 @@ import (
 
 // Root is a pseudo root directory for a Master Boot Record.
 type Root struct {
-	mbr *MbrPartitionTable
+	mbr       *MbrPartitionTable
+	dirOffset int
 }
 
 func (r *Root) Read([]byte) (int, error) {
@@ -19,19 +21,39 @@ func (r *Root) Read([]byte) (int, error) {
 func (r *Root) Name() string { return "." }
 
 // ReadDir lists all partitions in the MBR.
-func (r *Root) ReadDir(count int) ([]fs.DirEntry, error) {
+func (r *Root) ReadDir(n int) ([]fs.DirEntry, error) {
 	var partitionInfos []fs.DirEntry
 	partitions := r.mbr.Partitions()
 	for index, partition := range partitions {
-		if count != 0 && index == count {
-			return partitionInfos, nil
-		}
 		if partition.NumSectors() != 0 {
 			p := NewPartition(index, &partitions[index])
 			partitionInfos = append(partitionInfos, p)
 		}
 	}
-	return partitionInfos, nil
+
+	// directory already exhausted
+	if n <= 0 && r.dirOffset >= len(partitionInfos) {
+		return nil, nil
+	}
+
+	var err error
+	// read till end
+	if n > 0 && r.dirOffset+n > len(partitionInfos) {
+		err = io.EOF
+		if r.dirOffset > len(partitionInfos) {
+			return nil, err
+		}
+	}
+
+	if n > 0 && r.dirOffset+n <= len(partitionInfos) {
+		partitionInfos = partitionInfos[r.dirOffset : r.dirOffset+n]
+		r.dirOffset += n
+	} else {
+		partitionInfos = partitionInfos[r.dirOffset:]
+		r.dirOffset += len(partitionInfos)
+	}
+
+	return partitionInfos, err
 }
 
 // Size returns 0 for MBR pseudo roots.
