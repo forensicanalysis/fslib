@@ -43,7 +43,7 @@ func TestFS(t *testing.T) {
 	}
 
 	var fsys fs.FS = osfs.New()
-	fsys, err = fs.Sub(fsys, strings.TrimLeft(wd, "/"))
+	fsys, err = fs.Sub(fsys, strings.TrimLeft(wd, `C:/\`))
 	if err != nil {
 		t.Fatal(err)
 	}
