@@ -29,7 +29,21 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+
+	"testing/fstest"
 )
+
+func TestFS(t *testing.T) {
+	fsys := New()
+	fsys, err = fs.Sub(fsys, "HKEY_LOCAL_MACHINE/System/CurrentControlSet/Control/ComputerName")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := fstest.TestFS(fsys, "ComputerName"); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestRegistryFS_Open(t *testing.T) {
 

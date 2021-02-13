@@ -58,3 +58,9 @@ func ToForensicPath(systemPath string) (name string, err error) {
 	}
 	return name[1:], nil
 }
+
+type ByName []fs.DirEntry
+
+func (a ByName) Len() int           { return len(a) }
+func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool { return a[i].Name() < a[j].Name() }

@@ -31,6 +31,7 @@ import (
 	"io/fs"
 	"os"
 	"runtime"
+	"sort"
 	"time"
 
 	"github.com/forensicanalysis/fslib"
@@ -130,6 +131,12 @@ func sysname(name string) (string, string, error) {
 type Item struct {
 	os.File
 	syspath string
+}
+
+func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
+	entries, err := i.File.ReadDir(n)
+	sort.Sort(fslib.ByName(entries))
+	return entries, err
 }
 
 // Stat return an fs.FileInfo object that describes a file.

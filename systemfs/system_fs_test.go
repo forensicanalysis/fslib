@@ -27,8 +27,30 @@ import (
 	"io/fs"
 	"os"
 	"runtime"
+	"strings"
 	"testing"
+	"testing/fstest"
 )
+
+func TestFS(t *testing.T) {
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	fsys, err := New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fsys, err = fs.Sub(fsys, strings.TrimLeft(wd, "/"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := fstest.TestFS(fsys, "systemfs.go"); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func Test_LocalNTFS(t *testing.T) {
 	if runtime.GOOS == "windows" {

@@ -1,3 +1,5 @@
+// Package bufferfs provides a fs.FS wrapper for other fs.FS with a fs.File
+// that implements io.Seeker and io.ReaderAt.
 package bufferfs
 
 import (

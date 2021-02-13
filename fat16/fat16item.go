@@ -23,6 +23,7 @@ package fat16
 
 import (
 	"errors"
+	"github.com/forensicanalysis/fslib"
 	"io"
 	"io/fs"
 	"sort"
@@ -86,7 +87,7 @@ func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
 		}
 	}
 
-	sort.Sort(ByName(infos))
+	sort.Sort(fslib.ByName(infos))
 
 	// directory already exhausted
 	if n <= 0 && i.dirOffset >= len(infos) {
@@ -112,11 +113,7 @@ func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
 	return infos, err
 }
 
-type ByName []fs.DirEntry
 
-func (a ByName) Len() int           { return len(a) }
-func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByName) Less(i, j int) bool { return a[i].Name() < a[j].Name() }
 
 // Read reads bytes into the passed buffer.
 func (i *Item) Read(p []byte) (n int, err error) {
