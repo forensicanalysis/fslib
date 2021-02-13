@@ -23,13 +23,12 @@
 package osfs_test
 
 import (
+	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"reflect"
 	"runtime"
 	"sort"
-	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -44,7 +43,11 @@ func TestFS(t *testing.T) {
 	}
 
 	var fsys fs.FS = osfs.New()
-	fsys, err = fs.Sub(fsys, strings.TrimLeft(wd, `/\`+filepath.VolumeName(wd)))
+	subpath, err := fslib.ToForensicPath(wd)
+	if err != nil {
+		t.Error(err)
+	}
+	fsys, err = fs.Sub(fsys, subpath)
 	if err != nil {
 		t.Fatal(err)
 	}
