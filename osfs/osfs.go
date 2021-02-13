@@ -31,7 +31,6 @@ import (
 	"io/fs"
 	"os"
 	"runtime"
-	"sort"
 	"time"
 
 	"github.com/forensicanalysis/fslib"
@@ -133,12 +132,6 @@ type Item struct {
 	syspath string
 }
 
-func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
-	entries, err := i.File.ReadDir(n)
-	sort.Sort(fslib.ByName(entries))
-	return entries, err
-}
-
 // Stat return an fs.FileInfo object that describes a file.
 func (i *Item) Stat() (fs.FileInfo, error) {
 	info, err := os.Lstat(i.syspath)
@@ -148,7 +141,7 @@ func (i *Item) Stat() (fs.FileInfo, error) {
 // Info wraps fs.FileInfo for native OS items.
 type Info struct {
 	internal os.FileInfo
-	syspath string
+	syspath  string
 }
 
 func (i *Info) Name() string {
@@ -170,4 +163,3 @@ func (i *Info) ModTime() time.Time {
 func (i *Info) IsDir() bool {
 	return i.internal.IsDir()
 }
-
