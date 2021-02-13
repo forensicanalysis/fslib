@@ -30,6 +30,8 @@ import (
 	"time"
 	"unsafe"
 	"sort"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 type SimpleEntry struct {
