@@ -23,15 +23,39 @@
 package osfs_test
 
 import (
+	"github.com/forensicanalysis/fslib"
 	"io/fs"
+	"os"
 	"reflect"
 	"runtime"
 	"sort"
 	"testing"
+	"testing/fstest"
 
-	"github.com/forensicanalysis/fslib/fstest"
+	fslibtest "github.com/forensicanalysis/fslib/fstest"
 	"github.com/forensicanalysis/fslib/osfs"
 )
+
+func TestFS(t *testing.T) {
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Error(err)
+	}
+
+	var fsys fs.FS = osfs.New()
+	subpath, err := fslib.ToFSPath(wd)
+	if err != nil {
+		t.Error(err)
+	}
+	fsys, err = fs.Sub(fsys, subpath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := fstest.TestFS(fsys, "osfs_test.go"); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func getOSFS(t *testing.T) (*osfs.FS, *osfs.Item, *osfs.Item) {
 	fsys := osfs.New()
@@ -158,7 +182,7 @@ func TestWindowsRoot(t *testing.T) {
 	for _, tt := range tests {
 		if runtime.GOOS == "windows" {
 			t.Run(tt.name, func(t *testing.T) {
-				gotItems, err := fstest.Readdirnames(tt.item, tt.args.n)
+				gotItems, err := fslibtest.Readdirnames(tt.item, tt.args.n)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Readdirnames() error = %v, wantErr %v", err, tt.wantErr)
 					return

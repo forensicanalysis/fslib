@@ -1,3 +1,5 @@
+// Package context provides an simple replacement for the standard library
+// context for older Go versions.
 package context
 
 type Context interface {

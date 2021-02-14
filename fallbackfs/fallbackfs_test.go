@@ -29,6 +29,23 @@ import (
 	"testing/fstest"
 )
 
+func TestFS(t *testing.T) {
+	mem1 := fstest.MapFS{}
+	mem2 := fstest.MapFS{}
+
+	mem1["foo"] = &fstest.MapFile{Data: []byte("fs1")}
+	mem2["foo"] = &fstest.MapFile{Data: []byte("fs2")}
+	mem2["bar"] = &fstest.MapFile{Data: []byte("bar2")}
+
+	fallbackFS := New(mem1, mem2)
+
+	err := fstest.TestFS(fallbackFS, "foo")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+
 func TestFallbackFS_Open(t *testing.T) {
 	mem1 := fstest.MapFS{}
 	mem2 := fstest.MapFS{}

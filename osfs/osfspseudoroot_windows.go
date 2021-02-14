@@ -29,6 +29,9 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+	"sort"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 type SimpleEntry struct {
@@ -75,6 +78,8 @@ func (r *Root) ReadDir(n int) (partitions []fs.DirEntry, err error) {
 	for i := 0; i < int(returnLength); i += 4 {
 		partitions = append(partitions, &SimpleEntry{strings.ToUpper(string(lpBuffer[i]))})
 	}
+
+	sort.Sort(fslib.ByName(partitions))
 
 	return partitions, nil
 }
