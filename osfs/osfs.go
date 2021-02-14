@@ -53,7 +53,7 @@ func isLetter(c byte) bool {
 // OpenSystemPath opens a normal path (e.g. 'C:\Windows') instead of a fslib path
 // ('/C/Windows').
 func (fsys *FS) OpenSystemPath(syspath string) (item fs.File, err error) {
-	syspath, err = fslib.ToForensicPath(syspath)
+	syspath, err = fslib.ToFSPath(syspath)
 	if err != nil {
 		return nil, err
 	}

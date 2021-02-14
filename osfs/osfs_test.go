@@ -43,7 +43,7 @@ func TestFS(t *testing.T) {
 	}
 
 	var fsys fs.FS = osfs.New()
-	subpath, err := fslib.ToForensicPath(wd)
+	subpath, err := fslib.ToFSPath(wd)
 	if err != nil {
 		t.Error(err)
 	}

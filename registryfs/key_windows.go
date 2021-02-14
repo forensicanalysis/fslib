@@ -4,6 +4,7 @@ package registryfs
 
 import (
 	"fmt"
+	"github.com/forensicanalysis/fslib"
 	"golang.org/x/sys/windows/registry"
 	"io"
 	"io/fs"
@@ -11,14 +12,15 @@ import (
 
 // Key is an entry in the registry.
 type Key struct {
-	Key  *registry.Key
-	name string
-	path string
-	fs   *FS
+	Key       *registry.Key
+	name      string
+	path      string
+	fs        *FS
+	dirOffset int
 }
 
 func (rk *Key) Read([]byte) (int, error) {
-	return 0, nil
+	return 0, io.EOF
 }
 
 // Name returns the name of the file.
@@ -29,7 +31,7 @@ func (rk *Key) Name() string {
 // ReadDir returns up to n sub keys of a key.
 func (rk *Key) ReadDir(n int) (entries []fs.DirEntry, err error) {
 	var items []fs.DirEntry
-	subKeyNames, err := rk.Key.ReadSubKeyNames(n)
+	subKeyNames, err := rk.Key.ReadSubKeyNames(-1)
 	if err != nil && err != io.EOF {
 		return nil, fmt.Errorf("error ReadSubKeyNames: %w", err)
 	}
@@ -42,7 +44,10 @@ func (rk *Key) ReadDir(n int) (entries []fs.DirEntry, err error) {
 
 		items = append(items, &KeyInfo{name: subKeyName, KeyInfo: info})
 	}
-	return items, nil
+
+	items, offset, err := fslib.DirEntries(n, items, rk.dirOffset)
+	rk.dirOffset += offset
+	return items, err
 }
 
 func subKeyInfo(rk *Key, subKeyName string) (*registry.KeyInfo, error) {

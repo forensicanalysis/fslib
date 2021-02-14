@@ -29,10 +29,11 @@ package fslib
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 	"path/filepath"
 	"runtime"
-	"strings"
+	"sort"
 )
 
 const windows = "windows"
@@ -44,19 +45,48 @@ func ReadDir(file fs.File, n int) (items []fs.DirEntry, err error) {
 	return nil, fmt.Errorf("%v does not implement ReadDir", file)
 }
 
-// ToForensicPath converts a normal path (e.g. 'C:\Windows') to a fs path
+// ToFSPath converts a normal path (e.g. 'C:\Windows') to a fs path
 // ('C/Windows').
-func ToForensicPath(systemPath string) (name string, err error) {
+func ToFSPath(systemPath string) (name string, err error) {
 	name, err = filepath.Abs(systemPath)
 	if err != nil {
 		return "", err
 	}
 	if runtime.GOOS == windows {
-		name = strings.Replace(name, "\\", "/", -1)
+		name = filepath.ToSlash(name)
 		name = name[:1] + name[2:]
 		return name, nil
 	}
 	return name[1:], nil
+}
+
+func DirEntries(n int, items []fs.DirEntry, dirOffset int) ([]fs.DirEntry, int, error) {
+	sort.Sort(ByName(items))
+
+	// directory already exhausted
+	if n <= 0 && dirOffset >= len(items) {
+		return nil, 0, nil
+	}
+
+	var err error
+	// read till end
+	if n > 0 && dirOffset+n > len(items) {
+		err = io.EOF
+		if dirOffset > len(items) {
+			return nil, 0, err
+		}
+	}
+
+	offset := 0
+	if n > 0 && dirOffset+n <= len(items) {
+		items = items[dirOffset : dirOffset+n]
+		offset += n
+	} else {
+		items = items[dirOffset:]
+		offset += len(items)
+	}
+
+	return items, offset, err
 }
 
 type ByName []fs.DirEntry

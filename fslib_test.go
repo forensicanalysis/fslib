@@ -24,13 +24,13 @@ func TestToForensicPath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if (tt.windowsTest && runtime.GOOS == "windows") || !tt.windowsTest {
-				gotName, err := fslib.ToForensicPath(tt.args.systemPath)
+				gotName, err := fslib.ToFSPath(tt.args.systemPath)
 				if (err != nil) != tt.wantErr {
-					t.Errorf("ToForensicPath() error = %v, wantErr %v", err, tt.wantErr)
+					t.Errorf("ToFSPath() error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}
 				if gotName != tt.wantName {
-					t.Errorf("ToForensicPath() gotName = %v, want %v", gotName, tt.wantName)
+					t.Errorf("ToFSPath() gotName = %v, want %v", gotName, tt.wantName)
 				}
 			}
 		})

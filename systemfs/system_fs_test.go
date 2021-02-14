@@ -23,11 +23,11 @@
 package systemfs
 
 import (
+	"github.com/forensicanalysis/fslib"
 	"io"
 	"io/fs"
 	"os"
 	"runtime"
-	"strings"
 	"testing"
 	"testing/fstest"
 )
@@ -42,10 +42,17 @@ func TestFS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fsys, err = fs.Sub(fsys, strings.TrimLeft(wd, "/"))
+
+	wd, err = fslib.ToFSPath(wd)
 	if err != nil {
 		t.Fatal(err)
 	}
+	fsys, err = fs.Sub(fsys, wd)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+
 
 	if err := fstest.TestFS(fsys, "systemfs.go"); err != nil {
 		t.Fatal(err)
