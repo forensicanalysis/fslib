@@ -69,37 +69,19 @@ type lfnEntry struct {
 	Filename3       [4]byte
 }
 
-func (m *FS) getDirectoryEntry(cluster int64, count uint16, name string) (filename string, de *namedEntry, err error) {
-	// log.Println("getDirectoryEntry", name, cluster, count)
-	if name == "" {
-		var root [8]byte
-		copy(root[:], ".")
-		return ".", &namedEntry{
-			name: filename,
-			directoryEntry: directoryEntry{
-				Filename:          root,
-				FilenameExtension: [3]byte{},
-				FileAttributes:    0x10,
-				Timecreated:       [2]byte{},
-				Datecreated:       [2]byte{},
-				Startingcluster:   2,
-				FileSize:          uint32(m.vh.RootdirEntryCount) * 32,
-			},
-		}, nil
-	}
-
+// func (m *FS) getDirectoryEntry(cluster int64, count uint16, name string) (filename string, de *namedEntry, err error) {
+func (m *FS) getDirectoryEntry(offset int64, count uint16, name string) (filename string, de *namedEntry, err error) {
 	if count == 0 {
 		count = m.vh.SectorSize * uint16(m.vh.SectorsPerCluster)
 	}
-	entries, err := m.getDirectoryEntries(cluster, count)
+	entries, err := m.getDirectoryEntries(offset, count)
 
 	pathParts := strings.SplitN(name, "/", 2)
 	currentName := pathParts[0]
-	// log.Println("entries", entries, currentName)
 	if de, ok := entries[currentName]; ok {
 		if len(pathParts) > 1 {
-			// log.Println("filesize", de.FileSize) // uint16(de.FileSize/32)
-			return m.getDirectoryEntry(int64(de.Startingcluster), count, pathParts[1])
+			offset := getOffset(int64(de.Startingcluster), m.vh)
+			return m.getDirectoryEntry(offset, count, pathParts[1])
 		}
 		return currentName, de, err
 	}
@@ -107,8 +89,8 @@ func (m *FS) getDirectoryEntry(cluster int64, count uint16, name string) (filena
 	return currentName, nil, errors.New("file not found")
 }
 
-func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*namedEntry, error) {
-	_, err := m.decoder.Seek(getOffset(cluster, m.vh), os.SEEK_SET)
+func (m *FS) getDirectoryEntries(offset int64, count uint16) (map[string]*namedEntry, error) {
+	_, err := m.decoder.Seek(offset, os.SEEK_SET)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +140,7 @@ func (m *FS) getDirectoryEntries(cluster int64, count uint16) (map[string]*named
 				currentFilename = []byte{}
 			}
 
-			// log.Print("filename ", filename, " ", de.FileAttributes&0x10 != 0, de.Startingcluster, de.FileSize)
+			// log.Print("filename ", filename, " ", de.FileAttributes&0x10 != 0, de.Startingcluster, getOffset(int64(de.Startingcluster), m.vh))
 			files[filename] = &namedEntry{name: filename, directoryEntry: de}
 		} else {
 			_, err = m.decoder.Seek(32, os.SEEK_CUR)
@@ -211,21 +193,20 @@ func handleLongFilname(data []byte, currentFilename []byte) ([]byte, error) {
 	return currentFilename, nil
 }
 
+func fatOffset(vh volumeHeader) int64 {
+	return int64(vh.ReservedSectorCount) * int64(vh.SectorSize)
+}
+
+func rootOffset(vh volumeHeader) int64 {
+	return int64(vh.SectorsPerFat)*int64(vh.FatCount)*int64(vh.SectorSize) + fatOffset(vh)
+}
+
 func getOffset(cluster int64, vh volumeHeader) int64 {
-	rootDirStartSector := int64(vh.SectorsPerFat)*int64(vh.FatCount) + int64(vh.ReservedSectorCount)
-	// log.Println("rootDirStartSector: ", rootDirStartSector)
-	rootDirStart := rootDirStartSector * int64(vh.SectorSize)
-	pos := rootDirStart
-	if cluster != 2 {
-		// pos += int64(vh.SectorsPerCluster) * (cluster - 4) * int64(vh.SectorSize)
-		rootDirSectors := (vh.RootdirEntryCount*32 + (vh.SectorSize - 1)) / vh.SectorSize
-		// log.Println("rootDirSectors: ", rootDirSectors, "vh.SectorSize: ", vh.SectorSize, "vh.RootdirEntryCount ", vh.RootdirEntryCount)
-		firstDataSector := rootDirStartSector + int64(rootDirSectors)
-		firstSectorofCluster := ((cluster - 2) * int64(vh.SectorsPerCluster)) + firstDataSector
-		pos = firstSectorofCluster * int64(vh.SectorSize)
-		// log.Println("firstSectorofCluster ", firstSectorofCluster, "pos ", pos)
-	}
-	return pos
+	rootDirSectors := (vh.RootdirEntryCount*32 + (vh.SectorSize - 1)) / vh.SectorSize
+
+	firstDataByte := rootOffset(vh) + int64(rootDirSectors)*int64(vh.SectorSize)
+
+	return ((cluster-2)*int64(vh.SectorsPerCluster))*int64(vh.SectorSize) + firstDataByte
 }
 
 /*
