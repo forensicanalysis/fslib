@@ -26,7 +26,6 @@ import (
 	"github.com/forensicanalysis/fslib"
 	"io"
 	"io/fs"
-	"sort"
 	"syscall"
 	"time"
 )
@@ -43,7 +42,6 @@ type Item struct {
 
 // NewItem creates a new fat16 Item.
 func NewItem(name string, fs *FS, directoryEntry *directoryEntry) *Item {
-	// log.Println("NewItem directoryEntry.Startingcluster: ", directoryEntry.Startingcluster)
 	cluster := int64(directoryEntry.Startingcluster)
 
 	pos := getOffset(cluster, fs.vh)
@@ -52,7 +50,6 @@ func NewItem(name string, fs *FS, directoryEntry *directoryEntry) *Item {
 	if size == 0 {
 		size = int64(fs.vh.SectorSize) * int64(fs.vh.SectorsPerCluster)
 	}
-	// log.Println("directoryEntry.FileSize", directoryEntry.FileSize, "size ", size)
 
 	return &Item{
 		name:           name,
@@ -76,44 +73,31 @@ func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {
 	if size == 0 {
 		size = int64(i.fs.vh.SectorSize) * int64(i.fs.vh.SectorsPerCluster)
 	}
+	size /= 32
 
-	// log.Printf("Readdirnames startingcluster: %d size: %d", de.Startingcluster, size)
-	entries, err := i.fs.getDirectoryEntries(int64(i.directoryEntry.Startingcluster), uint16(size/32))
+	var offset int64
+	if i.name == "." {
+		offset = rootOffset(i.fs.vh)
+		size = int64(i.fs.vh.RootdirEntryCount)
+	} else {
+		offset = getOffset(int64(i.directoryEntry.Startingcluster), i.fs.vh)
+	}
+
+	entries, err := i.fs.getDirectoryEntries(offset, uint16(size))
+	if err != nil {
+		return nil, err
+	}
 	var infos []fs.DirEntry
 	for name, entry := range entries {
 		if name != "." && name != ".." {
 			infos = append(infos, entry)
-			// fmt.Println(entry.name)
 		}
 	}
 
-	sort.Sort(fslib.ByName(infos))
-
-	// directory already exhausted
-	if n <= 0 && i.dirOffset >= len(infos) {
-		return nil, nil
-	}
-
-	// read till end
-	if n > 0 && i.dirOffset+n > len(infos) {
-		err = io.EOF
-		if i.dirOffset > len(infos) {
-			return nil, err
-		}
-	}
-
-	if n > 0 && i.dirOffset+n <= len(infos) {
-		infos = infos[i.dirOffset : i.dirOffset+n]
-		i.dirOffset += n
-	} else {
-		infos = infos[i.dirOffset:]
-		i.dirOffset += len(infos)
-	}
-
+	infos, o, err := fslib.DirEntries(n, infos, i.dirOffset)
+	i.dirOffset += o
 	return infos, err
 }
-
-
 
 // Read reads bytes into the passed buffer.
 func (i *Item) Read(p []byte) (n int, err error) {

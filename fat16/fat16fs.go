@@ -29,25 +29,40 @@ import (
 	"github.com/forensicanalysis/fslib/fsio"
 	"io"
 	"io/fs"
+	"os"
 )
 
 // FS implements a read-only file system for the FAT16 file system.
 type FS struct {
 	vh      volumeHeader
 	decoder fsio.ReadSeekerAt
+	fat     []uint16
 }
 
 // New creates a new fat16 FS.
 func New(decoder fsio.ReadSeekerAt) (*FS, error) {
-	// parser volume header
 	vh := volumeHeader{}
 	err := binary.Read(decoder, binary.LittleEndian, &vh)
 	if err != nil && err != io.EOF {
 		return nil, err
 	}
-	decoder.Seek(0, 0) // nolint: errcheck
 
-	return &FS{vh: vh, decoder: decoder}, err
+	_, err = decoder.Seek(fatOffset(vh), os.SEEK_SET)
+	if err != nil {
+		return nil, err
+	}
+	fatData := make([]uint16, (vh.SectorsPerFat*vh.SectorSize)/2)
+	err = binary.Read(decoder, binary.LittleEndian, fatData)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = decoder.Seek(0, os.SEEK_SET)
+	if err != nil {
+		return nil, err
+	}
+
+	return &FS{vh: vh, decoder: decoder, fat: fatData}, err
 }
 
 // Open opens a file for reading.
@@ -56,17 +71,26 @@ func (m *FS) Open(name string) (f fs.File, err error) {
 	if !valid {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
-	// log.Println(">>", name)
 
 	if name == "." {
-		name = ""
+		var root [8]byte
+		copy(root[:], ".")
+		return NewItem(name, m, &directoryEntry{
+			Filename:          root,
+			FilenameExtension: [3]byte{},
+			FileAttributes:    0x10,
+			Timecreated:       [2]byte{},
+			Datecreated:       [2]byte{},
+			Startingcluster:   2,
+			FileSize:          uint32(m.vh.RootdirEntryCount) * 32,
+		}), nil
 	}
 
-	name, de, err := m.getDirectoryEntry(2, m.vh.RootdirEntryCount, name)
+	name, de, err := m.getDirectoryEntry(rootOffset(m.vh), m.vh.RootdirEntryCount, name)
+	// name, de, err := m.getDirectoryEntry(2, m.vh.RootdirEntryCount, name)
 	if err != nil {
 		return nil, err
 	}
-	f = NewItem(name, m, &de.directoryEntry)
 
-	return f, nil
+	return NewItem(name, m, &de.directoryEntry), nil
 }

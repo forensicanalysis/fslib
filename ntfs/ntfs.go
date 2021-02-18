@@ -32,6 +32,7 @@ import (
 	"io"
 	"io/fs"
 	"path"
+	"strings"
 
 	"www.velocidex.com/golang/go-ntfs/parser"
 )
@@ -59,7 +60,7 @@ type FS struct {
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (item fs.File, err error) {
 	valid := fs.ValidPath(name)
-	if !valid {
+	if !valid || strings.Contains(name, `\`){
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 	name = "/" + name

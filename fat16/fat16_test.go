@@ -24,17 +24,16 @@ package fat16
 
 import (
 	"encoding/binary"
+	"github.com/forensicanalysis/fslib/fsio"
+	fslibtest "github.com/forensicanalysis/fslib/fstest"
+	"github.com/stretchr/testify/assert"
+	"io"
 	"io/fs"
 	"os"
 	"strings"
 	"testing"
 	"testing/fstest"
 	"time"
-
-	"github.com/stretchr/testify/assert"
-
-	"github.com/forensicanalysis/fslib/fsio"
-	fslibtest "github.com/forensicanalysis/fslib/fstest"
 )
 
 func Test_FS(t *testing.T) {
@@ -49,6 +48,37 @@ func Test_FS(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = fstest.TestFS(fsys, "image/alps.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func Test_Walk(t *testing.T) {
+	file, err := os.Open("../testdata/filesystem/mbr_fat16.dd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	_, err = file.Seek(128*512, io.SeekStart)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r := io.NewSectionReader(file, 128*512, 34816*512)
+
+	fsys, err := New(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
+		if strings.Contains(path, "System Volume Information/System Volume Information") {
+			t.Fatal("recursion")
+			return fs.SkipDir
+		}
+		return nil
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
