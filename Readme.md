@@ -2,9 +2,7 @@
 <h3 align="center">file system processing for forensics</h3>
 
 <p  align="center">
- <a href="https://github.com/forensicanalysis/fslib/actions"><img src="https://github.com/forensicanalysis/fslib/workflows/CI/badge.svg" alt="build" /></a>
  <a href="https://codecov.io/gh/forensicanalysis/fslib"><img src="https://codecov.io/gh/forensicanalysis/fslib/branch/master/graph/badge.svg" alt="coverage" /></a>
- <a href="https://goreportcard.com/report/github.com/forensicanalysis/fslib"><img src="https://goreportcard.com/badge/github.com/forensicanalysis/fslib" alt="report" /></a>
  <a href="https://godocs.io/github.com/forensicanalysis/fslib"><img src="https://godocs.io/github.com/forensicanalysis/fslib?status.svg" alt="doc" /></a>
 </p>
 
@@ -15,7 +13,7 @@ access disk images of with different partitioning and file systems.
 Additionally, file systems for live access to the currently mounted file system
 and registry (on Windows) are implemented.
 
-All filesystems implement [io/fs](https://tip.golang.org/pkg/io/fs).
+All filesystems implement [io/fs](https://golang.org/pkg/io/fs/#FS).
 
 ### Included File systems
 
@@ -45,15 +43,6 @@ go get -u github.com/forensicanalysis/fslib
 ## Example
 
 ``` go
-package main
-
-import (
-	"fmt"
-	"github.com/forensicanalysis/fslib/ntfs"
-	"io/fs"
-	"os"
-)
-
 func main() {
 	// Read the root directory on an NTFS disk image.
 
@@ -74,7 +63,6 @@ func main() {
 	// print filenames
 	fmt.Println(filenames)
 }
-
 ```
 
 ## Contact
