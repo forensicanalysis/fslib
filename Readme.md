@@ -2,7 +2,6 @@
 <h3 align="center">file system processing for forensics</h3>
 
 <p  align="center">
- <a href="https://codecov.io/gh/forensicanalysis/fslib"><img src="https://codecov.io/gh/forensicanalysis/fslib/branch/master/graph/badge.svg" alt="coverage" /></a>
  <a href="https://godocs.io/github.com/forensicanalysis/fslib"><img src="https://godocs.io/github.com/forensicanalysis/fslib?status.svg" alt="doc" /></a>
 </p>
 
