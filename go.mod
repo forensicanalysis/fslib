@@ -7,6 +7,6 @@ require (
 	github.com/sebdah/goldie v0.0.0-20190531093107-d313ffb52c77 // indirect
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d
-	gopkg.in/djherbis/times.v1 v1.2.0
+	gopkg.in/djherbis/times.v1 v1.4.0
 	www.velocidex.com/golang/go-ntfs v0.1.1
 )
