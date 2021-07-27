@@ -110,7 +110,7 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 		return nil, nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
 
-	lowLevelFS, err := ntfs.New(base)
+	lowLevelFS, err := ntfs.New2(base, 1024*1024, 100*1024*1024)
 	if err != nil {
 		base.Close() // nolint:errcheck
 		return nil, nil, fmt.Errorf("ntfs creation failed: %w", err)
