@@ -37,8 +37,13 @@ import (
 )
 
 // New creates a new system FS.
-func New() (fs.FS, error) {
-	return newFS()
+func New(pageSize, cacheSize int) (fs.FS, error) {
+    ourFS, err := newFS()
+    if err != nil {
+        return ourFS, err
+    }
+
+	return ourFS, nil
 }
 
 func newFS() (fs.FS, error) {
@@ -70,6 +75,13 @@ func newFS() (fs.FS, error) {
 // FS implements a read-only file system for all operating systems.
 type FS struct {
 	ntfsPartitions []string
+    cacheSize int
+    pageSize int
+}
+
+func (systemfs *FS) setPageAndCacheSize(pageSize, cacheSize int) {
+    systemfs.cacheSize = cacheSize
+    systemfs.pageSize = pageSize
 }
 
 // Open opens a file for reading.
@@ -110,7 +122,7 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 		return nil, nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
 
-	lowLevelFS, err := ntfs.New2(base, 1024*1024, 100*1024*1024)
+	lowLevelFS, err := ntfs.New2(base, 1024*1024, 1*1024*1024)
 	if err != nil {
 		base.Close() // nolint:errcheck
 		return nil, nil, fmt.Errorf("ntfs creation failed: %w", err)
