@@ -42,29 +42,26 @@ var (
     DefaultCacheSize = 100*1024*1024
 )
 
-// New creates a new ntfs FS.
-func New(r io.ReaderAt) (fs *FS, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = errors.New("error parsing file system as NTFS")
-		}
-	}()
-	reader, err := parser.NewPagedReader(r, 1024*1024, 100*1024*1024)
-	if err != nil {
-		return nil, err
-	}
-	ntfsCtx, err := parser.GetNTFSContext(reader, 0)
-	return &FS{ntfsCtx: ntfsCtx}, err
+func checkPageSizeAndCacheSize(pageSize, cacheSize int) (int, int) {
+    if pageSize <= 0 {
+        pageSize = DefaultPageSize
+    }
+
+    if cacheSize <= 0 {
+        cacheSize = DefaultCacheSize
+    }
+    return pageSize, cacheSize
 }
 
-// New2 creates a new ntfs FS.
-func New2(r io.ReaderAt, pagesize, cacheSize int) (fs *FS, err error) {
+// New creates a new ntfs FS.
+func New(r io.ReaderAt, pageSize, cacheSize int) (fs *FS, err error) {
+    pageSize, cacheSize = checkPageSizeAndCacheSize(pageSize, cacheSize)
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New("error parsing file system as NTFS")
 		}
 	}()
-	reader, err := parser.NewPagedReader(r, int64(pagesize), cacheSize)
+	reader, err := parser.NewPagedReader(r, int64(pageSize), cacheSize)
 	if err != nil {
 		return nil, err
 	}
