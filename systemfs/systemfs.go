@@ -37,13 +37,8 @@ import (
 )
 
 // New creates a new system FS.
-func New(pageSize, cacheSize int) (fs.FS, error) {
-    ourFS, err := newFS()
-    if err != nil {
-        return ourFS, err
-    }
-
-	return ourFS, nil
+func New() (fs.FS, error) {
+	return newFS()
 }
 
 func newFS() (fs.FS, error) {
@@ -122,7 +117,7 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 		return nil, nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
 
-	lowLevelFS, err := ntfs.New2(base, 1024*1024, 1*1024*1024)
+	lowLevelFS, err := ntfs.New(base, 0, 0)
 	if err != nil {
 		base.Close() // nolint:errcheck
 		return nil, nil, fmt.Errorf("ntfs creation failed: %w", err)
@@ -169,7 +164,7 @@ func (systemfs *FS) Stat(name string) (info fs.FileInfo, err error) {
 		return nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
 
-	lowLevelFS, err := ntfs.New(base)
+	lowLevelFS, err := ntfs.New(base, 0, 0)
 	if err != nil {
 		base.Close() // nolint:errcheck
 		return info, fmt.Errorf("ntfs creation failed: %w", err)
