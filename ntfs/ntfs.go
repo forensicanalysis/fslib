@@ -38,24 +38,24 @@ import (
 )
 
 var (
-    DefaultPageSize = 1024*1024
-    DefaultCacheSize = 100*1024*1024
+	DefaultPageSize  = 1024 * 1024
+	DefaultCacheSize = 100 * 1024 * 1024
 )
 
 func checkPageSizeAndCacheSize(pageSize, cacheSize int) (int, int) {
-    if pageSize <= 0 {
-        pageSize = DefaultPageSize
-    }
+	if pageSize <= 0 {
+		pageSize = DefaultPageSize
+	}
 
-    if cacheSize <= 0 {
-        cacheSize = DefaultCacheSize
-    }
-    return pageSize, cacheSize
+	if cacheSize <= 0 {
+		cacheSize = DefaultCacheSize
+	}
+	return pageSize, cacheSize
 }
 
 // New creates a new ntfs FS.
 func New(r io.ReaderAt, pageSize, cacheSize int) (fs *FS, err error) {
-    pageSize, cacheSize = checkPageSizeAndCacheSize(pageSize, cacheSize)
+	pageSize, cacheSize = checkPageSizeAndCacheSize(pageSize, cacheSize)
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New("error parsing file system as NTFS")
@@ -77,7 +77,7 @@ type FS struct {
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (item fs.File, err error) {
 	valid := fs.ValidPath(name)
-	if !valid || strings.Contains(name, `\`){
+	if !valid || strings.Contains(name, `\`) {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 	name = "/" + name

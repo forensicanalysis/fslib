@@ -70,13 +70,13 @@ func newFS() (fs.FS, error) {
 // FS implements a read-only file system for all operating systems.
 type FS struct {
 	ntfsPartitions []string
-    cacheSize int
-    pageSize int
+	cacheSize      int
+	pageSize       int
 }
 
 func (systemfs *FS) setPageAndCacheSize(pageSize, cacheSize int) {
-    systemfs.cacheSize = cacheSize
-    systemfs.pageSize = pageSize
+	systemfs.cacheSize = cacheSize
+	systemfs.pageSize = pageSize
 }
 
 // Open opens a file for reading.

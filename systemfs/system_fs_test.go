@@ -23,13 +23,14 @@
 package systemfs
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"io"
 	"io/fs"
 	"os"
 	"runtime"
 	"testing"
 	"testing/fstest"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 func TestFS(t *testing.T) {
@@ -52,8 +53,6 @@ func TestFS(t *testing.T) {
 		t.Fatal(err)
 	}
 
-
-
 	if err := fstest.TestFS(fsys, "systemfs.go"); err != nil {
 		t.Fatal(err)
 	}
@@ -67,8 +66,8 @@ func Test_LocalNTFS(t *testing.T) {
 		}
 	}
 
-	tests := []struct{
-		path string
+	tests := []struct {
+		path   string
 		header string
 	}{
 		{"C/$MFT", "FILE"},
@@ -97,7 +96,7 @@ func Test_LocalNTFS(t *testing.T) {
 
 				header := make([]byte, len(test.header))
 				n, err := file.Read(header)
-				if err != nil && err != io.EOF{
+				if err != nil && err != io.EOF {
 					t.Errorf("read error %s", err)
 				}
 				if n != len(test.header) {
