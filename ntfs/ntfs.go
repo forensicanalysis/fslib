@@ -37,14 +37,36 @@ import (
 	"www.velocidex.com/golang/go-ntfs/parser"
 )
 
+const (
+	defaultPageSize  = 1024 * 1024
+	defaultCacheSize = 100 * 1024 * 1024
+)
+
+func checkPageSizeAndCacheSize(pageSize int64, cacheSize int) (int64, int) {
+	if pageSize <= 0 {
+		pageSize = defaultPageSize
+	}
+
+	if cacheSize <= 0 {
+		cacheSize = defaultCacheSize
+	}
+	return pageSize, cacheSize
+}
+
 // New creates a new ntfs FS.
 func New(r io.ReaderAt) (fs *FS, err error) {
+	return NewWithSize(r, defaultPageSize, defaultCacheSize)
+}
+
+// NewWithSize creates a new ntfs FS with specific pageSize and cacheSize.
+func NewWithSize(r io.ReaderAt, pageSize int64, cacheSize int) (fs *FS, err error) {
+	pageSize, cacheSize = checkPageSizeAndCacheSize(pageSize, cacheSize)
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New("error parsing file system as NTFS")
 		}
 	}()
-	reader, err := parser.NewPagedReader(r, 1024*1024, 100*1024*1024)
+	reader, err := parser.NewPagedReader(r, pageSize, cacheSize)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +82,7 @@ type FS struct {
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (item fs.File, err error) {
 	valid := fs.ValidPath(name)
-	if !valid || strings.Contains(name, `\`){
+	if !valid || strings.Contains(name, `\`) {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 	name = "/" + name

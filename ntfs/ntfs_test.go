@@ -39,7 +39,7 @@ import (
 )
 
 func TestFS(t *testing.T) {
-	b , err := os.ReadFile("../testdata/filesystem/ntfs.dd")
+	b, err := os.ReadFile("../testdata/filesystem/ntfs.dd")
 	if err != nil {
 		t.Error(err)
 	}
