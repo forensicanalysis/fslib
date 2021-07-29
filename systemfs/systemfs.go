@@ -38,15 +38,23 @@ import (
 
 // New creates a new system FS.
 func New() (fs.FS, error) {
-	return newFS()
+	return newFS(0, 0)
 }
 
-func newFS() (fs.FS, error) {
+// NewWithSize creates a new system FS.
+func NewWithSize(pageSize, cacheSize int) (fs.FS, error) {
+	return newFS(pageSize, cacheSize)
+}
+
+func newFS(pageSize, cacheSize int) (fs.FS, error) {
 	if runtime.GOOS != "windows" {
 		return osfs.New(), nil
 	}
 
-	fsys := &FS{}
+	fsys := &FS{
+		cacheSize: cacheSize,
+		pageSize: pageSize,
+	}
 	root := osfs.Root{}
 	partitions, err := root.ReadDir(0)
 	if err != nil {
@@ -72,11 +80,6 @@ type FS struct {
 	ntfsPartitions []string
 	cacheSize      int
 	pageSize       int
-}
-
-func (systemfs *FS) setPageAndCacheSize(pageSize, cacheSize int) {
-	systemfs.cacheSize = cacheSize
-	systemfs.pageSize = pageSize
 }
 
 // Open opens a file for reading.
@@ -117,7 +120,7 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 		return nil, nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
 
-	lowLevelFS, err := ntfs.New(base, 0, 0)
+	lowLevelFS, err := ntfs.NewWithSize(base, systemfs.pageSize, systemfs.cacheSize)
 	if err != nil {
 		base.Close() // nolint:errcheck
 		return nil, nil, fmt.Errorf("ntfs creation failed: %w", err)
@@ -164,7 +167,7 @@ func (systemfs *FS) Stat(name string) (info fs.FileInfo, err error) {
 		return nil, fmt.Errorf("ntfs base open failed: %w", err)
 	}
 
-	lowLevelFS, err := ntfs.New(base, 0, 0)
+	lowLevelFS, err := ntfs.NewWithSize(base, systemfs.pageSize, systemfs.cacheSize)
 	if err != nil {
 		base.Close() // nolint:errcheck
 		return info, fmt.Errorf("ntfs creation failed: %w", err)

@@ -37,7 +37,7 @@ func Example() {
 	image, _ := os.Open("testdata/filesystem/ntfs.dd")
 
 	// parse the file system
-	fsys, _ := ntfs.New(image, 0, 0)
+	fsys, _ := ntfs.New(image)
 
 	// get filenames
 	entries, _ := fs.ReadDir(fsys, ".")

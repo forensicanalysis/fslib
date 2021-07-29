@@ -45,7 +45,7 @@ func TestFS(t *testing.T) {
 	}
 	r := bytes.NewReader(b)
 
-	fsys, err := New(r, 0, 0)
+	fsys, err := New(r)
 	if err != nil {
 		t.Error(err)
 	}
@@ -91,7 +91,7 @@ func Test_NTFSImage(t *testing.T) {
 	tests["file2Test"].InfoModTime = time.Date(2019, time.August, 21, 17, 40, 04, 0, time.UTC)
 	tests["file2Test"].InfoMode = 0
 
-	fslibtest.RunTest(t, "NTFS", "testdata/filesystem/ntfs.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f, 0, 0) }, tests)
+	fslibtest.RunTest(t, "NTFS", "testdata/filesystem/ntfs.dd", func(f fsio.ReadSeekerAt) (fs.FS, error) { return New(f) }, tests)
 }
 
 func TestNew(t *testing.T) {
@@ -109,7 +109,7 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotFs, err := New(tt.args.r, 0, 0)
+			gotFs, err := New(tt.args.r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 				return

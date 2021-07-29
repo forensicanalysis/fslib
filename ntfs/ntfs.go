@@ -37,31 +37,36 @@ import (
 	"www.velocidex.com/golang/go-ntfs/parser"
 )
 
-var (
-	DefaultPageSize  = 1024 * 1024
-	DefaultCacheSize = 100 * 1024 * 1024
+const (
+	defaultPageSize  = 1024 * 1024
+	defaultCacheSize = 100 * 1024 * 1024
 )
 
-func checkPageSizeAndCacheSize(pageSize, cacheSize int) (int, int) {
+func checkPageSizeAndCacheSize(pageSize int64, cacheSize int) (int64, int) {
 	if pageSize <= 0 {
-		pageSize = DefaultPageSize
+		pageSize = defaultPageSize
 	}
 
 	if cacheSize <= 0 {
-		cacheSize = DefaultCacheSize
+		cacheSize = defaultCacheSize
 	}
 	return pageSize, cacheSize
 }
 
 // New creates a new ntfs FS.
-func New(r io.ReaderAt, pageSize, cacheSize int) (fs *FS, err error) {
+func New(r io.ReaderAt) (fs *FS, err error) {
+	return NewWithSize(r, defaultPageSize, defaultCacheSize)
+}
+
+// NewWithSize creates a new ntfs FS with specific pageSize and cacheSize.
+func NewWithSize(r io.ReaderAt, pageSize int64, cacheSize int) (fs *FS, err error) {
 	pageSize, cacheSize = checkPageSizeAndCacheSize(pageSize, cacheSize)
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New("error parsing file system as NTFS")
 		}
 	}()
-	reader, err := parser.NewPagedReader(r, int64(pageSize), cacheSize)
+	reader, err := parser.NewPagedReader(r, pageSize, cacheSize)
 	if err != nil {
 		return nil, err
 	}
