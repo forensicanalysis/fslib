@@ -9,3 +9,4 @@ path
 path.zip
 go1.*
 *.prof
+coverage.txt
