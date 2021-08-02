@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"gopkg.in/djherbis/times.v1"
+	"github.com/djherbis/times"
 )
 
 // Sys returns a map of item attributes.

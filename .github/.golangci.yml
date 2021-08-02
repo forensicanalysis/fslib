@@ -53,7 +53,6 @@ linters:
     - gosimple # Linter for Go source code that specializes in simplifying a code
     - govet # Vet examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string
     - ineffassign # Detects when assignments to existing variables are not used
-    - interfacer # Linter that suggests narrower interface types
     # - lll # Reports long lines
     # - maligned # Tool to detect Go structs that would take less memory if their fields were sorted
     - misspell # Finds commonly misspelled English words in comments
