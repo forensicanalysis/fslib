@@ -54,7 +54,7 @@ linters:
     - godot # Check if comments end in a period [fast: true, auto-fix: true]
     # - godox # Tool for detection of FIXME, TODO and other comment keywords [fast: true, auto-fix: false]
     # - goerr113 # Golang linter to check the errors handling expressions [fast: false, auto-fix: false]
-    - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification [fast: true, auto-fix: true]
+    # - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification [fast: true, auto-fix: true]
     # - gofumpt # Gofumpt checks whether code was gofumpt-ed. [fast: true, auto-fix: true]
     - goheader # Checks is file header matches to pattern [fast: true, auto-fix: false]
     # - goimports # Goimports does everything that gofmt does. Additionally it checks unused imports [fast: true, auto-fix: true]
