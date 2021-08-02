@@ -42,18 +42,18 @@ func New() (fs.FS, error) {
 }
 
 // NewWithSize creates a new system FS.
-func NewWithSize(pageSize, cacheSize int) (fs.FS, error) {
+func NewWithSize(pageSize int64, cacheSize int) (fs.FS, error) {
 	return newFS(pageSize, cacheSize)
 }
 
-func newFS(pageSize, cacheSize int) (fs.FS, error) {
+func newFS(pageSize int64, cacheSize int) (fs.FS, error) {
 	if runtime.GOOS != "windows" {
 		return osfs.New(), nil
 	}
 
 	fsys := &FS{
 		cacheSize: cacheSize,
-		pageSize: pageSize,
+		pageSize:  pageSize,
 	}
 	root := osfs.Root{}
 	partitions, err := root.ReadDir(0)
@@ -79,7 +79,7 @@ func newFS(pageSize, cacheSize int) (fs.FS, error) {
 type FS struct {
 	ntfsPartitions []string
 	cacheSize      int
-	pageSize       int
+	pageSize       int64
 }
 
 // Open opens a file for reading.
