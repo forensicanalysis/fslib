@@ -3,9 +3,10 @@
 package osfs
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"sort"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 func (i *Item) ReadDir(n int) ([]fs.DirEntry, error) {

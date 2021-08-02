@@ -25,11 +25,11 @@ package osfs
 import (
 	"errors"
 	"io/fs"
+	"sort"
 	"strings"
 	"syscall"
 	"time"
 	"unsafe"
-	"sort"
 
 	"github.com/forensicanalysis/fslib"
 )

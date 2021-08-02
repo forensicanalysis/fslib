@@ -26,10 +26,11 @@ package fat16
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/forensicanalysis/fslib/fsio"
 	"io"
 	"io/fs"
 	"os"
+
+	"github.com/forensicanalysis/fslib/fsio"
 )
 
 // FS implements a read-only file system for the FAT16 file system.
