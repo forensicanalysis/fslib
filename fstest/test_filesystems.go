@@ -92,23 +92,23 @@ func GetDefaultContainerTests() map[string]*PathTest {
 }
 
 // RunTest executes a set of tests.
-func RunTest(t *testing.T, name, file string, new func(fsio.ReadSeekerAt) (fs.FS, error), tests map[string]*PathTest) {
+func RunTest(t *testing.T, name, file string, newFunc func(fsio.ReadSeekerAt) (fs.FS, error), tests map[string]*PathTest) {
 	t.Run(name, func(t *testing.T) {
 		fsys := osfs.New()
 		base, err := fsys.OpenSystemPath("../" + file)
 		assert.NoError(t, err)
 		assert.NotNil(t, base)
 		if readSeekerAtBase, ok := base.(fsio.ReadSeekerAt); ok {
-			checkFS(t, readSeekerAtBase, new, name, tests)
+			checkFS(t, readSeekerAtBase, newFunc, name, tests)
 		} else {
 			assert.Fail(t, "File does not implement ReadAt and Seek")
 		}
 	})
 }
 
-func checkFS(t *testing.T, base fsio.ReadSeekerAt, new func(fsio.ReadSeekerAt) (fs.FS, error), name string, tests map[string]*PathTest) {
+func checkFS(t *testing.T, base fsio.ReadSeekerAt, newFunc func(fsio.ReadSeekerAt) (fs.FS, error), name string, tests map[string]*PathTest) {
 	// test creation
-	fsys, err := new(base)
+	fsys, err := newFunc(base)
 	assert.NoError(t, err)
 
 	log.Print("check FS ", name)
