@@ -23,7 +23,6 @@
 package osfs_test
 
 import (
-	"github.com/forensicanalysis/fslib"
 	"io/fs"
 	"os"
 	"reflect"
@@ -31,6 +30,8 @@ import (
 	"sort"
 	"testing"
 	"testing/fstest"
+
+	"github.com/forensicanalysis/fslib"
 
 	fslibtest "github.com/forensicanalysis/fslib/fstest"
 	"github.com/forensicanalysis/fslib/osfs"

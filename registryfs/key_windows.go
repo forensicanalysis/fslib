@@ -4,10 +4,12 @@ package registryfs
 
 import (
 	"fmt"
-	"github.com/forensicanalysis/fslib"
-	"golang.org/x/sys/windows/registry"
 	"io"
 	"io/fs"
+
+	"golang.org/x/sys/windows/registry"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 // Key is an entry in the registry.

@@ -26,11 +26,12 @@ package registryfs
 
 import (
 	"fmt"
-	"golang.org/x/sys/windows/registry"
 	"io/fs"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 var registryRoots = map[string]registry.Key{

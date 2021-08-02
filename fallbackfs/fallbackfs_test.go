@@ -45,7 +45,6 @@ func TestFS(t *testing.T) {
 	}
 }
 
-
 func TestFallbackFS_Open(t *testing.T) {
 	mem1 := fstest.MapFS{}
 	mem2 := fstest.MapFS{}

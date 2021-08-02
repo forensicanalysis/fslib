@@ -23,11 +23,12 @@ package fat16
 
 import (
 	"errors"
-	"github.com/forensicanalysis/fslib"
 	"io"
 	"io/fs"
 	"syscall"
 	"time"
+
+	"github.com/forensicanalysis/fslib"
 )
 
 // Item describes files and directories in the FAT16 file system.

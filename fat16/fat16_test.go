@@ -24,9 +24,6 @@ package fat16
 
 import (
 	"encoding/binary"
-	"github.com/forensicanalysis/fslib/fsio"
-	fslibtest "github.com/forensicanalysis/fslib/fstest"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"io/fs"
 	"os"
@@ -34,6 +31,11 @@ import (
 	"testing"
 	"testing/fstest"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/forensicanalysis/fslib/fsio"
+	fslibtest "github.com/forensicanalysis/fslib/fstest"
 )
 
 func Test_FS(t *testing.T) {
