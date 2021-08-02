@@ -45,7 +45,7 @@ linters:
     - forcetypeassert # finds forced type assertions [fast: true, auto-fix: false]
     - funlen # Tool for detection of long functions [fast: true, auto-fix: false]
     # - gci # Gci control golang package import order and make it always deterministic. [fast: true, auto-fix: true]
-    - gochecknoglobals # check that no global variables exist [fast: true, auto-fix: false]
+    # - gochecknoglobals # check that no global variables exist [fast: true, auto-fix: false]
     - gochecknoinits # Checks that no init functions are present in Go code [fast: true, auto-fix: false]
     - gocognit # Computes and checks the cognitive complexity of functions [fast: true, auto-fix: false]
     - goconst # Finds repeated strings that could be replaced by a constant [fast: true, auto-fix: false]
@@ -78,7 +78,7 @@ linters:
     - noctx # noctx finds sending http request without context.Context [fast: false, auto-fix: false]
     - nolintlint # Reports ill-formed or insufficient nolint directives [fast: true, auto-fix: false]
     - paralleltest # paralleltest detects missing usage of t.Parallel() method in your Go test [fast: true, auto-fix: false]
-    - prealloc # Finds slice declarations that could potentially be preallocated [fast: true, auto-fix: false]
+    # - prealloc # Finds slice declarations that could potentially be preallocated [fast: true, auto-fix: false]
     - predeclared # find code that shadows one of Go's predeclared identifiers [fast: true, auto-fix: false]
     - promlinter # Check Prometheus metrics naming via promlint [fast: true, auto-fix: false]
     - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint. [fast: false, auto-fix: false]
@@ -106,6 +106,7 @@ issues:
 
   exclude:
     - Error return value is not checked
+    - Error return value of `subKey.Close` is not checked
     - (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
     - G104
     - deprecated
