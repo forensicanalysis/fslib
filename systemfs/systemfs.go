@@ -63,11 +63,11 @@ func newFS(pageSize int64, cacheSize int) (fs.FS, error) {
 
 	var ntfsPartitions []string
 	for _, partition := range partitions {
-		_, close, err := fsys.NTFSOpen(partition.Name() + "/$MFT")
+		_, teardown, err := fsys.NTFSOpen(partition.Name() + "/$MFT")
 
 		if err == nil {
 			ntfsPartitions = append(ntfsPartitions, partition.Name())
-			close()
+			teardown()
 		}
 	}
 	fsys.ntfsPartitions = ntfsPartitions
