@@ -20,7 +20,7 @@
 //
 // Author(s): Jonas Plum
 
-//go:build !windows && !go1.8
+//go:build !windows || !go1.8
 // +build !windows !go1.8
 
 package registryfs
