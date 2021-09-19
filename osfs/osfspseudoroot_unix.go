@@ -20,6 +20,7 @@
 //
 // Author(s): Jonas Plum
 
+//go:build !windows
 // +build !windows
 
 package osfs

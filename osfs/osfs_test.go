@@ -32,7 +32,6 @@ import (
 	"testing/fstest"
 
 	"github.com/forensicanalysis/fslib"
-
 	fslibtest "github.com/forensicanalysis/fslib/fstest"
 	"github.com/forensicanalysis/fslib/osfs"
 )
