@@ -89,7 +89,7 @@ jobs:
         run: go mod download
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           version: v1.45.2
           args: --verbose --config .github/.golangci.yml --enable gofmt --enable goimports
