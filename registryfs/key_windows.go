@@ -1,3 +1,4 @@
+//go:build go1.8
 // +build go1.8
 
 package registryfs
@@ -69,7 +70,7 @@ func subKeyInfo(rk *Key, subKeyName string) (*registry.KeyInfo, error) {
 // after closing.
 func (rk *Key) Close() error { return rk.Key.Close() }
 
-// Stat return an fs.FileInfo object that describes a key.
+// Stat return a fs.FileInfo object that describes a key.
 func (rk *Key) Stat() (fs.FileInfo, error) {
 	info, err := rk.Key.Stat()
 	return &KeyInfo{info, rk.name}, err

@@ -7,6 +7,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/sebdah/goldie v0.0.0-20190531093107-d313ffb52c77 // indirect
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d
+	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	www.velocidex.com/golang/go-ntfs v0.1.1
 )

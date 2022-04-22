@@ -1,3 +1,4 @@
+//go:build go1.8
 // +build go1.8
 
 // Copyright (c) 2019-2020 Siemens AG
@@ -71,7 +72,11 @@ func TestRegistryFS_Open(t *testing.T) {
 				return
 			}
 
-			gotKey := gotItem.(*Key)
+			gotKey, ok := gotItem.(*Key)
+			if !ok {
+				t.Error("not a key")
+			}
+
 			gotKey.fs = nil
 			gotKey.Key = computerName.Key
 			if !reflect.DeepEqual(gotKey, tt.wantItem) {

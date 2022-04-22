@@ -1,3 +1,4 @@
+//go:build go1.8
 // +build go1.8
 
 package registryfs
@@ -20,7 +21,10 @@ func (r Root) ReadDir(int) (entries []fs.DirEntry, err error) {
 	for name := range registryRoots {
 		info, err := fs.Stat(r.fs, name)
 		if err == nil {
-			entries = append(entries, info.(*KeyInfo))
+			keyInfo, ok := info.(*KeyInfo)
+			if ok {
+				entries = append(entries, keyInfo)
+			}
 		}
 	}
 	return entries, nil

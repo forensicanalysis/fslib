@@ -84,8 +84,7 @@ type FS struct {
 
 // Open opens a file for reading.
 func (systemfs *FS) Open(name string) (item fs.File, err error) {
-	valid := fs.ValidPath(name)
-	if !valid {
+	if !fs.ValidPath(name) {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
@@ -139,8 +138,7 @@ func (systemfs *FS) NTFSOpen(name string) (fs.File, func() error, error) {
 
 // Stat returns an fs.FileInfo object that describes a file.
 func (systemfs *FS) Stat(name string) (info fs.FileInfo, err error) {
-	valid := fs.ValidPath(name)
-	if !valid {
+	if !fs.ValidPath(name) {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
