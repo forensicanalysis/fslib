@@ -100,10 +100,10 @@ func (fsys *FS) Stat(name string) (fs.FileInfo, error) {
 }
 
 func sysname(name string) (string, string, error) {
-	valid := fs.ValidPath(name)
-	if !valid {
+	if !fs.ValidPath(name) {
 		return "", "", fmt.Errorf("path %s invalid", name)
 	}
+
 	if name == "." {
 		return ".", ".", nil
 	}

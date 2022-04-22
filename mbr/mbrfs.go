@@ -46,8 +46,7 @@ func New(decoder io.ReadSeeker) (*FS, error) {
 
 // Open opens a file for reading.
 func (fsys *FS) Open(name string) (fs.File, error) {
-	valid := fs.ValidPath(name)
-	if !valid {
+	if !fs.ValidPath(name) {
 		return nil, fmt.Errorf("path %s invalid", name)
 	}
 
