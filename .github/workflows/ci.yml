@@ -97,7 +97,7 @@ jobs:
       - name: Lint Windows
         uses: golangci/golangci-lint-action@v3
         with:
-          version: latest
+          version: v1.45.2
           args: --verbose --config .github/.golangci.yml
         if: matrix.os == 'windows-latest'
 
