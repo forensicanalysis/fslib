@@ -1,6 +1,6 @@
 module github.com/forensicanalysis/fslib
 
-go 1.12
+go 1.19
 
 require (
 	github.com/djherbis/times v1.5.0
